@@ -19,6 +19,11 @@
             <Button Text="Request Patch"
                     Command="{Binding RequestPatchCommand}" />
 
+            <HorizontalStackLayout Spacing="20">
+                <views:EffectSequenceBlockView BindingContext="{Binding BlockAViewModel}" />
+                <views:EffectSequenceBlockView BindingContext="{Binding BlockBViewModel}" />
+            </HorizontalStackLayout>
+
             <views:CompressorView />
             <views:DistortionOverdriveView />
             <views:PickingFilterView />

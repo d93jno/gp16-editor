@@ -31,6 +31,9 @@ namespace GP16Editor.ViewModels
             }
         }
 
+        public EffectSequenceBlockViewModel BlockAViewModel { get; }
+        public EffectSequenceBlockViewModel BlockBViewModel { get; }
+
         public MainViewModel(MidiService midiService)
         {
             _midiService = midiService;
@@ -42,6 +45,30 @@ namespace GP16Editor.ViewModels
             _selectedOutputDevice = null;
 
             RequestPatchCommand = new Command(RequestPatch);
+
+            // Initialize Block A with demo effects
+            var blockAEffects = new List<EffectSequenceItem>
+            {
+                new EffectSequenceItem { Id = 1, Name = "Compressor", Icon = "🔊", IsEnabled = true },
+                new EffectSequenceItem { Id = 2, Name = "Distortion/Overdrive", Icon = "🎸", IsEnabled = false },
+                new EffectSequenceItem { Id = 3, Name = "Picking Filter", Icon = "🎶", IsEnabled = true },
+                new EffectSequenceItem { Id = 4, Name = "Step Phaser", Icon = "🌊", IsEnabled = true },
+                new EffectSequenceItem { Id = 5, Name = "Parametric EQ", Icon = "🎛️", IsEnabled = false },
+                new EffectSequenceItem { Id = 6, Name = "Noise Suppressor", Icon = "🔇", IsEnabled = true }
+            };
+            BlockAViewModel = new EffectSequenceBlockViewModel("Block A", blockAEffects);
+
+            // Initialize Block B with demo effects
+            var blockBEffects = new List<EffectSequenceItem>
+            {
+                new EffectSequenceItem { Id = 1, Name = "Short Delay", Icon = "⏱️", IsEnabled = true },
+                new EffectSequenceItem { Id = 2, Name = "Chorus", Icon = "🌊", IsEnabled = false },
+                new EffectSequenceItem { Id = 3, Name = "Auto Panpot", Icon = "🔄", IsEnabled = true },
+                new EffectSequenceItem { Id = 4, Name = "Tap Delay", Icon = "🎼", IsEnabled = true },
+                new EffectSequenceItem { Id = 5, Name = "Reverb", Icon = "🏞️", IsEnabled = false },
+                new EffectSequenceItem { Id = 6, Name = "Lineout Filter", Icon = "🔊", IsEnabled = true }
+            };
+            BlockBViewModel = new EffectSequenceBlockViewModel("Block B", blockBEffects);
         }
 
         private void Patch_PropertyChanged(object? sender, PropertyChangedEventArgs e)

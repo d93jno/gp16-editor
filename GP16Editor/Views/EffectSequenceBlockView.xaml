@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:GP16Editor.ViewModels"
+             xmlns:models="clr-namespace:GP16Editor.Models"
+             x:Class="GP16Editor.Views.EffectSequenceBlockView"
+             x:DataType="vm:EffectSequenceBlockViewModel">
+    <VerticalStackLayout>
+        <Label Text="{Binding BlockName}" FontAttributes="Bold" />
+
+        <CollectionView x:Name="EffectsCollectionView"
+                        ItemsSource="{Binding Effects}"
+                        CanReorderItems="True">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:EffectSequenceItem">
+                    <Grid ColumnDefinitions="Auto,Auto,*,Auto" Padding="10">
+                        <Label Text="⋮"
+                               FontSize="16"
+                               Grid.Column="0"
+                               VerticalOptions="Center"
+                               HorizontalOptions="Center"
+                               WidthRequest="20" />
+                        <Image Source="{Binding Icon}"
+                               WidthRequest="32"
+                               HeightRequest="32"
+                               Grid.Column="1"
+                               Opacity="{Binding IsEnabled, Converter={StaticResource BoolToOpacityConverter}}" />
+                        <Label Text="{Binding Name}"
+                               Grid.Column="2"
+                               VerticalOptions="Center"
+                               Opacity="{Binding IsEnabled, Converter={StaticResource BoolToOpacityConverter}}" />
+                        <Switch IsToggled="{Binding IsEnabled}"
+                                Grid.Column="3"
+                                VerticalOptions="Center" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Label Text="{Binding SequenceString}" />
+        <Label Text="{Binding ActiveString}" />
+    </VerticalStackLayout>
+</ContentView>
