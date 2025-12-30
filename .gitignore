@@ -1,0 +1,78 @@
+# .NET MAUI .gitignore
+# This file excludes common files and directories that should not be committed to git
+
+# Binaries and build outputs
+bin/
+obj/
+**/bin/
+**/obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# IDE and editor files
+.vscode/
+.vs/
+.idea/
+*.swp
+*.swo
+*~
+
+# NuGet packages
+packages/
+*.nupkg
+*.snupkg
+.nuget/
+
+# Logs and diagnostics
+*.log
+*.tlog
+*.cache
+*.diagnostic
+*.trace
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.orig
+
+# OS-specific files
+Thumbs.db
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# MAUI-specific
+# Android
+*.apk
+*.aab
+*.dex
+*.so
+proguard/
+# iOS
+*.ipa
+*.dSYM
+*.xcuserstate
+# macOS
+*.app
+# Windows
+*.appx
+*.msix
+*.pfx
+*.cer
+# Tizen
+*.tpk
+
+# Generated files
+# (Add any project-specific generated files here)
+
+# Secrets and config (if any)
+# appsettings.json (if contains secrets)
+# *.pfx (certificates)

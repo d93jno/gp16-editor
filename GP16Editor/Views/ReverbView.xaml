@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:GP16Editor.ViewModels"
+             x:Class="GP16Editor.Views.ReverbView"
+             x:DataType="vm:ReverbViewModel">
+    <VerticalStackLayout>
+        <Label Text="Reverb" FontAttributes="Bold" />
+
+        <Picker Title="Mode" SelectedItem="{Binding Mode}">
+            <Picker.ItemsSource>
+                <x:Array Type="{x:Type x:String}">
+                    <x:String>Room 1</x:String>
+                    <x:String>Room 2</x:String>
+                    <x:String>Room 3</x:String>
+                    <x:String>Hall 1</x:String>
+                    <x:String>Hall 2</x:String>
+                    <x:String>Plate 1</x:String>
+                    <x:String>Plate 2</x:String>
+                    <x:String>Spring</x:String>
+                    <x:String>Gate</x:String>
+                    <x:String>Reverse</x:String>
+                </x:Array>
+            </Picker.ItemsSource>
+        </Picker>
+
+        <Label Text="{Binding Decay, StringFormat='Decay: {0:F1} s'}" />
+        <Slider x:Name="DecaySlider" Minimum="0.5" Maximum="20.0" Value="{Binding Decay}" />
+
+        <Label Text="{Binding PreDelay, StringFormat='Pre Delay: {0:F0} ms'}" />
+        <Slider x:Name="PreDelaySlider" Minimum="0" Maximum="100" Value="{Binding PreDelay}" />
+        
+        <Label Text="{Binding EffectLevel, StringFormat='Effect Level: {0:F0}'}" />
+        <Slider x:Name="EffectLevelSlider" Minimum="0" Maximum="100" Value="{Binding EffectLevel}" />
+        
+        <Label Text="{Binding Cutoff, StringFormat='Cutoff: {0:F0} Hz'}" />
+        <Slider x:Name="CutoffSlider" Minimum="500" Maximum="8000" Value="{Binding Cutoff}" />
+
+    </VerticalStackLayout>
+</ContentView>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="GP16Editor.Views.FlangerView"
+             xmlns:viewModels="clr-namespace:GP16Editor.ViewModels"
+             x:DataType="viewModels:FlangerViewModel">
+    <VerticalStackLayout>
+        <Label Text="Flanger" FontAttributes="Bold" />
+
+        <Label Text="{Binding Rate, StringFormat='Rate: {0:F0}'}" />
+        <Slider x:Name="RateSlider" Minimum="0" Maximum="100" Value="{Binding Rate}" />
+
+        <Label Text="{Binding Depth, StringFormat='Depth: {0:F0}'}" />
+        <Slider x:Name="DepthSlider" Minimum="0" Maximum="100" Value="{Binding Depth}" />
+
+        <Label Text="{Binding Manual, StringFormat='Manual: {0:F0}'}" />
+        <Slider x:Name="ManualSlider" Minimum="0" Maximum="100" Value="{Binding Manual}" />
+
+        <Label Text="{Binding Resonance, StringFormat='Resonance: {0:F0}'}" />
+        <Slider x:Name="ResonanceSlider" Minimum="0" Maximum="100" Value="{Binding Resonance}" />
+
+    </VerticalStackLayout>
+</ContentView>

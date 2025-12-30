@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="GP16Editor.MainPage"
+             xmlns:viewModels="clr-namespace:GP16Editor.ViewModels"
+             xmlns:views="clr-namespace:GP16Editor.Views"
+             x:DataType="viewModels:MainViewModel">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="30,0" Spacing="25">
+            <Picker Title="Select Input Device"
+                    ItemsSource="{Binding InputDevices}"
+                    SelectedItem="{Binding SelectedInputDevice}" />
+
+            <Picker Title="Select Output Device"
+                    ItemsSource="{Binding OutputDevices}"
+                    SelectedItem="{Binding SelectedOutputDevice}" />
+
+            <Button Text="Request Patch"
+                    Command="{Binding RequestPatchCommand}" />
+
+            <views:CompressorView />
+            <views:DistortionOverdriveView />
+            <views:PickingFilterView />
+            <views:StepPhaserView />
+            <views:ParametricEQView />
+            <views:NoiseSuppressorView />
+            <views:ShortDelayView />
+            <views:ChorusView />
+            <views:FlangerView />
+            <views:PitchShifterView />
+            <views:SpaceDView />
+            <views:AutoPanpotView />
+            <views:TapDelayView />
+            <views:ReverbView />
+            <views:LineoutFilterView />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

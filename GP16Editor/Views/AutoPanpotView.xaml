@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:GP16Editor.ViewModels"
+             x:Class="GP16Editor.Views.AutoPanpotView"
+             x:DataType="vm:AutoPanpotViewModel">
+    <VerticalStackLayout>
+        <Label Text="Auto Panpot" FontAttributes="Bold" />
+
+        <Label Text="{Binding Rate, StringFormat='Rate: {0:F0}'}" />
+        <Slider x:Name="RateSlider" Minimum="0" Maximum="100" Value="{Binding Rate}" />
+
+        <Label Text="{Binding Depth, StringFormat='Depth: {0:F0}'}" />
+        <Slider x:Name="DepthSlider" Minimum="0" Maximum="100" Value="{Binding Depth}" />
+
+        <Picker Title="Mode" SelectedItem="{Binding Mode}">
+            <Picker.ItemsSource>
+                <x:Array Type="{x:Type x:String}">
+                    <x:String>Panning</x:String>
+                    <x:String>Tremolo</x:String>
+                </x:Array>
+            </Picker.ItemsSource>
+        </Picker>
+    </VerticalStackLayout>
+</ContentView>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:GP16Editor.ViewModels"
+             x:Class="GP16Editor.Views.ParametricEQView"
+             x:DataType="vm:ParametricEQViewModel">
+    <VerticalStackLayout>
+        <Label Text="Parametric EQ" FontAttributes="Bold" />
+
+        <!-- Low Band -->
+        <Label Text="Low Band" FontAttributes="Italic" />
+        <Label Text="{Binding LowFreq, StringFormat='Frequency: {0:F0} Hz'}" />
+        <Slider x:Name="LowFreqSlider" Minimum="60" Maximum="250" Value="{Binding LowFreq}" />
+        <Label Text="{Binding LowLevel, StringFormat='Level: {0:F0} dB'}" />
+        <Slider x:Name="LowLevelSlider" Minimum="-12" Maximum="12" Value="{Binding LowLevel}" />
+
+        <!-- Low Mid Band -->
+        <Label Text="Low Mid Band" FontAttributes="Italic" />
+        <Label Text="{Binding LowMidFreq, StringFormat='Frequency: {0:F0} Hz'}" />
+        <Slider x:Name="LowMidFreqSlider" Minimum="125" Maximum="1000" Value="{Binding LowMidFreq}" />
+        <Label Text="{Binding LowMidQ, StringFormat='Q: {0:F1}'}" />
+        <Slider x:Name="LowMidQSlider" Minimum="1.0" Maximum="5.0" Value="{Binding LowMidQ}" />
+        <Label Text="{Binding LowMidLevel, StringFormat='Level: {0:F0} dB'}" />
+        <Slider x:Name="LowMidLevelSlider" Minimum="-12" Maximum="12" Value="{Binding LowMidLevel}" />
+
+        <!-- High Mid Band -->
+        <Label Text="High Mid Band" FontAttributes="Italic" />
+        <Label Text="{Binding HighMidFreq, StringFormat='Frequency: {0:F0} Hz'}" />
+        <Slider x:Name="HighMidFreqSlider" Minimum="500" Maximum="4000" Value="{Binding HighMidFreq}" />
+        <Label Text="{Binding HighMidQ, StringFormat='Q: {0:F1}'}" />
+        <Slider x:Name="HighMidQSlider" Minimum="1.0" Maximum="5.0" Value="{Binding HighMidQ}" />
+        <Label Text="{Binding HighMidLevel, StringFormat='Level: {0:F0} dB'}" />
+        <Slider x:Name="HighMidLevelSlider" Minimum="-12" Maximum="12" Value="{Binding HighMidLevel}" />
+
+        <!-- High Band -->
+        <Label Text="High Band" FontAttributes="Italic" />
+        <Label Text="{Binding HighFreq, StringFormat='Frequency: {0:F0} Hz'}" />
+        <Slider x:Name="HighFreqSlider" Minimum="2000" Maximum="8000" Value="{Binding HighFreq}" />
+        <Label Text="{Binding HighLevel, StringFormat='Level: {0:F0} dB'}" />
+        <Slider x:Name="HighLevelSlider" Minimum="-12" Maximum="12" Value="{Binding HighLevel}" />
+        
+    </VerticalStackLayout>
+</ContentView>

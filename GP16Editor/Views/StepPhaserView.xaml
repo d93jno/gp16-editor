@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="GP16Editor.Views.StepPhaserView"
+             xmlns:viewModels="clr-namespace:GP16Editor.ViewModels"
+             x:DataType="viewModels:StepPhaserViewModel">
+    <VerticalStackLayout>
+        <Label Text="Step Phaser" FontAttributes="Bold" />
+
+        <Label Text="{Binding Rate, StringFormat='Rate: {0:F0}'}" />
+        <Slider x:Name="RateSlider" Minimum="0" Maximum="100" Value="{Binding Rate}" />
+
+        <Label Text="{Binding Depth, StringFormat='Depth: {0:F0}'}" />
+        <Slider x:Name="DepthSlider" Minimum="0" Maximum="100" Value="{Binding Depth}" />
+
+        <Label Text="{Binding Manual, StringFormat='Manual: {0:F0}'}" />
+        <Slider x:Name="ManualSlider" Minimum="0" Maximum="100" Value="{Binding Manual}" />
+
+        <Label Text="{Binding Resonance, StringFormat='Resonance: {0:F0}'}" />
+        <Slider x:Name="ResonanceSlider" Minimum="0" Maximum="100" Value="{Binding Resonance}" />
+
+        <Label Text="{Binding LfoStep, StringFormat='LFO Step: {0:F0}'}" />
+        <Slider x:Name="LfoStepSlider" Minimum="0" Maximum="100" Value="{Binding LfoStep}" />
+    </VerticalStackLayout>
+</ContentView>

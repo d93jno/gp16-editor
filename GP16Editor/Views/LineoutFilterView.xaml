@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:GP16Editor.ViewModels"
+             x:Class="GP16Editor.Views.LineoutFilterView"
+             x:DataType="vm:LineoutFilterViewModel">
+    <VerticalStackLayout>
+        <Label Text="Lineout Filter" FontAttributes="Bold" />
+
+        <Label Text="{Binding Presence, StringFormat='Presence: {0:F0}'}" />
+        <Slider x:Name="PresenceSlider" Minimum="0" Maximum="100" Value="{Binding Presence}" />
+
+        <Label Text="{Binding Treble, StringFormat='Treble: {0:F0}'}" />
+        <Slider x:Name="TrebleSlider" Minimum="0" Maximum="100" Value="{Binding Treble}" />
+
+        <Label Text="{Binding Middle, StringFormat='Middle: {0:F0}'}" />
+        <Slider x:Name="MiddleSlider" Minimum="0" Maximum="100" Value="{Binding Middle}" />
+
+        <Label Text="{Binding Bass, StringFormat='Bass: {0:F0}'}" />
+        <Slider x:Name="BassSlider" Minimum="0" Maximum="100" Value="{Binding Bass}" />
+
+    </VerticalStackLayout>
+</ContentView>

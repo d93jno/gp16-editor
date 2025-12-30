@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:GP16Editor.ViewModels"
+             x:Class="GP16Editor.Views.SpaceDView"
+             x:DataType="vm:SpaceDViewModel">
+    <VerticalStackLayout>
+        <Label Text="Space-D" FontAttributes="Bold" />
+
+        <Picker Title="Mode" SelectedItem="{Binding Mode}">
+            <Picker.ItemsSource>
+                <x:Array Type="{x:Type x:String}">
+                    <x:String>Mode 1</x:String>
+                    <x:String>Mode 2</x:String>
+                    <x:String>Mode 3</x:String>
+                    <x:String>Mode 4</x:String>
+                </x:Array>
+            </Picker.ItemsSource>
+        </Picker>
+    </VerticalStackLayout>
+</ContentView>
