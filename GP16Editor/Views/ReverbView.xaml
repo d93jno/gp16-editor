@@ -2,9 +2,11 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:GP16Editor.ViewModels"
+             xmlns:controls="clr-namespace:GP16Editor.Controls"
              x:Class="GP16Editor.Views.ReverbView"
              x:DataType="vm:ReverbViewModel">
-    <VerticalStackLayout>
+    <Border Stroke="LightGray" StrokeThickness="1" Padding="5">
+        <VerticalStackLayout>
         <Label Text="Reverb" FontAttributes="Bold" />
 
         <Picker Title="Mode" SelectedItem="{Binding Mode}">
@@ -24,17 +26,18 @@
             </Picker.ItemsSource>
         </Picker>
 
-        <Label Text="{Binding Decay, StringFormat='Decay: {0:F1} s'}" />
-        <Slider x:Name="DecaySlider" Minimum="0.5" Maximum="20.0" Value="{Binding Decay}" />
+        <Label Text="Decay" />
+        <controls:CircularSlider Minimum="0.5" Maximum="20.0" Value="{Binding Decay}" />
 
-        <Label Text="{Binding PreDelay, StringFormat='Pre Delay: {0:F0} ms'}" />
-        <Slider x:Name="PreDelaySlider" Minimum="0" Maximum="100" Value="{Binding PreDelay}" />
+        <Label Text="Pre Delay (ms)" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding PreDelay}" />
         
-        <Label Text="{Binding EffectLevel, StringFormat='Effect Level: {0:F0}'}" />
-        <Slider x:Name="EffectLevelSlider" Minimum="0" Maximum="100" Value="{Binding EffectLevel}" />
+        <Label Text="Effect Level" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding EffectLevel}" />
         
-        <Label Text="{Binding Cutoff, StringFormat='Cutoff: {0:F0} Hz'}" />
-        <Slider x:Name="CutoffSlider" Minimum="500" Maximum="8000" Value="{Binding Cutoff}" />
+        <Label Text="Cutoff (Hz)" />
+        <controls:CircularSlider Minimum="500" Maximum="8000" Value="{Binding Cutoff}" />
 
     </VerticalStackLayout>
+    </Border>
 </ContentView>

@@ -2,21 +2,24 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:GP16Editor.ViewModels"
+             xmlns:controls="clr-namespace:GP16Editor.Controls"
              x:DataType="vm:CompressorViewModel"
              x:Class="GP16Editor.Views.CompressorView">
-    <VerticalStackLayout>
+    <Border Stroke="LightGray" StrokeThickness="1" Padding="5">
+        <VerticalStackLayout>
         <Label Text="Compressor" FontAttributes="Bold" />
         
-        <Label Text="{Binding Sustain, StringFormat='Sustain: {0:F0}'}" />
-        <Slider x:Name="SustainSlider" Minimum="0" Maximum="100" Value="{Binding Sustain}" />
+        <Label Text="Sustain" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Sustain}" />
 
-        <Label Text="{Binding Attack, StringFormat='Attack: {0:F0}'}" />
-        <Slider x:Name="AttackSlider" Minimum="0" Maximum="100" Value="{Binding Attack}" />
+        <Label Text="Attack" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Attack}" />
 
-        <Label Text="{Binding Tone, StringFormat='Tone: {0:F0}'}" />
-        <Slider x:Name="ToneSlider" Minimum="-50" Maximum="50" Value="{Binding Tone}" />
+        <Label Text="Tone" />
+        <controls:CircularSlider Minimum="-50" Maximum="50" Value="{Binding Tone}" />
 
-        <Label Text="{Binding Level, StringFormat='Level: {0:F0}'}" />
-        <Slider x:Name="LevelSlider" Minimum="0" Maximum="100" Value="{Binding Level}" />
+        <Label Text="Level" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Level}" />
     </VerticalStackLayout>
+    </Border>
 </ContentView>

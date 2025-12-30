@@ -86,12 +86,27 @@ namespace GP16Editor.ViewModels
             {
                 new() { Id = 1, Name = "Short Delay", Icon = "⏱️", IsEnabled = true },
                 new() { Id = 2, Name = "Chorus", Icon = "🌊", IsEnabled = true },
-                new() { Id = 3, Name = "Auto Panpot", Icon = "🔄", IsEnabled = true },
-                new() { Id = 4, Name = "Tap Delay", Icon = "🎼", IsEnabled = true },
-                new() { Id = 5, Name = "Reverb", Icon = "🏞️", IsEnabled = true },
-                new() { Id = 6, Name = "Lineout Filter", Icon = "🔊", IsEnabled = true }
+                new() { Id = 3, Name = "Flanger", Icon = "🌊", IsEnabled = false },
+                new() { Id = 4, Name = "Pitch Shifter", Icon = "🎵", IsEnabled = false },
+                new() { Id = 5, Name = "Space-D", Icon = "🌌", IsEnabled = false },
+                new() { Id = 6, Name = "Auto Panpot", Icon = "🔄", IsEnabled = true },
+                new() { Id = 7, Name = "Tap Delay", Icon = "🎼", IsEnabled = true },
+                new() { Id = 8, Name = "Reverb", Icon = "🏞️", IsEnabled = true },
+                new() { Id = 9, Name = "Lineout Filter", Icon = "🔊", IsEnabled = true }
             };
             BlockBViewModel = new EffectSequenceBlockViewModel("Block B", blockBEffects);
+
+            // Subscribe to effect changes for visibility updates
+            foreach (var effect in BlockAViewModel.Effects)
+            {
+                effect.PropertyChanged += OnEffectChanged;
+            }
+            foreach (var effect in BlockBViewModel.Effects)
+            {
+                effect.PropertyChanged += OnEffectChanged;
+            }
+
+            midiService.SelectDevices(SelectedInputDevice, SelectedOutputDevice);
         }
 
         private void Patch_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -143,10 +158,54 @@ namespace GP16Editor.ViewModels
             }
         }
 
-        private void CheckAndSelectDevices()
+        private void OnEffectChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(EffectSequenceItem.IsEnabled) && sender is EffectSequenceItem item)
+            {
+                switch (item.Name)
+                {
+                    case "Compressor": OnPropertyChanged(nameof(IsCompressorEnabled)); break;
+                    case "Distortion/Overdrive": OnPropertyChanged(nameof(IsDistortionOverdriveEnabled)); break;
+                    case "Picking Filter": OnPropertyChanged(nameof(IsPickingFilterEnabled)); break;
+                    case "Step Phaser": OnPropertyChanged(nameof(IsStepPhaserEnabled)); break;
+                    case "Parametric EQ": OnPropertyChanged(nameof(IsParametricEQEnabled)); break;
+                    case "Noise Suppressor": OnPropertyChanged(nameof(IsNoiseSuppressorEnabled)); break;
+                    case "Short Delay": OnPropertyChanged(nameof(IsShortDelayEnabled)); break;
+                    case "Chorus": OnPropertyChanged(nameof(IsChorusEnabled)); break;
+                    case "Flanger": OnPropertyChanged(nameof(IsFlangerEnabled)); break;
+                    case "Pitch Shifter": OnPropertyChanged(nameof(IsPitchShifterEnabled)); break;
+                    case "Space-D": OnPropertyChanged(nameof(IsSpaceDEnabled)); break;
+                    case "Auto Panpot": OnPropertyChanged(nameof(IsAutoPanpotEnabled)); break;
+                    case "Tap Delay": OnPropertyChanged(nameof(IsTapDelayEnabled)); break;
+                    case "Reverb": OnPropertyChanged(nameof(IsReverbEnabled)); break;
+                    case "Lineout Filter": OnPropertyChanged(nameof(IsLineoutFilterEnabled)); break;
+                }
+            }
+        }
+
+        public bool IsCompressorEnabled => BlockAViewModel.Effects.FirstOrDefault(e => e.Name == "Compressor")?.IsEnabled ?? false;
+        public bool IsDistortionOverdriveEnabled => BlockAViewModel.Effects.FirstOrDefault(e => e.Name == "Distortion/Overdrive")?.IsEnabled ?? false;
+        public bool IsPickingFilterEnabled => BlockAViewModel.Effects.FirstOrDefault(e => e.Name == "Picking Filter")?.IsEnabled ?? false;
+        public bool IsStepPhaserEnabled => BlockAViewModel.Effects.FirstOrDefault(e => e.Name == "Step Phaser")?.IsEnabled ?? false;
+        public bool IsParametricEQEnabled => BlockAViewModel.Effects.FirstOrDefault(e => e.Name == "Parametric EQ")?.IsEnabled ?? false;
+        public bool IsNoiseSuppressorEnabled => BlockAViewModel.Effects.FirstOrDefault(e => e.Name == "Noise Suppressor")?.IsEnabled ?? false;
+
+        public bool IsShortDelayEnabled => BlockBViewModel.Effects.FirstOrDefault(e => e.Name == "Short Delay")?.IsEnabled ?? false;
+        public bool IsChorusEnabled => BlockBViewModel.Effects.FirstOrDefault(e => e.Name == "Chorus")?.IsEnabled ?? false;
+        public bool IsFlangerEnabled => BlockBViewModel.Effects.FirstOrDefault(e => e.Name == "Flanger")?.IsEnabled ?? false;
+        public bool IsPitchShifterEnabled => BlockBViewModel.Effects.FirstOrDefault(e => e.Name == "Pitch Shifter")?.IsEnabled ?? false;
+        public bool IsSpaceDEnabled => BlockBViewModel.Effects.FirstOrDefault(e => e.Name == "Space-D")?.IsEnabled ?? false;
+        public bool IsAutoPanpotEnabled => BlockBViewModel.Effects.FirstOrDefault(e => e.Name == "Auto Panpot")?.IsEnabled ?? false;
+        public bool IsTapDelayEnabled => BlockBViewModel.Effects.FirstOrDefault(e => e.Name == "Tap Delay")?.IsEnabled ?? false;
+        public bool IsReverbEnabled => BlockBViewModel.Effects.FirstOrDefault(e => e.Name == "Reverb")?.IsEnabled ?? false;
+        public bool IsLineoutFilterEnabled => BlockBViewModel.Effects.FirstOrDefault(e => e.Name == "Lineout Filter")?.IsEnabled ?? false;
+
+        private async void CheckAndSelectDevices()
         {
             if (!string.IsNullOrEmpty(SelectedInputDevice) && !string.IsNullOrEmpty(SelectedOutputDevice))
             {
+                // Delay to ensure GUI is fully initialized
+                await Task.Delay(1000);
                 _midiService.SelectDevices(SelectedInputDevice, SelectedOutputDevice);
             }
         }

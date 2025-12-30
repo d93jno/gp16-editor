@@ -7,11 +7,17 @@ namespace GP16Editor.Services
     {
         private IInputDevice? _inputDevice;
         private IOutputDevice? _outputDevice;
+        private bool _disposed = false;
 
         public event EventHandler<NormalSysExEvent>? SysExReceived;
 
         public MidiService()
         {
+        }
+
+        ~MidiService()
+        {
+            Dispose(false);
         }
 
         public IEnumerable<string> GetInputDevices()
@@ -24,7 +30,7 @@ namespace GP16Editor.Services
             return OutputDevice.GetAll().Select(d => d.Name);
         }
 
-        public void SelectDevices(string inputDeviceName, string outputDeviceName)
+        public void SelectDevices(string? inputDeviceName, string? outputDeviceName)
         {
             var inputDevices = InputDevice.GetAll();
             var outputDevices = OutputDevice.GetAll();
@@ -32,16 +38,20 @@ namespace GP16Editor.Services
             var inputDevice = inputDevices.FirstOrDefault(d => d.Name == inputDeviceName);
             var outputDevice = outputDevices.FirstOrDefault(d => d.Name == outputDeviceName);
 
+            System.Diagnostics.Debug.WriteLine($"MIDI devices selected: Input='{inputDeviceName}', Output='{outputDeviceName}'");
+
             if (inputDevice != null && outputDevice != null)
             {
                 _inputDevice = inputDevice;
                 _outputDevice = outputDevice;
+
 
                 _inputDevice.EventReceived += OnEventReceived;
                 _inputDevice.StartEventsListening();
             }
             else
             {
+                System.Diagnostics.Debug.WriteLine($"MIDI devices not available: Input='{inputDeviceName}' ({inputDevice != null}), Output='{outputDeviceName}' ({outputDevice != null})");
                 // Devices not available, do nothing
                 _inputDevice = null;
                 _outputDevice = null;
@@ -70,9 +80,43 @@ namespace GP16Editor.Services
 
         public void Dispose()
         {
-            _inputDevice?.StopEventsListening();
-            _inputDevice?.Dispose();
-            _outputDevice?.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+                return;
+
+            if (disposing)
+            {
+                // Dispose managed resources
+                try
+                {
+                    if (_inputDevice != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine("Stopping MIDI input device event listening");
+                        _inputDevice.StopEventsListening();
+                        _inputDevice.Dispose();
+                        _inputDevice = null;
+                    }
+                    
+                    if (_outputDevice != null)
+                    {
+                        _outputDevice.Dispose();
+                        _outputDevice = null;
+                    }
+                    
+                    System.Diagnostics.Debug.WriteLine("MIDI service disposed successfully");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error disposing MIDI service: {ex.Message}");
+                }
+            }
+
+            _disposed = true;
         }
 
         public byte CalculateChecksum(IEnumerable<byte> addressAndData)

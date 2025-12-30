@@ -1,25 +1,28 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:GP16Editor.Controls"
              x:Class="GP16Editor.Views.PitchShifterView"
              xmlns:viewModels="clr-namespace:GP16Editor.ViewModels"
              x:DataType="viewModels:PitchShifterViewModel">
-    <VerticalStackLayout>
+    <Border Stroke="LightGray" StrokeThickness="1" Padding="5">
+        <VerticalStackLayout>
         <Label Text="Pitch Shifter" FontAttributes="Bold" />
 
-        <Label Text="{Binding Chromatic, StringFormat='Chromatic: {0:F0} semitones'}" />
-        <Slider x:Name="ChromaticSlider" Minimum="-12" Maximum="12" Value="{Binding Chromatic}" />
+        <Label Text="Chromatic (semitones)" />
+        <controls:CircularSlider Minimum="-12" Maximum="12" Value="{Binding Chromatic}" />
 
-        <Label Text="{Binding Fine, StringFormat='Fine: {0:F0}'}" />
-        <Slider x:Name="FineSlider" Minimum="-50" Maximum="50" Value="{Binding Fine}" />
+        <Label Text="Fine" />
+        <controls:CircularSlider Minimum="-50" Maximum="50" Value="{Binding Fine}" />
 
-        <Label Text="{Binding Balance, StringFormat='Balance: {0:F0}'}" />
-        <Slider x:Name="BalanceSlider" Minimum="0" Maximum="100" Value="{Binding Balance}" />
+        <Label Text="Balance" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Balance}" />
 
-        <Label Text="{Binding Feedback, StringFormat='Feedback: {0:F0}'}" />
-        <Slider x:Name="FeedbackSlider" Minimum="0" Maximum="100" Value="{Binding Feedback}" />
+        <Label Text="Feedback" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Feedback}" />
 
-        <Label Text="{Binding PreDelay, StringFormat='Pre Delay: {0:F0} ms'}" />
-        <Slider x:Name="PreDelaySlider" Minimum="0" Maximum="100" Value="{Binding PreDelay}" />
+        <Label Text="Pre Delay (ms)" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding PreDelay}" />
     </VerticalStackLayout>
+    </Border>
 </ContentView>

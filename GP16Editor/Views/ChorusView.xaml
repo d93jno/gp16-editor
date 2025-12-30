@@ -2,22 +2,25 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:GP16Editor.ViewModels"
+             xmlns:controls="clr-namespace:GP16Editor.Controls"
              x:Class="GP16Editor.Views.ChorusView"
              x:DataType="vm:ChorusViewModel">
-    <VerticalStackLayout>
+    <Border Stroke="LightGray" StrokeThickness="1" Padding="5">
+        <VerticalStackLayout>
         <Label Text="Chorus" FontAttributes="Bold" />
 
-        <Label Text="{Binding PreDelay, StringFormat='Pre Delay: {0:F0} ms'}" />
-        <Slider x:Name="PreDelaySlider" Minimum="0" Maximum="100" Value="{Binding PreDelay}" />
+        <Label Text="Pre Delay (ms)" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding PreDelay}" />
 
-        <Label Text="{Binding Rate, StringFormat='Rate: {0:F0}'}" />
-        <Slider x:Name="RateSlider" Minimum="0" Maximum="100" Value="{Binding Rate}" />
+        <Label Text="Rate" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Rate}" />
 
-        <Label Text="{Binding Depth, StringFormat='Depth: {0:F0}'}" />
-        <Slider x:Name="DepthSlider" Minimum="0" Maximum="100" Value="{Binding Depth}" />
+        <Label Text="Depth" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Depth}" />
 
-        <Label Text="{Binding EffectLevel, StringFormat='Effect Level: {0:F0}'}" />
-        <Slider x:Name="EffectLevelSlider" Minimum="0" Maximum="100" Value="{Binding EffectLevel}" />
+        <Label Text="Effect Level" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding EffectLevel}" />
 
-    </VerticalStackLayout>
+        </VerticalStackLayout>
+    </Border>
 </ContentView>

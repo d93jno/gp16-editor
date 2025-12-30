@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:GP16Editor.Controls"
              x:Class="GP16Editor.Views.ShortDelayView"
              xmlns:viewModels="clr-namespace:GP16Editor.ViewModels"
              x:DataType="viewModels:ShortDelayViewModel">
-    <VerticalStackLayout>
+    <Border Stroke="LightGray" StrokeThickness="1" Padding="5">
+        <VerticalStackLayout>
         <Label Text="Short Delay" FontAttributes="Bold" />
 
-        <Label Text="{Binding DelayTime, StringFormat='Delay Time: {0:F0} ms'}" />
-        <Slider x:Name="DelayTimeSlider" Minimum="0" Maximum="100" Value="{Binding DelayTime}" />
+        <Label Text="Delay Time (ms)" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding DelayTime}" />
 
-        <Label Text="{Binding EffectLevel, StringFormat='Effect Level: {0:F0}'}" />
-        <Slider x:Name="EffectLevelSlider" Minimum="0" Maximum="100" Value="{Binding EffectLevel}" />
+        <Label Text="Effect Level" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding EffectLevel}" />
 
     </VerticalStackLayout>
+    </Border>
 </ContentView>

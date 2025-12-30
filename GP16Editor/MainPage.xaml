@@ -24,21 +24,21 @@
                 <views:EffectSequenceBlockView BindingContext="{Binding BlockBViewModel}" />
             </HorizontalStackLayout>
 
-            <views:CompressorView />
-            <views:DistortionOverdriveView />
-            <views:PickingFilterView />
-            <views:StepPhaserView />
-            <views:ParametricEQView />
-            <views:NoiseSuppressorView />
-            <views:ShortDelayView />
-            <views:ChorusView />
-            <views:FlangerView />
-            <views:PitchShifterView />
-            <views:SpaceDView />
-            <views:AutoPanpotView />
-            <views:TapDelayView />
-            <views:ReverbView />
-            <views:LineoutFilterView />
+            <views:CompressorView IsVisible="{Binding IsCompressorEnabled}" />
+            <views:DistortionOverdriveView IsVisible="{Binding IsDistortionOverdriveEnabled}" />
+            <views:PickingFilterView IsVisible="{Binding IsPickingFilterEnabled}" />
+            <views:StepPhaserView IsVisible="{Binding IsStepPhaserEnabled}" />
+            <views:ParametricEQView IsVisible="{Binding IsParametricEQEnabled}" />
+            <views:NoiseSuppressorView IsVisible="{Binding IsNoiseSuppressorEnabled}" />
+            <views:ShortDelayView IsVisible="{Binding IsShortDelayEnabled}" />
+            <views:ChorusView IsVisible="{Binding IsChorusEnabled}" />
+            <views:FlangerView IsVisible="{Binding IsFlangerEnabled}" />
+            <views:PitchShifterView IsVisible="{Binding IsPitchShifterEnabled}" />
+            <views:SpaceDView IsVisible="{Binding IsSpaceDEnabled}" />
+            <views:AutoPanpotView IsVisible="{Binding IsAutoPanpotEnabled}" />
+            <views:TapDelayView IsVisible="{Binding IsTapDelayEnabled}" />
+            <views:ReverbView IsVisible="{Binding IsReverbEnabled}" />
+            <views:LineoutFilterView IsVisible="{Binding IsLineoutFilterEnabled}" />
 
         </VerticalStackLayout>
     </ScrollView>

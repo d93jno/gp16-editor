@@ -2,22 +2,25 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:GP16Editor.ViewModels"
+             xmlns:controls="clr-namespace:GP16Editor.Controls"
              x:Class="GP16Editor.Views.LineoutFilterView"
              x:DataType="vm:LineoutFilterViewModel">
-    <VerticalStackLayout>
+    <Border Stroke="LightGray" StrokeThickness="1" Padding="5">
+        <VerticalStackLayout>
         <Label Text="Lineout Filter" FontAttributes="Bold" />
 
-        <Label Text="{Binding Presence, StringFormat='Presence: {0:F0}'}" />
-        <Slider x:Name="PresenceSlider" Minimum="0" Maximum="100" Value="{Binding Presence}" />
+        <Label Text="Presence" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Presence}" />
 
-        <Label Text="{Binding Treble, StringFormat='Treble: {0:F0}'}" />
-        <Slider x:Name="TrebleSlider" Minimum="0" Maximum="100" Value="{Binding Treble}" />
+        <Label Text="Treble" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Treble}" />
 
-        <Label Text="{Binding Middle, StringFormat='Middle: {0:F0}'}" />
-        <Slider x:Name="MiddleSlider" Minimum="0" Maximum="100" Value="{Binding Middle}" />
+        <Label Text="Middle" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Middle}" />
 
-        <Label Text="{Binding Bass, StringFormat='Bass: {0:F0}'}" />
-        <Slider x:Name="BassSlider" Minimum="0" Maximum="100" Value="{Binding Bass}" />
+        <Label Text="Bass" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Bass}" />
 
-    </VerticalStackLayout>
+        </VerticalStackLayout>
+    </Border>
 </ContentView>

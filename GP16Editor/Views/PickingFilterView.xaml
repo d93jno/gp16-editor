@@ -2,19 +2,21 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:GP16Editor.ViewModels"
+             xmlns:controls="clr-namespace:GP16Editor.Controls"
              x:Class="GP16Editor.Views.PickingFilterView"
              x:DataType="vm:PickingFilterViewModel">
-    <VerticalStackLayout>
+    <Border Stroke="LightGray" StrokeThickness="1" Padding="5">
+        <VerticalStackLayout>
         <Label Text="Picking Filter" FontAttributes="Bold" />
 
-        <Label Text="{Binding Sensitivity, StringFormat='Sensitivity: {0:F0}'}" />
-        <Slider x:Name="SensitivitySlider" Minimum="0" Maximum="100" Value="{Binding Sensitivity}" />
+        <Label Text="Sensitivity" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Sensitivity}" />
 
-        <Label Text="{Binding CutoffFrequency, StringFormat='Cutoff Frequency: {0:F0}'}" />
-        <Slider x:Name="CutoffFrequencySlider" Minimum="0" Maximum="100" Value="{Binding CutoffFrequency}" />
+        <Label Text="Cutoff Frequency" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding CutoffFrequency}" />
 
-        <Label Text="{Binding QControl, StringFormat='Q Control: {0:F1}'}" />
-        <Slider x:Name="QControlSlider" Minimum="1.0" Maximum="5.0" Value="{Binding QControl}" />
+        <Label Text="Q Control" />
+        <controls:CircularSlider Minimum="1.0" Maximum="5.0" Value="{Binding QControl}" />
 
         <Picker Title="Up/Down" SelectedItem="{Binding UpDown}">
             <Picker.ItemsSource>
@@ -25,4 +27,5 @@
             </Picker.ItemsSource>
         </Picker>
     </VerticalStackLayout>
+    </Border>
 </ContentView>

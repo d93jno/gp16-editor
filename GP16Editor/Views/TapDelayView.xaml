@@ -2,36 +2,38 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:GP16Editor.ViewModels"
+             xmlns:controls="clr-namespace:GP16Editor.Controls"
              x:Class="GP16Editor.Views.TapDelayView"
              x:DataType="vm:TapDelayViewModel">
-    <VerticalStackLayout>
+    <Border Stroke="LightGray" StrokeThickness="1" Padding="5">
+        <VerticalStackLayout>
         <Label Text="Tap Delay" FontAttributes="Bold" />
 
         <!-- Center Tap -->
         <Label Text="Center Tap" FontAttributes="Italic" />
-        <Label Text="{Binding CenterTapTime, StringFormat='Time: {0:F0} ms'}" />
-        <Slider x:Name="CenterTapTimeSlider" Minimum="0" Maximum="1200" Value="{Binding CenterTapTime}" />
-        <Label Text="{Binding CenterTapLevel, StringFormat='Level: {0:F0}'}" />
-        <Slider x:Name="CenterTapLevelSlider" Minimum="0" Maximum="100" Value="{Binding CenterTapLevel}" />
+        <Label Text="Time (ms)" />
+        <controls:CircularSlider Minimum="0" Maximum="1200" Value="{Binding CenterTapTime}" />
+        <Label Text="Level" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding CenterTapLevel}" />
 
         <!-- Left Tap -->
         <Label Text="Left Tap" FontAttributes="Italic" />
-        <Label Text="{Binding LeftTapTime, StringFormat='Time: {0:F0} ms'}" />
-        <Slider x:Name="LeftTapTimeSlider" Minimum="0" Maximum="1200" Value="{Binding LeftTapTime}" />
-        <Label Text="{Binding LeftTapLevel, StringFormat='Level: {0:F0}'}" />
-        <Slider x:Name="LeftTapLevelSlider" Minimum="0" Maximum="100" Value="{Binding LeftTapLevel}" />
+        <Label Text="Time (ms)" />
+        <controls:CircularSlider Minimum="0" Maximum="1200" Value="{Binding LeftTapTime}" />
+        <Label Text="Level" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding LeftTapLevel}" />
 
         <!-- Right Tap -->
         <Label Text="Right Tap" FontAttributes="Italic" />
-        <Label Text="{Binding RightTapTime, StringFormat='Time: {0:F0} ms'}" />
-        <Slider x:Name="RightTapTimeSlider" Minimum="0" Maximum="1200" Value="{Binding RightTapTime}" />
-        <Label Text="{Binding RightTapLevel, StringFormat='Level: {0:F0}'}" />
-        <Slider x:Name="RightTapLevelSlider" Minimum="0" Maximum="100" Value="{Binding RightTapLevel}" />
+        <Label Text="Time (ms)" />
+        <controls:CircularSlider Minimum="0" Maximum="1200" Value="{Binding RightTapTime}" />
+        <Label Text="Level" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding RightTapLevel}" />
 
         <!-- Feedback -->
         <Label Text="Feedback" FontAttributes="Italic" />
-        <Label Text="{Binding Feedback, StringFormat='Feedback: {0:F0}'}" />
-        <Slider x:Name="FeedbackSlider" Minimum="0" Maximum="100" Value="{Binding Feedback}" />
+        <Label Text="Feedback" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Feedback}" />
 
         <!-- Cutoff -->
         <Label Text="Cutoff" FontAttributes="Italic" />
@@ -48,4 +50,5 @@
             </Picker.ItemsSource>
         </Picker>
     </VerticalStackLayout>
+    </Border>
 </ContentView>

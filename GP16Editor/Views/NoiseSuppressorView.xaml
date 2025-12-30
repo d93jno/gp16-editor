@@ -2,18 +2,21 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:GP16Editor.ViewModels"
+             xmlns:controls="clr-namespace:GP16Editor.Controls"
              x:Class="GP16Editor.Views.NoiseSuppressorView"
              x:DataType="vm:NoiseSuppressorViewModel">
-    <VerticalStackLayout>
+    <Border Stroke="LightGray" StrokeThickness="1" Padding="5">
+        <VerticalStackLayout>
         <Label Text="Noise Suppressor" FontAttributes="Bold" />
 
-        <Label Text="{Binding Sensitivity, StringFormat='Sensitivity: {0:F0}'}" />
-        <Slider x:Name="SensitivitySlider" Minimum="0" Maximum="100" Value="{Binding Sensitivity}" />
+        <Label Text="Sensitivity" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Sensitivity}" />
 
-        <Label Text="{Binding Release, StringFormat='Release: {0:F0}'}" />
-        <Slider x:Name="ReleaseSlider" Minimum="0" Maximum="100" Value="{Binding Release}" />
+        <Label Text="Release" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Release}" />
 
-        <Label Text="{Binding Level, StringFormat='Level: {0:F0}'}" />
-        <Slider x:Name="LevelSlider" Minimum="0" Maximum="100" Value="{Binding Level}" />
-    </VerticalStackLayout>
+        <Label Text="Level" />
+        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Level}" />
+        </VerticalStackLayout>
+    </Border>
 </ContentView>
