@@ -26,13 +26,25 @@ namespace GP16Editor.Services
 
         public void SelectDevices(string inputDeviceName, string outputDeviceName)
         {
-            _inputDevice = InputDevice.GetByName(inputDeviceName);
-            _outputDevice = OutputDevice.GetByName(outputDeviceName);
+            var inputDevices = InputDevice.GetAll();
+            var outputDevices = OutputDevice.GetAll();
 
-            if (_inputDevice != null)
+            var inputDevice = inputDevices.FirstOrDefault(d => d.Name == inputDeviceName);
+            var outputDevice = outputDevices.FirstOrDefault(d => d.Name == outputDeviceName);
+
+            if (inputDevice != null && outputDevice != null)
             {
+                _inputDevice = inputDevice;
+                _outputDevice = outputDevice;
+
                 _inputDevice.EventReceived += OnEventReceived;
                 _inputDevice.StartEventsListening();
+            }
+            else
+            {
+                // Devices not available, do nothing
+                _inputDevice = null;
+                _outputDevice = null;
             }
         }
 

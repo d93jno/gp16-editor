@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Storage;
 
 namespace GP16Editor.ViewModels
 {
@@ -12,6 +13,9 @@ namespace GP16Editor.ViewModels
         private readonly MidiService _midiService;
         private Patch _currentPatch;
         public ICommand RequestPatchCommand { get; }
+
+        private const string SelectedInputDeviceKey = "SelectedInputDevice";
+        private const string SelectedOutputDeviceKey = "SelectedOutputDevice";
 
         public Patch CurrentPatch
         {
@@ -41,32 +45,51 @@ namespace GP16Editor.ViewModels
             CurrentPatch = _currentPatch;
             InputDevices = new ObservableCollection<string>(_midiService.GetInputDevices());
             OutputDevices = new ObservableCollection<string>(_midiService.GetOutputDevices());
-            _selectedInputDevice = null;
-            _selectedOutputDevice = null;
+
+            // Load saved device selections
+            string? savedInput = Preferences.Get(SelectedInputDeviceKey, null);
+            if (savedInput != null && InputDevices.Contains(savedInput))
+            {
+                SelectedInputDevice = savedInput;
+            }
+            else if (savedInput != null)
+            {
+                Preferences.Remove(SelectedInputDeviceKey);
+            }
+
+            string? savedOutput = Preferences.Get(SelectedOutputDeviceKey, null);
+            if (savedOutput != null && OutputDevices.Contains(savedOutput))
+            {
+                SelectedOutputDevice = savedOutput;
+            }
+            else if (savedOutput != null)
+            {
+                Preferences.Remove(SelectedOutputDeviceKey);
+            }
 
             RequestPatchCommand = new Command(RequestPatch);
 
             // Initialize Block A with demo effects
             var blockAEffects = new List<EffectSequenceItem>
             {
-                new EffectSequenceItem { Id = 1, Name = "Compressor", Icon = "🔊", IsEnabled = true },
-                new EffectSequenceItem { Id = 2, Name = "Distortion/Overdrive", Icon = "🎸", IsEnabled = false },
-                new EffectSequenceItem { Id = 3, Name = "Picking Filter", Icon = "🎶", IsEnabled = true },
-                new EffectSequenceItem { Id = 4, Name = "Step Phaser", Icon = "🌊", IsEnabled = true },
-                new EffectSequenceItem { Id = 5, Name = "Parametric EQ", Icon = "🎛️", IsEnabled = false },
-                new EffectSequenceItem { Id = 6, Name = "Noise Suppressor", Icon = "🔇", IsEnabled = true }
+                new() { Id = 1, Name = "Compressor", Icon = "🔊", IsEnabled = true },
+                new() { Id = 2, Name = "Distortion/Overdrive", Icon = "🎸", IsEnabled = true },
+                new() { Id = 3, Name = "Picking Filter", Icon = "🎶", IsEnabled = true },
+                new() { Id = 4, Name = "Step Phaser", Icon = "🌊", IsEnabled = true },
+                new() { Id = 5, Name = "Parametric EQ", Icon = "🎛️", IsEnabled = true },
+                new() { Id = 6, Name = "Noise Suppressor", Icon = "🔇", IsEnabled = true }
             };
             BlockAViewModel = new EffectSequenceBlockViewModel("Block A", blockAEffects);
 
             // Initialize Block B with demo effects
             var blockBEffects = new List<EffectSequenceItem>
             {
-                new EffectSequenceItem { Id = 1, Name = "Short Delay", Icon = "⏱️", IsEnabled = true },
-                new EffectSequenceItem { Id = 2, Name = "Chorus", Icon = "🌊", IsEnabled = false },
-                new EffectSequenceItem { Id = 3, Name = "Auto Panpot", Icon = "🔄", IsEnabled = true },
-                new EffectSequenceItem { Id = 4, Name = "Tap Delay", Icon = "🎼", IsEnabled = true },
-                new EffectSequenceItem { Id = 5, Name = "Reverb", Icon = "🏞️", IsEnabled = false },
-                new EffectSequenceItem { Id = 6, Name = "Lineout Filter", Icon = "🔊", IsEnabled = true }
+                new() { Id = 1, Name = "Short Delay", Icon = "⏱️", IsEnabled = true },
+                new() { Id = 2, Name = "Chorus", Icon = "🌊", IsEnabled = true },
+                new() { Id = 3, Name = "Auto Panpot", Icon = "🔄", IsEnabled = true },
+                new() { Id = 4, Name = "Tap Delay", Icon = "🎼", IsEnabled = true },
+                new() { Id = 5, Name = "Reverb", Icon = "🏞️", IsEnabled = true },
+                new() { Id = 6, Name = "Lineout Filter", Icon = "🔊", IsEnabled = true }
             };
             BlockBViewModel = new EffectSequenceBlockViewModel("Block B", blockBEffects);
         }
@@ -101,6 +124,7 @@ namespace GP16Editor.ViewModels
             set
             {
                 _selectedInputDevice = value;
+                Preferences.Set(SelectedInputDeviceKey, value);
                 OnPropertyChanged(nameof(SelectedInputDevice));
                 CheckAndSelectDevices();
             }
@@ -113,6 +137,7 @@ namespace GP16Editor.ViewModels
             set
             {
                 _selectedOutputDevice = value;
+                Preferences.Set(SelectedOutputDeviceKey, value);
                 OnPropertyChanged(nameof(SelectedOutputDevice));
                 CheckAndSelectDevices();
             }
