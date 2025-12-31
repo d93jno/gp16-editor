@@ -13,7 +13,7 @@ It maps out the hardware architecture, the SysEx protocol requirements, and the 
 * Use Melanchall.DryWetMidi to send and receiev SysEx messages
 
 # MIDI & SysEx Implementation
-* When sending SysEx, many hardware devices (like older Roland or Yamaha synths) require a small delay (typically 20ms–50ms) between large messages to prevent buffer overflow on the device side.
+* When sending SysEx, the device require a small delay (typically 20ms–50ms) between large messages to prevent buffer overflow on the device side.
 * Use Roland SysEx checksum calculations
 
 To edit the GP-16 in real-time, the editor must use the Roland Checksum-protected SysEx protocol.
@@ -59,6 +59,103 @@ Protocol: Uses the One-way communication format (Roland Exclusive Type IV).
 Command IDs: `11H` (Request Data - RQ1) and `12H` (Data Set - DT1).
 Model ID: The Model ID for the GP-16 is `2AH`.
 Checksum: Roland's standard 7-bit checksum is required for all data packets.
+
+#### Roland System Exlusive Messages
+Roland Exclusive messages are used to transfer sound data or settings between the GP-16 and other MIDI devices (such as another GP-16 or a computer). 
+These messages use a specific format that includes a Manufacturer ID, Device ID (Unit Number), and a Checksum to ensure data integrity.
+
+1. Data Format
+The Roland Exclusive message format follows this sequence:
+Byte,Description,Value
+F0H,Exclusive Status,Start of System Exclusive message
+41H,Manufacturer ID,Roland ID
+dev,Device ID,Unit Number (MIDI Channel - 1)
+2AH,Model ID,GP-16 Specific ID
+cmd,Command ID,11H (RQ1) or 12H (DT1)
+[body],Main Data,Address and Data bytes
+sum,Checksum,Error correction byte
+F7H,EOX,End of Exclusive message
+
+2. Commands (Command ID)
+The GP-16 recognizes two primary commands for data communication:
+
+Request Data 1 (RQ1) — 11
+HThis command is sent to the GP-16 to request it to transmit a specific set of data. Upon receiving this, the GP-16 checks the address and size. If they are valid, it transmits the requested data using a "Data Set 1" message.
+
+Data Set 1 (DT1) — 12HThis command carries the actual data. It is used in two ways:
+From External Device to GP-16: To change settings or load patches.
+From GP-16 to External Device: In response to an RQ1 command or during a manual Bulk Dump.
+
+3. Address and Data Size
+Data within the GP-16 is managed in a virtual memory map. To access specific parameters, you must provide the correct Address and the Size (number of bytes).
+
+Addresses: Expressed in 3 bytes (7-bit format).
+Size: Also expressed in 3 bytes (7-bit format).[!IMPORTANT]Roland addresses are 7-bit values $00-$7F. When calculating an address, if a value exceeds 127, it carries over to the next significant byte.
+
+4. One-Way Communication
+
+The GP-16 primarily uses one-way communication for simple tasks like real-time parameter editing.
+
+Header: F0 41 10 2A 12 (assuming Device ID 10H)
+Address: 3 bytes indicating which parameter to change.Data: The new value for the parameter.
+Checksum: 1 byte.
+Footer: F7
+
+6. Handshaking Communication (Advanced)
+Note: While the GP-16 supports simple one-way transfers, handshaking is used for large bulk dumps where the receiving device must confirm it is ready for the next packet.
+ACK (Acknowledgment): 43H
+NAK (Negative Acknowledgment): 4EH
+ERR (Error): 4FH
+WANT (Wait): 48H
+
+If the GP-16 receives a "WANT" message, it will pause transmission until it receives an "ACK". If it receives "NAK" or "ERR", it will re-transmit the last packet.
+
+7. Address Map Summary (Typical Offsets)
+
+Detailed parameter addresses are found in the MIDI Implementation Chart section.
+Address (Hex),Description
+00 00 00,Temporary Patch Buffer (The currently running patch)
+01 00 00,Internal Patch Group A (Patches 1–64)
+02 00 00,Internal Patch Group B (Patches 64–128)
+04 00 00,"System Settings (MIDI Channel, Master Level, etc.)
+
+You need the Address Map offsets. In Roland SysEx, you don't send the "effect name"; you send data to a specific memory address that corresponds to a knob or switch.
+
+The GP-16 address is composed of 3 bytes: [High] [Mid] [Low].
+
+7.1. Base Addresses
+When editing, you should almost always target the Temporary Buffer. Changes sent here are heard instantly but not saved until you send a "Write" command or the user saves on the front panel.
+
+Area,Base Address (Hex),Description
+Temporary Buffer,00 00 00,"The ""Work Area"" (Active Sound)"
+Internal Group A,01 00 00,Patches 1–64
+Internal Group B,02 00 00,Patches 65–128
+System,04 00 00,"Global settings (MIDI Channel, etc.)"
+
+7.2. Effect Parameter Offsets (Temporary Buffer)
+To calculate the final address for a SysEx message, add the Offset below to the Temporary Buffer base (00 00 00).
+
+Block A: Pre-Effects
+Parameter,Offset (Hex),Range (Dec),Notes
+A-1 Compressor,,,
+Sustain,00 00 06,0–100,
+Attack,00 00 07,0–100,
+A-2 Distortion/Overdrive,,,
+Drive,00 00 0B,0–100,
+Turbo,00 00 0C,0–1,"0 = Off, 1 = On"
+A-3 Picking Filter,,,
+Cutoff Freq,00 00 11,0–100,
+Up/Down,00 00 13,0–1,"0 = Down, 1 = Up"
+
+Block B: Time-Based Effects
+Parameter,Offset (Hex),Range (Dec),Notes
+B-2a Chorus,,,
+Pre-Delay,00 00 23,0–100,
+Rate,00 00 24,0–100,
+Depth,00 00 25,0–100,
+B-5 Reverb,,,
+Reverb Time,00 00 3D,0–127,High values = longer decay
+Reverb Type,00 00 3F,0–9,Selects Room1 through Spring
 
 # GP-16 Setup
 The Roland GP-16 is a 24-bit internal processing rackmount multi-effects processor. 
