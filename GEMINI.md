@@ -6,6 +6,7 @@ It maps out the hardware architecture, the SysEx protocol requirements, and the 
 * Don't write comments, only the generated code
 * The system is implemented using C#
 * Consider all PropertyChanged events as nullable
+* Don't do any git updates
 
 # C# setup
 * Use .NET MAUI as the graphical library
@@ -156,6 +157,25 @@ Depth,00 00 25,0–100,
 B-5 Reverb,,,
 Reverb Time,00 00 3D,0–127,High values = longer decay
 Reverb Type,00 00 3F,0–9,Selects Room1 through Spring
+
+7.3. Patch Name Address
+If you want to display the name of the current patch in your C# UI, the name starts at the very beginning of the patch data.
+Address: 00 00 00 through 00 00 0F
+Format: ASCII (16 characters)
+
+7.4. Constructing the "Parameter Change" Message
+If you want to turn the Distortion Turbo ON (Value 01) via your C# app:
+Address: 00 00 0C
+Data: 01
+Checksum: Sum (00+00+0C+01) = 0D. $128 - 13 = 115$ (73H).
+Message: F0 41 10 2A 12 00 00 0C 01 73 F7
+
+7.5. Bulk Data Request (The "Sync" Button)
+To pull the entire current patch from the GP-16 into your editor, send a Request Data (RQ1):
+Address: 00 00 00
+Size: 00 00 46 (Requests all 70 bytes of the patch)
+Message: F0 41 10 2A 11 00 00 00 00 00 46 [Checksum] F7
+The GP-16 will respond with a DT1 message containing all parameter bytes in sequence, which you can then parse to update your UI sliders.
 
 # GP-16 Setup
 The Roland GP-16 is a 24-bit internal processing rackmount multi-effects processor. 

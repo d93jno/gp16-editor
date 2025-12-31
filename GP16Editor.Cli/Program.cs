@@ -54,8 +54,18 @@ var selectedOutputDevice = outputDevices[outputDeviceIndex];
 midiService.SelectDevices(selectedInputDevice, selectedOutputDevice);
 midiService.SysExReceived += (sender, e) =>
 {
-    var hex = string.Join(" ", e.Data.Select(b => b.ToString("X2")));
-    Console.WriteLine($"SysEx Received: F0 {hex} F7");
+    var patch = new GP16Editor.Cli.Models.Patch();
+    
+    var fullSysex = new byte[] { 0xF0 }.Concat(e.Data).Concat(new byte[] { 0xF7 }).ToArray();
+    patch.Parse(fullSysex);
+
+    Console.WriteLine("\n--- Parsed Patch ---");
+    Console.WriteLine($"Patch Name: {patch.PatchName}");
+    Console.WriteLine($"Compressor Sustain: {patch.Compressor.Sustain}");
+    Console.WriteLine($"Compressor Attack: {patch.Compressor.Attack}");
+    Console.WriteLine($"Dist/OD Drive: {patch.DistortionOverdrive.Drive}");
+    Console.WriteLine($"Dist/OD Turbo: {patch.DistortionOverdrive.Turbo}");
+    Console.WriteLine("--------------------\n");
 };
 
 Console.WriteLine($"Listening for MIDI messages on '{selectedInputDevice}'...");
