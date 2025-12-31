@@ -78,22 +78,13 @@ public partial class App : Application
 
 	protected override Window CreateWindow(IActivationState? activationState)
 	{
-		return new Window(_shell);
-	}
-
-	protected override void OnSleep()	{
-		base.OnSleep();
-		
-		// Clean up MIDI resources when app is suspended/closed
-		try
+		var window = new Window(_shell);
+		window.Destroying += (s, e) =>
 		{
 			_midiService?.Dispose();
-			_midiService = null;
-			Debug.WriteLine("MIDI service disposed during app sleep/close");
-		}
-		catch (Exception ex)
-		{
-			Debug.WriteLine($"Error disposing MIDI service: {ex.Message}");
-		}
+		};
+		return window;
 	}
+
+
 }
