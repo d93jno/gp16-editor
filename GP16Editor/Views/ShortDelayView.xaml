@@ -9,11 +9,8 @@
         <VerticalStackLayout>
         <Label Text="Short Delay" FontAttributes="Bold" />
 
-        <Label Text="Delay Time (ms)" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding DelayTime}" />
-
-        <Label Text="Effect Level" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding EffectLevel}" />
+        <controls:CircularSlider LabelText="Delay Time (ms)" Minimum="0" Maximum="100" Value="{Binding DelayTime}" />
+        <controls:CircularSlider LabelText="Effect Level" Minimum="0" Maximum="100" Value="{Binding EffectLevel}" />
 
     </VerticalStackLayout>
     </Border>

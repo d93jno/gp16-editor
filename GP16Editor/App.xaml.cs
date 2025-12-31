@@ -7,13 +7,15 @@ namespace GP16Editor;
 
 public partial class App : Application
 {
+	private readonly AppShell _shell;
 	private MidiService? _midiService;
 
-	public App(MidiService midiService)
+	public App(MidiService midiService, AppShell shell)
 	{
 		InitializeComponent();
 
 		_midiService = midiService;
+		_shell = shell;
 
 		// Global exception handlers
 		AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
@@ -58,9 +60,13 @@ public partial class App : Application
 			{
 				var message = $"An error occurred:\n\n{exception?.Message}\n\nStack Trace:\n{exception?.StackTrace}";
 				var app = Application.Current;
-				if (app != null && app.Windows?.Count > 0 && app.Windows[0].Page != null)
+				if (app != null && app.Windows?.Count > 0)
 				{
-					await app.Windows[0].Page.DisplayAlert(title, message, "OK");
+					var page = app.Windows[0].Page;
+					if (page != null)
+					{
+						await page.DisplayAlert(title, message, "OK");
+					}
 				}
 			}
 			catch
@@ -72,11 +78,10 @@ public partial class App : Application
 
 	protected override Window CreateWindow(IActivationState? activationState)
 	{
-		return new Window(new AppShell());
+		return new Window(_shell);
 	}
 
-	protected override void OnSleep()
-	{
+	protected override void OnSleep()	{
 		base.OnSleep();
 		
 		// Clean up MIDI resources when app is suspended/closed

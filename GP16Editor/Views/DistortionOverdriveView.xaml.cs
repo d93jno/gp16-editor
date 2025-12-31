@@ -7,6 +7,5 @@ public partial class DistortionOverdriveView : ContentView
 	public DistortionOverdriveView()
 	{
 		InitializeComponent();
-		BindingContext = new DistortionOverdriveViewModel();
 	}
 }

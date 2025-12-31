@@ -7,6 +7,5 @@ public partial class SpaceDView : ContentView
 	public SpaceDView()
 	{
 		InitializeComponent();
-		BindingContext = new SpaceDViewModel();
 	}
 }

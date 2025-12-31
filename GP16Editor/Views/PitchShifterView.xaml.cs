@@ -7,6 +7,5 @@ public partial class PitchShifterView : ContentView
 	public PitchShifterView()
 	{
 		InitializeComponent();
-		BindingContext = new PitchShifterViewModel();
 	}
 }

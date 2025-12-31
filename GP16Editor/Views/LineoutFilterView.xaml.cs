@@ -7,6 +7,5 @@ public partial class LineoutFilterView : ContentView
 	public LineoutFilterView()
 	{
 		InitializeComponent();
-		BindingContext = new LineoutFilterViewModel();
 	}
 }

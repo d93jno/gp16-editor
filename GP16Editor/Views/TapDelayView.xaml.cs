@@ -7,6 +7,5 @@ public partial class TapDelayView : ContentView
 	public TapDelayView()
 	{
 		InitializeComponent();
-		BindingContext = new TapDelayViewModel();
 	}
 }

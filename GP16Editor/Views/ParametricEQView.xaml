@@ -11,35 +11,25 @@
 
         <!-- Low Band -->
         <Label Text="Low Band" FontAttributes="Italic" />
-        <Label Text="Frequency (Hz)" />
-        <controls:CircularSlider Minimum="60" Maximum="250" Value="{Binding LowFreq}" />
-        <Label Text="Level (dB)" />
-        <controls:CircularSlider Minimum="-12" Maximum="12" Value="{Binding LowLevel}" />
+        <controls:CircularSlider LabelText="Frequency (Hz)" Minimum="60" Maximum="250" Value="{Binding LowFreq}" />
+        <controls:CircularSlider LabelText="Level (dB)" Minimum="-12" Maximum="12" Value="{Binding LowLevel}" />
 
         <!-- Low Mid Band -->
         <Label Text="Low Mid Band" FontAttributes="Italic" />
-        <Label Text="Frequency (Hz)" />
-        <controls:CircularSlider Minimum="125" Maximum="1000" Value="{Binding LowMidFreq}" />
-        <Label Text="Q" />
-        <controls:CircularSlider Minimum="1.0" Maximum="5.0" Value="{Binding LowMidQ}" />
-        <Label Text="Level (dB)" />
-        <controls:CircularSlider Minimum="-12" Maximum="12" Value="{Binding LowMidLevel}" />
+        <controls:CircularSlider LabelText="Frequency (Hz)" Minimum="125" Maximum="1000" Value="{Binding LowMidFreq}" />
+        <controls:CircularSlider LabelText="Q" Minimum="1.0" Maximum="5.0" Value="{Binding LowMidQ}" />
+        <controls:CircularSlider LabelText="Level (dB)" Minimum="-12" Maximum="12" Value="{Binding LowMidLevel}" />
 
         <!-- High Mid Band -->
         <Label Text="High Mid Band" FontAttributes="Italic" />
-        <Label Text="Frequency (Hz)" />
-        <controls:CircularSlider Minimum="500" Maximum="4000" Value="{Binding HighMidFreq}" />
-        <Label Text="Q" />
-        <controls:CircularSlider Minimum="1.0" Maximum="5.0" Value="{Binding HighMidQ}" />
-        <Label Text="Level (dB)" />
-        <controls:CircularSlider Minimum="-12" Maximum="12" Value="{Binding HighMidLevel}" />
+        <controls:CircularSlider LabelText="Frequency (Hz)" Minimum="500" Maximum="4000" Value="{Binding HighMidFreq}" />
+        <controls:CircularSlider LabelText="Q" Minimum="1.0" Maximum="5.0" Value="{Binding HighMidQ}" />
+        <controls:CircularSlider LabelText="Level (dB)" Minimum="-12" Maximum="12" Value="{Binding HighMidLevel}" />
 
         <!-- High Band -->
         <Label Text="High Band" FontAttributes="Italic" />
-        <Label Text="Frequency (Hz)" />
-        <controls:CircularSlider Minimum="2000" Maximum="8000" Value="{Binding HighFreq}" />
-        <Label Text="Level (dB)" />
-        <controls:CircularSlider Minimum="-12" Maximum="12" Value="{Binding HighLevel}" />
+        <controls:CircularSlider LabelText="Frequency (Hz)" Minimum="2000" Maximum="8000" Value="{Binding HighFreq}" />
+        <controls:CircularSlider LabelText="Level (dB)" Minimum="-12" Maximum="12" Value="{Binding HighLevel}" />
         
     </VerticalStackLayout>
     </Border>

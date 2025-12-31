@@ -7,6 +7,5 @@ public partial class FlangerView : ContentView
 	public FlangerView()
 	{
 		InitializeComponent();
-		BindingContext = new FlangerViewModel();
 	}
 }

@@ -7,6 +7,5 @@ public partial class ShortDelayView : ContentView
 	public ShortDelayView()
 	{
 		InitializeComponent();
-		BindingContext = new ShortDelayViewModel();
 	}
 }

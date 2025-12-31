@@ -7,6 +7,5 @@ public partial class AutoPanpotView : ContentView
 	public AutoPanpotView()
 	{
 		InitializeComponent();
-		BindingContext = new AutoPanpotViewModel();
 	}
 }

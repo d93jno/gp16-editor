@@ -7,6 +7,5 @@ public partial class ReverbView : ContentView
 	public ReverbView()
 	{
 		InitializeComponent();
-		BindingContext = new ReverbViewModel();
 	}
 }

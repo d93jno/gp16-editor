@@ -7,6 +7,5 @@ public partial class NoiseSuppressorView : ContentView
 	public NoiseSuppressorView()
 	{
 		InitializeComponent();
-		BindingContext = new NoiseSuppressorViewModel();
 	}
 }

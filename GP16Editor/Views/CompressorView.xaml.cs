@@ -7,6 +7,5 @@ public partial class CompressorView : ContentView
 	public CompressorView()
 	{
 		InitializeComponent();
-		BindingContext = new CompressorViewModel();
 	}
 }

@@ -47,14 +47,31 @@ public class CircularSlider : ContentView
         set => SetValue(TextColorProperty, value);
     }
 
+    public static readonly BindableProperty LabelTextProperty =
+        BindableProperty.Create(nameof(LabelText), typeof(string), typeof(CircularSlider), string.Empty);
+
+    public string LabelText
+    {
+        get => (string)GetValue(LabelTextProperty);
+        set => SetValue(LabelTextProperty, value);
+    }
+
     public CircularSlider()
     {
-        _canvasView = new SKCanvasView();
+        _canvasView = new SKCanvasView
+        {
+            WidthRequest = 100,
+            HeightRequest = 100
+        };
         _canvasView.PaintSurface += OnPaintSurface;
 
-        var panGesture = new PanGestureRecognizer();
-        panGesture.PanUpdated += OnPanUpdated;
-        _canvasView.GestureRecognizers.Add(panGesture);
+        var nameLabel = new Label
+        {
+            HorizontalTextAlignment = TextAlignment.Center,
+            FontSize = 18,
+            TextColor = TextColor
+        };
+        nameLabel.SetBinding(Label.TextProperty, new Binding(nameof(LabelText), source: this));
 
         var valueLabel = new Label
         {
@@ -69,12 +86,24 @@ public class CircularSlider : ContentView
             Spacing = 10,
             Children =
             {
+                nameLabel,
                 _canvasView,
                 valueLabel
             }
         };
 
         UpdateAngleFromValue();
+    }
+
+    protected override void OnParentSet()
+    {
+        base.OnParentSet();
+        if (Parent != null)
+        {
+            var panGesture = new PanGestureRecognizer();
+            panGesture.PanUpdated += OnPanUpdated;
+            _canvasView.GestureRecognizers.Add(panGesture);
+        }
     }
 
     private static void OnValueChanged(BindableObject bindable, object oldValue, object newValue)
@@ -96,7 +125,8 @@ public class CircularSlider : ContentView
     private void UpdateValueFromAngle()
     {
         var normalizedAngle = (_angle + 135) / 270; // Convert from -135..135 to 0..1
-        Value = Minimum + normalizedAngle * (Maximum - Minimum);
+        var calculatedValue = Minimum + normalizedAngle * (Maximum - Minimum);
+        Value = Math.Round(calculatedValue); // Round to nearest integer
     }
 
     private void OnPanUpdated(object? sender, PanUpdatedEventArgs e)

@@ -9,17 +9,10 @@
         <VerticalStackLayout>
         <Label Text="Compressor" FontAttributes="Bold" />
         
-        <Label Text="Sustain" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Sustain}" />
-
-        <Label Text="Attack" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Attack}" />
-
-        <Label Text="Tone" />
-        <controls:CircularSlider Minimum="-50" Maximum="50" Value="{Binding Tone}" />
-
-        <Label Text="Level" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Level}" />
+        <controls:CircularSlider LabelText="Sustain" Minimum="0" Maximum="100" Value="{Binding Sustain}" />
+        <controls:CircularSlider LabelText="Attack" Minimum="0" Maximum="100" Value="{Binding Attack}" />
+        <controls:CircularSlider LabelText="Tone" Minimum="-50" Maximum="50" Value="{Binding Tone}" />
+        <controls:CircularSlider LabelText="Level" Minimum="0" Maximum="100" Value="{Binding Level}" />
     </VerticalStackLayout>
     </Border>
 </ContentView>

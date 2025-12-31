@@ -42,12 +42,44 @@ namespace GP16Editor.Services
 
             if (inputDevice != null && outputDevice != null)
             {
-                _inputDevice = inputDevice;
-                _outputDevice = outputDevice;
+                try
+                {
+                    _inputDevice = inputDevice;
+                    _outputDevice = outputDevice;
 
+                    _inputDevice.EventReceived += OnEventReceived;
+                    _inputDevice.StartEventsListening();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error starting MIDI devices: {ex.Message}");
 
-                _inputDevice.EventReceived += OnEventReceived;
-                _inputDevice.StartEventsListening();
+                    if (_inputDevice != null)
+                    {
+                        _inputDevice.EventReceived -= OnEventReceived;
+                        _inputDevice.Dispose();
+                        _inputDevice = null;
+                    }
+
+                    if (_outputDevice != null)
+                    {
+                        _outputDevice.Dispose();
+                        _outputDevice = null;
+                    }
+
+                    MainThread.BeginInvokeOnMainThread(async () =>
+                    {
+                        var app = Application.Current;
+                        if (app != null && app.Windows?.Count > 0)
+                        {
+                            var page = app.Windows[0].Page;
+                            if (page != null)
+                            {
+                                await page.DisplayAlert("MIDI Error", $"Could not start MIDI devices: {ex.Message}", "OK");
+                            }
+                        }
+                    });
+                }
             }
             else
             {

@@ -7,6 +7,5 @@ public partial class StepPhaserView : ContentView
 	public StepPhaserView()
 	{
 		InitializeComponent();
-		BindingContext = new StepPhaserViewModel();
 	}
 }

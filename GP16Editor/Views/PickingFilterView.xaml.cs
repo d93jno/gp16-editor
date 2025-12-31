@@ -7,6 +7,5 @@ public partial class PickingFilterView : ContentView
 	public PickingFilterView()
 	{
 		InitializeComponent();
-		BindingContext = new PickingFilterViewModel();
 	}
 }

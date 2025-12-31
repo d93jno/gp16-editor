@@ -38,6 +38,22 @@ namespace GP16Editor.ViewModels
         public EffectSequenceBlockViewModel BlockAViewModel { get; }
         public EffectSequenceBlockViewModel BlockBViewModel { get; }
 
+        public CompressorViewModel CompressorViewModel { get; }
+        public DistortionOverdriveViewModel DistortionOverdriveViewModel { get; }
+        public PickingFilterViewModel PickingFilterViewModel { get; }
+        public StepPhaserViewModel StepPhaserViewModel { get; }
+        public ParametricEQViewModel ParametricEQViewModel { get; }
+        public NoiseSuppressorViewModel NoiseSuppressorViewModel { get; }
+        public ShortDelayViewModel ShortDelayViewModel { get; }
+        public ChorusViewModel ChorusViewModel { get; }
+        public FlangerViewModel FlangerViewModel { get; }
+        public PitchShifterViewModel PitchShifterViewModel { get; }
+        public SpaceDViewModel SpaceDViewModel { get; }
+        public AutoPanpotViewModel AutoPanpotViewModel { get; }
+        public TapDelayViewModel TapDelayViewModel { get; }
+        public ReverbViewModel ReverbViewModel { get; }
+        public LineoutFilterViewModel LineoutFilterViewModel { get; }
+
         public MainViewModel(MidiService midiService)
         {
             _midiService = midiService;
@@ -52,7 +68,7 @@ namespace GP16Editor.ViewModels
             {
                 SelectedInputDevice = savedInput;
             }
-            else if (savedInput != null)
+            else if (Preferences.ContainsKey(SelectedInputDeviceKey))
             {
                 Preferences.Remove(SelectedInputDeviceKey);
             }
@@ -62,7 +78,7 @@ namespace GP16Editor.ViewModels
             {
                 SelectedOutputDevice = savedOutput;
             }
-            else if (savedOutput != null)
+            else if (Preferences.ContainsKey(SelectedOutputDeviceKey))
             {
                 Preferences.Remove(SelectedOutputDeviceKey);
             }
@@ -96,6 +112,22 @@ namespace GP16Editor.ViewModels
             };
             BlockBViewModel = new EffectSequenceBlockViewModel("Block B", blockBEffects);
 
+            CompressorViewModel = new CompressorViewModel();
+            DistortionOverdriveViewModel = new DistortionOverdriveViewModel();
+            PickingFilterViewModel = new PickingFilterViewModel();
+            StepPhaserViewModel = new StepPhaserViewModel();
+            ParametricEQViewModel = new ParametricEQViewModel();
+            NoiseSuppressorViewModel = new NoiseSuppressorViewModel();
+            ShortDelayViewModel = new ShortDelayViewModel();
+            ChorusViewModel = new ChorusViewModel();
+            FlangerViewModel = new FlangerViewModel();
+            PitchShifterViewModel = new PitchShifterViewModel();
+            SpaceDViewModel = new SpaceDViewModel();
+            AutoPanpotViewModel = new AutoPanpotViewModel();
+            TapDelayViewModel = new TapDelayViewModel();
+            ReverbViewModel = new ReverbViewModel();
+            LineoutFilterViewModel = new LineoutFilterViewModel();
+
             // Subscribe to effect changes for visibility updates
             foreach (var effect in BlockAViewModel.Effects)
             {
@@ -106,7 +138,7 @@ namespace GP16Editor.ViewModels
                 effect.PropertyChanged += OnEffectChanged;
             }
 
-            midiService.SelectDevices(SelectedInputDevice, SelectedOutputDevice);
+
         }
 
         private void Patch_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -141,7 +173,7 @@ namespace GP16Editor.ViewModels
                 _selectedInputDevice = value;
                 Preferences.Set(SelectedInputDeviceKey, value);
                 OnPropertyChanged(nameof(SelectedInputDevice));
-                CheckAndSelectDevices();
+                _ = CheckAndSelectDevicesAsync();
             }
         }
 
@@ -154,7 +186,7 @@ namespace GP16Editor.ViewModels
                 _selectedOutputDevice = value;
                 Preferences.Set(SelectedOutputDeviceKey, value);
                 OnPropertyChanged(nameof(SelectedOutputDevice));
-                CheckAndSelectDevices();
+                _ = CheckAndSelectDevicesAsync();
             }
         }
 
@@ -200,7 +232,12 @@ namespace GP16Editor.ViewModels
         public bool IsReverbEnabled => BlockBViewModel.Effects.FirstOrDefault(e => e.Name == "Reverb")?.IsEnabled ?? false;
         public bool IsLineoutFilterEnabled => BlockBViewModel.Effects.FirstOrDefault(e => e.Name == "Lineout Filter")?.IsEnabled ?? false;
 
-        private async void CheckAndSelectDevices()
+        public async Task InitializeAsync()
+        {
+            await CheckAndSelectDevicesAsync();
+        }
+
+        private async Task CheckAndSelectDevicesAsync()
         {
             if (!string.IsNullOrEmpty(SelectedInputDevice) && !string.IsNullOrEmpty(SelectedOutputDevice))
             {

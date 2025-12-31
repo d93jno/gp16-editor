@@ -2,8 +2,11 @@ namespace GP16Editor;
 
 public partial class AppShell : Shell
 {
-	public AppShell()
+    public MainPage TheMainPage { get; }
+	public AppShell(MainPage page)
 	{
 		InitializeComponent();
-	}
+        TheMainPage = page;
+        BindingContext = this;
+    }
 }

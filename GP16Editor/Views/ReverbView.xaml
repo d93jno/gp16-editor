@@ -26,17 +26,10 @@
             </Picker.ItemsSource>
         </Picker>
 
-        <Label Text="Decay" />
-        <controls:CircularSlider Minimum="0.5" Maximum="20.0" Value="{Binding Decay}" />
-
-        <Label Text="Pre Delay (ms)" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding PreDelay}" />
-        
-        <Label Text="Effect Level" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding EffectLevel}" />
-        
-        <Label Text="Cutoff (Hz)" />
-        <controls:CircularSlider Minimum="500" Maximum="8000" Value="{Binding Cutoff}" />
+        <controls:CircularSlider LabelText="Decay" Minimum="0.5" Maximum="20.0" Value="{Binding Decay}" />
+        <controls:CircularSlider LabelText="Pre Delay (ms)" Minimum="0" Maximum="100" Value="{Binding PreDelay}" />
+        <controls:CircularSlider LabelText="Effect Level" Minimum="0" Maximum="100" Value="{Binding EffectLevel}" />
+        <controls:CircularSlider LabelText="Cutoff (Hz)" Minimum="500" Maximum="8000" Value="{Binding Cutoff}" />
 
     </VerticalStackLayout>
     </Border>

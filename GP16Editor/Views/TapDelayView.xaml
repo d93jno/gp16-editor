@@ -11,29 +11,22 @@
 
         <!-- Center Tap -->
         <Label Text="Center Tap" FontAttributes="Italic" />
-        <Label Text="Time (ms)" />
-        <controls:CircularSlider Minimum="0" Maximum="1200" Value="{Binding CenterTapTime}" />
-        <Label Text="Level" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding CenterTapLevel}" />
+        <controls:CircularSlider LabelText="Time (ms)" Minimum="0" Maximum="1200" Value="{Binding CenterTapTime}" />
+        <controls:CircularSlider LabelText="Level" Minimum="0" Maximum="100" Value="{Binding CenterTapLevel}" />
 
         <!-- Left Tap -->
         <Label Text="Left Tap" FontAttributes="Italic" />
-        <Label Text="Time (ms)" />
-        <controls:CircularSlider Minimum="0" Maximum="1200" Value="{Binding LeftTapTime}" />
-        <Label Text="Level" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding LeftTapLevel}" />
+        <controls:CircularSlider LabelText="Time (ms)" Minimum="0" Maximum="1200" Value="{Binding LeftTapTime}" />
+        <controls:CircularSlider LabelText="Level" Minimum="0" Maximum="100" Value="{Binding LeftTapLevel}" />
 
         <!-- Right Tap -->
         <Label Text="Right Tap" FontAttributes="Italic" />
-        <Label Text="Time (ms)" />
-        <controls:CircularSlider Minimum="0" Maximum="1200" Value="{Binding RightTapTime}" />
-        <Label Text="Level" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding RightTapLevel}" />
+        <controls:CircularSlider LabelText="Time (ms)" Minimum="0" Maximum="1200" Value="{Binding RightTapTime}" />
+        <controls:CircularSlider LabelText="Level" Minimum="0" Maximum="100" Value="{Binding RightTapLevel}" />
 
         <!-- Feedback -->
         <Label Text="Feedback" FontAttributes="Italic" />
-        <Label Text="Feedback" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Feedback}" />
+        <controls:CircularSlider LabelText="Feedback" Minimum="0" Maximum="100" Value="{Binding Feedback}" />
 
         <!-- Cutoff -->
         <Label Text="Cutoff" FontAttributes="Italic" />

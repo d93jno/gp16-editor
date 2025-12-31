@@ -9,17 +9,10 @@
         <VerticalStackLayout>
         <Label Text="Chorus" FontAttributes="Bold" />
 
-        <Label Text="Pre Delay (ms)" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding PreDelay}" />
-
-        <Label Text="Rate" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Rate}" />
-
-        <Label Text="Depth" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Depth}" />
-
-        <Label Text="Effect Level" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding EffectLevel}" />
+        <controls:CircularSlider LabelText="Pre Delay (ms)" Minimum="0" Maximum="100" Value="{Binding PreDelay}" />
+        <controls:CircularSlider LabelText="Rate" Minimum="0" Maximum="100" Value="{Binding Rate}" />
+        <controls:CircularSlider LabelText="Depth" Minimum="0" Maximum="100" Value="{Binding Depth}" />
+        <controls:CircularSlider LabelText="Effect Level" Minimum="0" Maximum="100" Value="{Binding EffectLevel}" />
 
         </VerticalStackLayout>
     </Border>

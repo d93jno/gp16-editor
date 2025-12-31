@@ -9,17 +9,10 @@
         <VerticalStackLayout>
         <Label Text="Lineout Filter" FontAttributes="Bold" />
 
-        <Label Text="Presence" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Presence}" />
-
-        <Label Text="Treble" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Treble}" />
-
-        <Label Text="Middle" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Middle}" />
-
-        <Label Text="Bass" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Bass}" />
+        <controls:CircularSlider LabelText="Presence" Minimum="0" Maximum="100" Value="{Binding Presence}" />
+        <controls:CircularSlider LabelText="Treble" Minimum="0" Maximum="100" Value="{Binding Treble}" />
+        <controls:CircularSlider LabelText="Middle" Minimum="0" Maximum="100" Value="{Binding Middle}" />
+        <controls:CircularSlider LabelText="Bass" Minimum="0" Maximum="100" Value="{Binding Bass}" />
 
         </VerticalStackLayout>
     </Border>

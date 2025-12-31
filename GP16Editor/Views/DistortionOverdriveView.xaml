@@ -9,19 +9,16 @@
         <VerticalStackLayout>
         <Label Text="Distortion / Overdrive" FontAttributes="Bold" />
 
-        <Label Text="Drive" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Drive}" />
+        <controls:CircularSlider LabelText="Drive" Minimum="0" Maximum="100" Value="{Binding Drive}" />
 
         <HorizontalStackLayout>
             <Label Text="Turbo" />
             <Switch IsToggled="{Binding Turbo}" />
         </HorizontalStackLayout>
 
-        <Label Text="Tone" />
-        <controls:CircularSlider Minimum="-50" Maximum="50" Value="{Binding Tone}" />
+        <controls:CircularSlider LabelText="Tone" Minimum="-50" Maximum="50" Value="{Binding Tone}" />
 
-        <Label Text="Level" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Level}" />
+        <controls:CircularSlider LabelText="Level" Minimum="0" Maximum="100" Value="{Binding Level}" />
         </VerticalStackLayout>
     </Border>
 </ContentView>

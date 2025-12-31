@@ -9,17 +9,10 @@
         <VerticalStackLayout>
         <Label Text="Flanger" FontAttributes="Bold" />
 
-        <Label Text="Rate" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Rate}" />
-
-        <Label Text="Depth" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Depth}" />
-
-        <Label Text="Manual" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Manual}" />
-
-        <Label Text="Resonance" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Resonance}" />
+        <controls:CircularSlider LabelText="Rate" Minimum="0" Maximum="100" Value="{Binding Rate}" />
+        <controls:CircularSlider LabelText="Depth" Minimum="0" Maximum="100" Value="{Binding Depth}" />
+        <controls:CircularSlider LabelText="Manual" Minimum="0" Maximum="100" Value="{Binding Manual}" />
+        <controls:CircularSlider LabelText="Resonance" Minimum="0" Maximum="100" Value="{Binding Resonance}" />
 
         </VerticalStackLayout>
     </Border>

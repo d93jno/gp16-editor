@@ -7,6 +7,5 @@ public partial class ChorusView : ContentView
 	public ChorusView()
 	{
 		InitializeComponent();
-		BindingContext = new ChorusViewModel();
 	}
 }

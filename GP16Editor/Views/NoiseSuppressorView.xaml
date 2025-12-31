@@ -9,14 +9,9 @@
         <VerticalStackLayout>
         <Label Text="Noise Suppressor" FontAttributes="Bold" />
 
-        <Label Text="Sensitivity" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Sensitivity}" />
-
-        <Label Text="Release" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Release}" />
-
-        <Label Text="Level" />
-        <controls:CircularSlider Minimum="0" Maximum="100" Value="{Binding Level}" />
+        <controls:CircularSlider LabelText="Sensitivity" Minimum="0" Maximum="100" Value="{Binding Sensitivity}" />
+        <controls:CircularSlider LabelText="Release" Minimum="0" Maximum="100" Value="{Binding Release}" />
+        <controls:CircularSlider LabelText="Level" Minimum="0" Maximum="100" Value="{Binding Level}" />
         </VerticalStackLayout>
     </Border>
 </ContentView>

@@ -7,6 +7,5 @@ public partial class ParametricEQView : ContentView
 	public ParametricEQView()
 	{
 		InitializeComponent();
-		BindingContext = new ParametricEQViewModel();
 	}
 }
