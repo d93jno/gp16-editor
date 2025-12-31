@@ -1,8 +1,10 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GP16Editor", "GP16Editor\GP16Editor.csproj", "{50C9E4BC-4DFE-3290-F907-65B83EA8A7FB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GP16Editor.Cli", "GP16Editor.Cli\GP16Editor.Cli.csproj", "{CA8BF216-5F2A-4B6B-800A-10C8CD205F4A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,6 +16,10 @@ Global
 		{50C9E4BC-4DFE-3290-F907-65B83EA8A7FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{50C9E4BC-4DFE-3290-F907-65B83EA8A7FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{50C9E4BC-4DFE-3290-F907-65B83EA8A7FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA8BF216-5F2A-4B6B-800A-10C8CD205F4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA8BF216-5F2A-4B6B-800A-10C8CD205F4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA8BF216-5F2A-4B6B-800A-10C8CD205F4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA8BF216-5F2A-4B6B-800A-10C8CD205F4A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
