@@ -1,10 +1,11 @@
-﻿using GP16Editor.Cli;
-using GP16Editor.Models;
+﻿using GP16Editor.Models;
+using GP16Editor.Core;
 
 Console.WriteLine("GP-16 Editor CLI");
 Console.WriteLine("---------------");
 
-using var midiService = new MidiService();
+var sysExService = new SysExService();
+using var midiService = new MidiService(sysExService);
 midiService.DeviceId = 0x00; // Use MIDI channel 1 (Device ID 0)
 
 
@@ -31,8 +32,13 @@ for (int i = 0; i < inputDevices.Count; i++)
 
 Console.Write("Select input device (number): ");
 int inputDeviceIndex;
-while (!int.TryParse(Console.ReadLine(), out inputDeviceIndex) || inputDeviceIndex < 0 || inputDeviceIndex >= inputDevices.Count)
+while (true)
 {
+    var line = Console.ReadLine();
+    if (int.TryParse(line, out inputDeviceIndex) && inputDeviceIndex >= 0 && inputDeviceIndex < inputDevices.Count)
+    {
+        break;
+    }
     Console.Write("Invalid selection. Please select input device (number): ");
 }
 
@@ -44,8 +50,13 @@ for (int i = 0; i < outputDevices.Count; i++)
 
 Console.Write("Select output device (number): ");
 int outputDeviceIndex;
-while (!int.TryParse(Console.ReadLine(), out outputDeviceIndex) || outputDeviceIndex < 0 || outputDeviceIndex >= outputDevices.Count)
+while (true)
 {
+    var line = Console.ReadLine();
+    if (int.TryParse(line, out outputDeviceIndex) && outputDeviceIndex >= 0 && outputDeviceIndex < outputDevices.Count)
+    {
+        break;
+    }
     Console.Write("Invalid selection. Please select output device (number): ");
 }
 
@@ -55,7 +66,7 @@ var selectedOutputDevice = outputDevices[outputDeviceIndex];
 midiService.SelectDevices(selectedInputDevice, selectedOutputDevice);
 midiService.SysExReceived += (sender, e) =>
 {
-    var patch = new GP16Editor.Cli.Models.Patch();
+    var patch = new GP16Editor.Models.Patch();
     
     var fullSysex = new byte[] { 0xF0 }.Concat(e.Data).Concat(new byte[] { 0xF7 }).ToArray();
     patch.Parse(fullSysex);

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using GP16Editor.Services;
+using GP16Editor.Core;
 using Microsoft.Maui.Storage;
 
 namespace GP16Editor.ViewModels

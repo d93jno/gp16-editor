@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace GP16Editor.Services
+namespace GP16Editor.Core
 {
     public class SysExService
     {

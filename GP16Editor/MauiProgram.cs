@@ -1,7 +1,7 @@
 using CommunityToolkit.Maui;
 using GP16Editor.Views;
 using Microsoft.Extensions.Logging;
-using GP16Editor.Services;
+using GP16Editor.Core;
 using GP16Editor.ViewModels;
 using SkiaSharp.Views.Maui.Controls.Hosting;
 using System.Diagnostics;

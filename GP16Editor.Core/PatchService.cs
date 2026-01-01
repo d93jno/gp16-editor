@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using GP16Editor.Models;
 using Melanchall.DryWetMidi.Core;
 
-namespace GP16Editor.Services
+namespace GP16Editor.Core
 {
     public class PatchService
     {

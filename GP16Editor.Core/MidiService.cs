@@ -4,10 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Melanchall.DryWetMidi.Core;
 using Melanchall.DryWetMidi.Multimedia;
-using Microsoft.Maui.Storage;
-using Microsoft.Maui.ApplicationModel;
 
-namespace GP16Editor.Services
+namespace GP16Editor.Core
 {
     public class MidiService : IDisposable
     {
@@ -15,11 +13,12 @@ namespace GP16Editor.Services
         private IOutputDevice? _outputDevice;
         private bool _disposed = false;
         private readonly SysExService _sysExService;
-        public int InputChannel => Preferences.Get("SelectedInputChannel", 1);
-        public int OutputChannel => Preferences.Get("SelectedOutputChannel", 1);
-        public byte DeviceId => (byte)(OutputChannel - 1);
+        public int InputChannel { get; set; } = 1;
+        public int OutputChannel { get; set; } = 1;
+        public byte DeviceId { get; set; } = 0;
 
         public event EventHandler<NormalSysExEvent>? SysExReceived;
+        public event EventHandler<string>? ErrorOccurred;
 
         public MidiService(SysExService sysExService)
         {
@@ -60,6 +59,7 @@ namespace GP16Editor.Services
 
                     _inputDevice.EventReceived += OnEventReceived;
                     _inputDevice.StartEventsListening();
+                    DeviceId = (byte)(OutputChannel - 1);
                 }
                 catch (Exception ex)
                 {
@@ -78,24 +78,13 @@ namespace GP16Editor.Services
                         _outputDevice = null;
                     }
 
-                    MainThread.BeginInvokeOnMainThread(async () =>
-                    {
-                        var app = Application.Current;
-                        if (app != null && app.Windows?.Count > 0)
-                        {
-                            var page = app.Windows[0].Page;
-                            if (page != null)
-                            {
-                                await page.DisplayAlert("MIDI Error", $"Could not start MIDI devices: {ex.Message}", "OK");
-                            }
-                        }
-                    });
+                    ErrorOccurred?.Invoke(this, $"Could not start MIDI devices: {ex.Message}");
                 }
             }
             else
             {
                 System.Diagnostics.Debug.WriteLine($"MIDI devices not available: Input='{inputDeviceName}' ({inputDevice != null}), Output='{outputDeviceName}' ({outputDevice != null})");
-                // Devices not available, do nothing
+                ErrorOccurred?.Invoke(this, "Selected MIDI devices are not available.");
                 _inputDevice = null;
                 _outputDevice = null;
             }

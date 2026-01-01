@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.IO;
 using Microsoft.Maui.Storage;
-using GP16Editor.Services;
+using GP16Editor.Core;
 
 namespace GP16Editor;
 

@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -13,7 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GP16Editor.Models\GP16Editor.Models.csproj" />
-    <ProjectReference Include="..\GP16Editor.Core\GP16Editor.Core.csproj" />
   </ItemGroup>
 
 </Project>

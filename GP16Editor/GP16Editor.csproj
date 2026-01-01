@@ -71,6 +71,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\GP16Editor.Core\GP16Editor.Core.csproj" />
 	  <ProjectReference Include="..\GP16Editor.Models\GP16Editor.Models.csproj" />
 	</ItemGroup>
 
