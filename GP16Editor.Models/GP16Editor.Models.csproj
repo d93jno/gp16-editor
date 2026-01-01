@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="NotifyPropertyChangedBase.cs" />
+    <Compile Include="EffectParameters.cs" />
+    <Compile Include="Patch.cs" />
+  </ItemGroup>
+
+</Project>

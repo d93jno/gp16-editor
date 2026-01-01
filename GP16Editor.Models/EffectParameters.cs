@@ -1,5 +1,10 @@
-namespace GP16Editor.Cli.Models
+using System.ComponentModel;
+using System.Collections.Generic;
+
+namespace GP16Editor.Models
 {
+
+
     public class CompressorParameters : NotifyPropertyChangedBase
     {
         private int _sustain;

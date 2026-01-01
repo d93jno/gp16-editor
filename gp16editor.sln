@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GP16Editor", "GP16Editor\GP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GP16Editor.Cli", "GP16Editor.Cli\GP16Editor.Cli.csproj", "{CA8BF216-5F2A-4B6B-800A-10C8CD205F4A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GP16Editor.Models", "GP16Editor.Models\GP16Editor.Models.csproj", "{A87AA626-2C1E-4EE4-A903-C3CA7CEA431B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,10 @@ Global
 		{CA8BF216-5F2A-4B6B-800A-10C8CD205F4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA8BF216-5F2A-4B6B-800A-10C8CD205F4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA8BF216-5F2A-4B6B-800A-10C8CD205F4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A87AA626-2C1E-4EE4-A903-C3CA7CEA431B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A87AA626-2C1E-4EE4-A903-C3CA7CEA431B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A87AA626-2C1E-4EE4-A903-C3CA7CEA431B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A87AA626-2C1E-4EE4-A903-C3CA7CEA431B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

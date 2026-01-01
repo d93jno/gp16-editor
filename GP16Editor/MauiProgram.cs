@@ -1,3 +1,5 @@
+using CommunityToolkit.Maui;
+using GP16Editor.Views;
 using Microsoft.Extensions.Logging;
 using GP16Editor.Services;
 using GP16Editor.ViewModels;
@@ -14,6 +16,7 @@ public static class MauiProgram
 		builder
 			.UseMauiApp<App>()
             .UseSkiaSharp()
+            .UseMauiCommunityToolkit()
 			.ConfigureFonts(fonts =>
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -23,9 +26,22 @@ public static class MauiProgram
 		builder.Logging.AddDebug();
 		System.Diagnostics.Trace.Listeners.Add(new System.Diagnostics.ConsoleTraceListener());
 
-        builder.Services.AddSingleton<MidiService>();
+        // Register SysExService as a singleton
+        builder.Services.AddSingleton<SysExService>();
+        // Register MidiService, injecting SysExService
+        builder.Services.AddSingleton<MidiService>(provider => 
+            new MidiService(
+                provider.GetRequiredService<SysExService>()
+            ));
+        builder.Services.AddSingleton<PatchService>();
+        builder.Services.AddTransient<ConfigurationView>();
+        builder.Services.AddTransient<ConfigurationViewModel>();
         builder.Services.AddSingleton<MainPage>();
-        builder.Services.AddSingleton<MainViewModel>();
+        builder.Services.AddSingleton<MainViewModel>(provider =>
+            new MainViewModel(
+                provider.GetRequiredService<MidiService>(),
+                provider
+            ));
         builder.Services.AddSingleton<AppShell>();
 
         // Register App with MidiService dependency

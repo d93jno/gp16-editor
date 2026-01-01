@@ -7,43 +7,45 @@
              x:DataType="viewModels:MainViewModel"
              x:Name="mainPage">
 
-    <ScrollView>
-        <VerticalStackLayout Padding="30,0" Spacing="25">
-            <Picker Title="Select Input Device"
-                    ItemsSource="{Binding InputDevices}"
-                    SelectedItem="{Binding SelectedInputDevice}" />
+    <Grid>
+        <ScrollView>
+            <VerticalStackLayout Padding="30,0" Spacing="25">
 
-            <Picker Title="Select Output Device"
-                    ItemsSource="{Binding OutputDevices}"
-                    SelectedItem="{Binding SelectedOutputDevice}" />
+                <Button Text="Request Patch"
+                        Command="{Binding RequestPatchCommand}" />
 
-            <Button Text="Request Patch"
-                    Command="{Binding RequestPatchCommand}" />
+                <HorizontalStackLayout Spacing="20">
+                    <views:EffectSequenceBlockView BindingContext="{Binding BlockAViewModel}" />
+                    <views:EffectSequenceBlockView BindingContext="{Binding BlockBViewModel}" />
+                </HorizontalStackLayout>
 
-            <HorizontalStackLayout Spacing="20">
-                <views:EffectSequenceBlockView BindingContext="{Binding BlockAViewModel}" />
-                <views:EffectSequenceBlockView BindingContext="{Binding BlockBViewModel}" />
-            </HorizontalStackLayout>
+                <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="10">
+                    <views:CompressorView Grid.Row="0" Grid.Column="0" BindingContext="{Binding CompressorViewModel}" IsVisible="{Binding IsCompressorEnabled}" />
+                    <views:DistortionOverdriveView Grid.Row="0" Grid.Column="1" BindingContext="{Binding DistortionOverdriveViewModel}" IsVisible="{Binding IsDistortionOverdriveEnabled}" />
+                    <views:PickingFilterView Grid.Row="0" Grid.Column="2" BindingContext="{Binding PickingFilterViewModel}" IsVisible="{Binding IsPickingFilterEnabled}" />
+                    <views:StepPhaserView Grid.Row="1" Grid.Column="0" BindingContext="{Binding StepPhaserViewModel}" IsVisible="{Binding IsStepPhaserEnabled}" />
+                    <views:ParametricEQView Grid.Row="1" Grid.Column="1" BindingContext="{Binding ParametricEQViewModel}" IsVisible="{Binding IsParametricEQEnabled}" />
+                    <views:NoiseSuppressorView Grid.Row="1" Grid.Column="2" BindingContext="{Binding NoiseSuppressorViewModel}" IsVisible="{Binding IsNoiseSuppressorEnabled}" />
+                    <views:ShortDelayView Grid.Row="2" Grid.Column="0" BindingContext="{Binding ShortDelayViewModel}" IsVisible="{Binding IsShortDelayEnabled}" />
+                    <views:ChorusView Grid.Row="2" Grid.Column="1" BindingContext="{Binding ChorusViewModel}" IsVisible="{Binding IsChorusEnabled}" />
+                    <views:FlangerView Grid.Row="2" Grid.Column="2" BindingContext="{Binding FlangerViewModel}" IsVisible="{Binding IsFlangerEnabled}" />
+                    <views:PitchShifterView Grid.Row="3" Grid.Column="0" BindingContext="{Binding PitchShifterViewModel}" IsVisible="{Binding IsPitchShifterEnabled}" />
+                    <views:SpaceDView Grid.Row="3" Grid.Column="1" BindingContext="{Binding SpaceDViewModel}" IsVisible="{Binding IsSpaceDEnabled}" />
+                    <views:AutoPanpotView Grid.Row="3" Grid.Column="2" BindingContext="{Binding AutoPanpotViewModel}" IsVisible="{Binding IsAutoPanpotEnabled}" />
+                    <views:TapDelayView Grid.Row="4" Grid.Column="0" BindingContext="{Binding TapDelayViewModel}" IsVisible="{Binding IsTapDelayEnabled}" />
+                    <views:ReverbView Grid.Row="4" Grid.Column="1" BindingContext="{Binding ReverbViewModel}" IsVisible="{Binding IsReverbEnabled}" />
+                    <views:LineoutFilterView Grid.Row="4" Grid.Column="2" BindingContext="{Binding LineoutFilterViewModel}" IsVisible="{Binding IsLineoutFilterEnabled}" />
+                </Grid>
 
-            <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="10">
-                <views:CompressorView Grid.Row="0" Grid.Column="0" BindingContext="{Binding CompressorViewModel}" IsVisible="{Binding IsCompressorEnabled}" />
-                <views:DistortionOverdriveView Grid.Row="0" Grid.Column="1" BindingContext="{Binding DistortionOverdriveViewModel}" IsVisible="{Binding IsDistortionOverdriveEnabled}" />
-                <views:PickingFilterView Grid.Row="0" Grid.Column="2" BindingContext="{Binding PickingFilterViewModel}" IsVisible="{Binding IsPickingFilterEnabled}" />
-                <views:StepPhaserView Grid.Row="1" Grid.Column="0" BindingContext="{Binding StepPhaserViewModel}" IsVisible="{Binding IsStepPhaserEnabled}" />
-                <views:ParametricEQView Grid.Row="1" Grid.Column="1" BindingContext="{Binding ParametricEQViewModel}" IsVisible="{Binding IsParametricEQEnabled}" />
-                <views:NoiseSuppressorView Grid.Row="1" Grid.Column="2" BindingContext="{Binding NoiseSuppressorViewModel}" IsVisible="{Binding IsNoiseSuppressorEnabled}" />
-                <views:ShortDelayView Grid.Row="2" Grid.Column="0" BindingContext="{Binding ShortDelayViewModel}" IsVisible="{Binding IsShortDelayEnabled}" />
-                <views:ChorusView Grid.Row="2" Grid.Column="1" BindingContext="{Binding ChorusViewModel}" IsVisible="{Binding IsChorusEnabled}" />
-                <views:FlangerView Grid.Row="2" Grid.Column="2" BindingContext="{Binding FlangerViewModel}" IsVisible="{Binding IsFlangerEnabled}" />
-                <views:PitchShifterView Grid.Row="3" Grid.Column="0" BindingContext="{Binding PitchShifterViewModel}" IsVisible="{Binding IsPitchShifterEnabled}" />
-                <views:SpaceDView Grid.Row="3" Grid.Column="1" BindingContext="{Binding SpaceDViewModel}" IsVisible="{Binding IsSpaceDEnabled}" />
-                <views:AutoPanpotView Grid.Row="3" Grid.Column="2" BindingContext="{Binding AutoPanpotViewModel}" IsVisible="{Binding IsAutoPanpotEnabled}" />
-                <views:TapDelayView Grid.Row="4" Grid.Column="0" BindingContext="{Binding TapDelayViewModel}" IsVisible="{Binding IsTapDelayEnabled}" />
-                <views:ReverbView Grid.Row="4" Grid.Column="1" BindingContext="{Binding ReverbViewModel}" IsVisible="{Binding IsReverbEnabled}" />
-                <views:LineoutFilterView Grid.Row="4" Grid.Column="2" BindingContext="{Binding LineoutFilterViewModel}" IsVisible="{Binding IsLineoutFilterEnabled}" />
-            </Grid>
+            </VerticalStackLayout>
+        </ScrollView>
+        
+        <Button Text="Settings"
+                Command="{Binding ShowSettingsCommand}"
+                HorizontalOptions="End"
+                VerticalOptions="Start"
+                Margin="10" />
 
-        </VerticalStackLayout>
-    </ScrollView>
+    </Grid>
 
 </ContentPage>

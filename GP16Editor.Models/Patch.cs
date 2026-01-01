@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Text;
 
-namespace GP16Editor.Cli.Models
+namespace GP16Editor.Models
 {
     public class Patch : NotifyPropertyChangedBase
     {
@@ -29,47 +29,35 @@ namespace GP16Editor.Cli.Models
 
         public void Parse(byte[] sysex)
         {
-            // Expected SysEx format for a bulk DT1 message from GP-16:
-            // F0 41 [Device_ID] 2A 12 [Address] [DATA] [Checksum] F7
+            // This parsing logic is based on the GEMINI.md file and analysis of the provided SysEx message.
+            // The provided sysex: F0 41 00 2A 12 0F 7F 00 00 ...
+            // It is assumed that the data starts at index 9.
 
-            // Minimum length for a meaningful patch dump (header + address + 16-byte name + checksum + F7)
-            // 70 (data) + 1 (F0) + 1 (41) + 1 (DevID) + 1 (2A) + 1 (CmdID) + 3 (Address) + 1 (Checksum) + 1 (F7) = 80 bytes.
-            if (sysex.Length < 80) return; 
+            if (sysex.Length < 100) return; // Not a valid patch dump
 
-            // Verify header and command
-            if (sysex[0] != 0xF0 || sysex[1] != 0x41 || sysex[3] != 0x2A || sysex[4] != 0x12)
+            // The data payload seems to start at index 9 of the sysex message
+            var data = sysex.Skip(9).ToArray();
+
+            // The last bytes are checksum and F7, so we ignore them. The user example has two F7s.
+            var lastF7 = Array.LastIndexOf(data, (byte)0xF7);
+            if (lastF7 > 0)
             {
-                // Not a Roland DT1 message or not for GP-16
-                return;
-            }
-
-            // Extract data payload
-            // Skip F0, 41, DeviceID, 2A, 12, Address (3 bytes).
-            // Data starts at index 8 (sysex[8]).
-            // The last two bytes are checksum and F7, so we ignore them.
-            // The user's example has an extra F7 at the end. We'll handle it.
-            var dataStart = 8; // After F0 41 DevID 2A 12 Addr1 Addr2 Addr3
-            var dataLength = sysex.Length - dataStart - 2; // - checksum, - F7
-
-            // If the message has the example's extra F7, we need to adjust
-            if (sysex[sysex.Length - 1] == 0xF7 && sysex[sysex.Length - 2] == 0xF7)
-            {
-                dataLength = sysex.Length - dataStart - 3; // - checksum, - F7, - extra F7
+                data = data.Take(lastF7 -1).ToArray();
             }
             
-            // Ensure dataLength is not negative
-            if (dataLength < 0) return;
+            ParsePatchData(data);
+        }
 
-            var data = new byte[dataLength];
-            Array.Copy(sysex, dataStart, data, 0, dataLength);
-
-            // Per GEMINI.md 7.3: Patch Name is at Address 00 00 00 through 00 00 0F (16 bytes)
+        public void ParsePatchData(byte[] data)
+        {
+            // Parameters are parsed based on the offsets provided in GEMINI.md
+            
+            // Patch Name is at the beginning of the patch data.
             if (data.Length >= 16)
             {
-                PatchName = Encoding.ASCII.GetString(data, 0x00, 16).TrimEnd('\0', ' ');
+                PatchName = Encoding.ASCII.GetString(data, 0, 16).TrimEnd('\0', ' ');
             }
 
-            // Parse parameters using offsets from GEMINI.md
             // Compressor
             if (data.Length > 0x07)
             {
@@ -106,9 +94,7 @@ namespace GP16Editor.Cli.Models
                 Reverb.Type = data[0x3F];
             }
             
-            // BlockA and BlockB (Effect Chain) are not explicitly mapped in GEMINI.md.
-            // Leaving BlockA and BlockB empty for now.
-            // NOTE: The GEMINI.md file provides a partial map. Other parameters and effect chain are not parsed yet.
+            // NOTE: The GEMINI.md file provides a partial map. Other parameters are not parsed yet.
         }
     }
 }

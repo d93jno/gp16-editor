@@ -1,21 +1,25 @@
-using GP16Editor.Services;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Maui.Views;
 using GP16Editor.Models;
-using System.Collections.ObjectModel;
+using GP16Editor.Services;
+using GP16Editor.Views;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows.Input;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
+using Microsoft.Maui.Controls;
 
 namespace GP16Editor.ViewModels
 {
-    public class MainViewModel : INotifyPropertyChanged
+    public partial class MainViewModel : ObservableObject
     {
         private readonly MidiService _midiService;
+        private readonly IServiceProvider _serviceProvider;
         private Patch _currentPatch;
         public ICommand RequestPatchCommand { get; }
-
-        private const string SelectedInputDeviceKey = "SelectedInputDevice";
-        private const string SelectedOutputDeviceKey = "SelectedOutputDevice";
 
         public Patch CurrentPatch
         {
@@ -54,35 +58,13 @@ namespace GP16Editor.ViewModels
         public ReverbViewModel ReverbViewModel { get; }
         public LineoutFilterViewModel LineoutFilterViewModel { get; }
 
-        public MainViewModel(MidiService midiService)
+        public MainViewModel(MidiService midiService, IServiceProvider serviceProvider)
         {
             _midiService = midiService;
+            _serviceProvider = serviceProvider;
             _currentPatch = new Patch();
             CurrentPatch = _currentPatch;
-            InputDevices = new ObservableCollection<string>(_midiService.GetInputDevices());
-            OutputDevices = new ObservableCollection<string>(_midiService.GetOutputDevices());
-
-            // Load saved device selections
-            string? savedInput = Preferences.Get(SelectedInputDeviceKey, null);
-            if (savedInput != null && InputDevices.Contains(savedInput))
-            {
-                SelectedInputDevice = savedInput;
-            }
-            else if (Preferences.ContainsKey(SelectedInputDeviceKey))
-            {
-                Preferences.Remove(SelectedInputDeviceKey);
-            }
-
-            string? savedOutput = Preferences.Get(SelectedOutputDeviceKey, null);
-            if (savedOutput != null && OutputDevices.Contains(savedOutput))
-            {
-                SelectedOutputDevice = savedOutput;
-            }
-            else if (Preferences.ContainsKey(SelectedOutputDeviceKey))
-            {
-                Preferences.Remove(SelectedOutputDeviceKey);
-            }
-
+            
             RequestPatchCommand = new Command(RequestPatch);
 
             // Initialize Block A with demo effects
@@ -137,18 +119,26 @@ namespace GP16Editor.ViewModels
             {
                 effect.PropertyChanged += OnEffectChanged;
             }
-
-
+        }
+        
+        [RelayCommand]
+        private void ShowSettings()
+        {
+            var popup = _serviceProvider.GetRequiredService<ConfigurationView>();
+            if (Application.Current?.MainPage != null)
+            {
+                Application.Current.MainPage.ShowPopup(popup);
+            }
         }
 
         private void Patch_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(Patch.Sustain))
+            if (e.PropertyName == nameof(Patch.Compressor.Sustain))
             {
                 // Temporary address for the compressor's sustain parameter.
                 // This should be replaced with the correct value from the GP-16 manual.
-                var address = new byte[] { 0x01, 0x00, 0x00, 0x00 };
-                _midiService.SendParameterChange(address, (byte)CurrentPatch.Sustain);
+                var address = new byte[] { 0x00, 0x00, 0x06 };
+                _midiService.SendParameterChange(address, (byte)CurrentPatch.Compressor.Sustain);
             }
         }
 
@@ -157,39 +147,10 @@ namespace GP16Editor.ViewModels
             // Temporary address and size for a single patch dump.
             // This should be replaced with the correct values from the GP-16 manual.
             var address = new byte[] { 0x00, 0x00, 0x00 };
-            var size = new byte[] { 0x00, 0x01, 0x00, 0x00 };
+            var size = new byte[] { 0x00, 0x00, 0x46 };
             _midiService.RequestDataDump(address, size);
         }
-
-        public ObservableCollection<string> InputDevices { get; }
-        public ObservableCollection<string> OutputDevices { get; }
-
-        private string? _selectedInputDevice;
-        public string? SelectedInputDevice
-        {
-            get => _selectedInputDevice;
-            set
-            {
-                _selectedInputDevice = value;
-                Preferences.Set(SelectedInputDeviceKey, value);
-                OnPropertyChanged(nameof(SelectedInputDevice));
-                _ = CheckAndSelectDevicesAsync();
-            }
-        }
-
-        private string? _selectedOutputDevice;
-        public string? SelectedOutputDevice
-        {
-            get => _selectedOutputDevice;
-            set
-            {
-                _selectedOutputDevice = value;
-                Preferences.Set(SelectedOutputDeviceKey, value);
-                OnPropertyChanged(nameof(SelectedOutputDevice));
-                _ = CheckAndSelectDevicesAsync();
-            }
-        }
-
+        
         private void OnEffectChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(EffectSequenceItem.IsEnabled) && sender is EffectSequenceItem item)
@@ -231,28 +192,5 @@ namespace GP16Editor.ViewModels
         public bool IsTapDelayEnabled => BlockBViewModel.Effects.FirstOrDefault(e => e.Name == "Tap Delay")?.IsEnabled ?? false;
         public bool IsReverbEnabled => BlockBViewModel.Effects.FirstOrDefault(e => e.Name == "Reverb")?.IsEnabled ?? false;
         public bool IsLineoutFilterEnabled => BlockBViewModel.Effects.FirstOrDefault(e => e.Name == "Lineout Filter")?.IsEnabled ?? false;
-
-        public async Task InitializeAsync()
-        {
-            await CheckAndSelectDevicesAsync();
-        }
-
-        private async Task CheckAndSelectDevicesAsync()
-        {
-            if (!string.IsNullOrEmpty(SelectedInputDevice) && !string.IsNullOrEmpty(SelectedOutputDevice))
-            {
-                // Delay to ensure GUI is fully initialized
-                await Task.Delay(1000);
-                _midiService.SelectDevices(SelectedInputDevice, SelectedOutputDevice);
-            }
-        }
-
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
     }
 }

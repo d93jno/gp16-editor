@@ -1,18 +1,29 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Melanchall.DryWetMidi.Core;
 using Melanchall.DryWetMidi.Multimedia;
+using Microsoft.Maui.Storage;
+using Microsoft.Maui.ApplicationModel;
 
 namespace GP16Editor.Services
 {
-    public class MidiService
+    public class MidiService : IDisposable
     {
         private IInputDevice? _inputDevice;
         private IOutputDevice? _outputDevice;
         private bool _disposed = false;
+        private readonly SysExService _sysExService;
+        public int InputChannel => Preferences.Get("SelectedInputChannel", 1);
+        public int OutputChannel => Preferences.Get("SelectedOutputChannel", 1);
+        public byte DeviceId => (byte)(OutputChannel - 1);
 
         public event EventHandler<NormalSysExEvent>? SysExReceived;
 
-        public MidiService()
+        public MidiService(SysExService sysExService)
         {
+            _sysExService = sysExService;
         }
 
         ~MidiService()
@@ -104,10 +115,23 @@ namespace GP16Editor.Services
             }
         }
 
-        public void SendSysEx(byte[] data)
+        public async Task SendSysExAsync(ICollection<byte> data)
         {
-            var sysExEvent = new NormalSysExEvent(data);
-            _outputDevice?.SendEvent(sysExEvent);
+            if (_outputDevice == null)
+            {
+                System.Diagnostics.Debug.WriteLine("MIDI Output device not selected.");
+                return;
+            }
+
+            // The NormalSysExEvent constructor expects the data bytes *without* F0 and F7.
+            // My BuildDt1Message and BuildRq1Message methods return the full SysEx message
+            // including F0 and F7. So I need to strip them for the DryWetMidi library.
+            var sysExDataWithoutF0F7 = data.Skip(1).Take(data.Count - 2).ToArray();
+            var sysExEvent = new NormalSysExEvent(sysExDataWithoutF0F7);
+            
+            _outputDevice.SendEvent(sysExEvent);
+            // Implement the required delay for Roland devices between large messages
+            await Task.Delay(50); // 50ms delay as specified in GEMINI.md
         }
 
         public void Dispose()
@@ -151,34 +175,16 @@ namespace GP16Editor.Services
             _disposed = true;
         }
 
-        public byte CalculateChecksum(IEnumerable<byte> addressAndData)
+        public Task RequestDataDump(byte[] address, byte[] size)
         {
-            var sum = addressAndData.Sum(b => b);
-            var remainder = sum % 128;
-            var checksum = 128 - remainder;
-            return (byte)(checksum == 128 ? 0 : checksum);
+            var sysexMessage = _sysExService.BuildRq1Message(DeviceId, address, size);
+            return SendSysExAsync(sysexMessage.ToList());
         }
 
-        public void RequestDataDump(byte[] address, byte[] size)
+        public Task SendParameterChange(byte[] address, byte value)
         {
-            var message = new List<byte> { 0xF0, 0x41, 0x10, 0x2A, 0x11 };
-            message.AddRange(address);
-            message.AddRange(size);
-            var checksum = CalculateChecksum(address.Concat(size));
-            message.Add(checksum);
-            message.Add(0xF7);
-            SendSysEx(message.ToArray());
-        }
-
-        public void SendParameterChange(byte[] address, byte value)
-        {
-            var message = new List<byte> { 0xF0, 0x41, 0x10, 0x2A, 0x12 };
-            message.AddRange(address);
-            message.Add(value);
-            var checksum = CalculateChecksum(address.Concat(new[] { value }));
-            message.Add(checksum);
-            message.Add(0xF7);
-            SendSysEx(message.ToArray());
+            var sysexMessage = _sysExService.BuildDt1Message(DeviceId, address, new[] { value });
+            return SendSysExAsync(sysexMessage.ToList());
         }
     }
 }

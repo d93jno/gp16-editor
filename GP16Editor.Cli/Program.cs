@@ -1,4 +1,5 @@
 ﻿using GP16Editor.Cli;
+using GP16Editor.Models;
 
 Console.WriteLine("GP-16 Editor CLI");
 Console.WriteLine("---------------");

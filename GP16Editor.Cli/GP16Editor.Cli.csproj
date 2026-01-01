@@ -11,4 +11,8 @@
     <PackageReference Include="Melanchall.DryWetMidi" Version="8.0.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\GP16Editor.Models\GP16Editor.Models.csproj" />
+  </ItemGroup>
+
 </Project>

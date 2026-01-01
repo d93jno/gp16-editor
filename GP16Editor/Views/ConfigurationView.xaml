@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:viewModels="clr-namespace:GP16Editor.ViewModels"
+             x:Class="GP16Editor.Views.ConfigurationView"
+             x:DataType="viewModels:ConfigurationViewModel">
+    <VerticalStackLayout Padding="20" Spacing="10" BackgroundColor="{StaticResource Gray900}">
+        <Label Text="MIDI Settings" FontSize="Large" FontAttributes="Bold" />
+
+        <Picker Title="Select Input Device"
+                ItemsSource="{Binding InputDevices}"
+                SelectedItem="{Binding SelectedInputDevice}" />
+
+        <Picker Title="Select Output Device"
+                ItemsSource="{Binding OutputDevices}"
+                SelectedItem="{Binding SelectedOutputDevice}" />
+
+        <Picker Title="Select Input Channel"
+                ItemsSource="{Binding MidiChannels}"
+                SelectedItem="{Binding SelectedInputChannel}" />
+
+        <Picker Title="Select Output Channel"
+                ItemsSource="{Binding MidiChannels}"
+                SelectedItem="{Binding SelectedOutputChannel}" />
+
+        <Picker Title="Select Theme"
+                ItemsSource="{Binding Themes}"
+                SelectedItem="{Binding SelectedTheme}" />
+
+        <Button Text="Save"
+                Command="{Binding SaveCommand}" 
+                Clicked="OnSaveButtonClicked"/>
+    </VerticalStackLayout>
+</toolkit:Popup>
