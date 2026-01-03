@@ -20,8 +20,8 @@ public class CircularSlider : ContentView
     public static readonly BindableProperty ValueProperty =
         BindableProperty.Create(nameof(Value), typeof(double), typeof(CircularSlider), 0.0, BindingMode.TwoWay, propertyChanged: OnValueChanged);
 
-    public static readonly BindableProperty TextColorProperty =
-        BindableProperty.Create(nameof(TextColor), typeof(Color), typeof(CircularSlider), Colors.Black);
+    public static readonly BindableProperty LabelTextProperty =
+        BindableProperty.Create(nameof(LabelText), typeof(string), typeof(CircularSlider), string.Empty);
 
     public double Minimum
     {
@@ -40,15 +40,6 @@ public class CircularSlider : ContentView
         get => (double)GetValue(ValueProperty);
         set => SetValue(ValueProperty, Math.Clamp(value, Minimum, Maximum));
     }
-
-    public Color TextColor
-    {
-        get => (Color)GetValue(TextColorProperty);
-        set => SetValue(TextColorProperty, value);
-    }
-
-    public static readonly BindableProperty LabelTextProperty =
-        BindableProperty.Create(nameof(LabelText), typeof(string), typeof(CircularSlider), string.Empty);
 
     public string LabelText
     {
@@ -69,17 +60,17 @@ public class CircularSlider : ContentView
         {
             HorizontalTextAlignment = TextAlignment.Center,
             FontSize = 18,
-            TextColor = TextColor
         };
         nameLabel.SetBinding(Label.TextProperty, new Binding(nameof(LabelText), source: this));
+        nameLabel.SetDynamicResource(Label.TextColorProperty, "TextColor");
 
         var valueLabel = new Label
         {
             HorizontalTextAlignment = TextAlignment.Center,
             FontSize = 16,
-            TextColor = TextColor
         };
         valueLabel.SetBinding(Label.TextProperty, new Binding(nameof(Value), source: this, stringFormat: "{0:F1}"));
+        valueLabel.SetDynamicResource(Label.TextColorProperty, "TextColor");
 
         Content = new VerticalStackLayout
         {

@@ -36,7 +36,7 @@
         <!-- Cutoff -->
         <VerticalStackLayout>
             <Label Text="Cutoff" FontAttributes="Italic" />
-            <Picker Title="Cutoff" SelectedItem="{Binding Cutoff}">
+            <Picker Title="Cutoff" SelectedItem="{Binding Cutoff}" VerticalOptions="Center">
                 <Picker.ItemsSource>
                     <x:Array Type="{x:Type x:String}">
                         <x:String>Thru</x:String>

@@ -6,7 +6,7 @@
              x:Class="GP16Editor.Views.ReverbView"
              x:DataType="vm:ReverbViewModel">
     <HorizontalStackLayout>
-        <Picker Title="Mode" SelectedItem="{Binding Mode}">
+        <Picker Title="Mode" SelectedItem="{Binding Mode}" VerticalOptions="Center">
             <Picker.ItemsSource>
                 <x:Array Type="{x:Type x:String}">
                     <x:String>Room 1</x:String>

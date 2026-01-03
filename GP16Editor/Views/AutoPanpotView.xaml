@@ -9,7 +9,7 @@
         <controls:CircularSlider LabelText="Rate" Minimum="0" Maximum="100" Value="{Binding Rate}" />
         <controls:CircularSlider LabelText="Depth" Minimum="0" Maximum="100" Value="{Binding Depth}" />
 
-        <Picker Title="Mode" SelectedItem="{Binding Mode}">
+        <Picker Title="Mode" SelectedItem="{Binding Mode}" VerticalOptions="Center">
             <Picker.ItemsSource>
                 <x:Array Type="{x:Type x:String}">
                     <x:String>Panning</x:String>

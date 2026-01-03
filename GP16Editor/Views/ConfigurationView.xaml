@@ -5,28 +5,35 @@
              xmlns:viewModels="clr-namespace:GP16Editor.ViewModels"
              x:Class="GP16Editor.Views.ConfigurationView"
              x:DataType="viewModels:ConfigurationViewModel">
-    <VerticalStackLayout Padding="20" Spacing="10" BackgroundColor="{StaticResource Gray900}">
-        <Label Text="MIDI Settings" FontSize="Large" FontAttributes="Bold" />
+    <VerticalStackLayout Padding="20" Spacing="10" BackgroundColor="{DynamicResource ContentBackgroundColor}">
+        <Label Text="MIDI Settings" FontSize="Large" FontAttributes="Bold" TextColor="{DynamicResource TextColor}" />
 
         <Picker Title="Select Input Device"
                 ItemsSource="{Binding InputDevices}"
-                SelectedItem="{Binding SelectedInputDevice}" />
+                SelectedItem="{Binding SelectedInputDevice}"
+                TextColor="{DynamicResource TextColor}" />
+        <Label Text="No input devices found." IsVisible="{Binding NoInputDevicesFound}" TextColor="{DynamicResource TextColor}" />
 
         <Picker Title="Select Output Device"
                 ItemsSource="{Binding OutputDevices}"
-                SelectedItem="{Binding SelectedOutputDevice}" />
+                SelectedItem="{Binding SelectedOutputDevice}"
+                TextColor="{DynamicResource TextColor}" />
+        <Label Text="No output devices found." IsVisible="{Binding NoOutputDevicesFound}" TextColor="{DynamicResource TextColor}" />
 
         <Picker Title="Select Input Channel"
                 ItemsSource="{Binding MidiChannels}"
-                SelectedItem="{Binding SelectedInputChannel}" />
+                SelectedItem="{Binding SelectedInputChannel}"
+                TextColor="{DynamicResource TextColor}" />
 
         <Picker Title="Select Output Channel"
                 ItemsSource="{Binding MidiChannels}"
-                SelectedItem="{Binding SelectedOutputChannel}" />
+                SelectedItem="{Binding SelectedOutputChannel}"
+                TextColor="{DynamicResource TextColor}" />
 
         <Picker Title="Select Theme"
                 ItemsSource="{Binding Themes}"
-                SelectedItem="{Binding SelectedTheme}" />
+                SelectedItem="{Binding SelectedTheme}"
+                TextColor="{DynamicResource TextColor}" />
 
         <Button Text="Save"
                 Command="{Binding SaveCommand}" 

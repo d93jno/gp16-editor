@@ -9,8 +9,45 @@ namespace GP16Editor.ViewModels
 {
     public partial class ConfigurationViewModel : ObservableObject
     {
-        public IEnumerable<string> InputDevices { get; set; }
-        public IEnumerable<string> OutputDevices { get; set; }
+        private IEnumerable<string> _inputDevices;
+        public IEnumerable<string> InputDevices
+        {
+            get => _inputDevices;
+            set
+            {
+                if (SetProperty(ref _inputDevices, value))
+                {
+                    NoInputDevicesFound = !_inputDevices.Any();
+                }
+            }
+        }
+
+        private IEnumerable<string> _outputDevices;
+        public IEnumerable<string> OutputDevices
+        {
+            get => _outputDevices;
+            set
+            {
+                if (SetProperty(ref _outputDevices, value))
+                {
+                    NoOutputDevicesFound = !_outputDevices.Any();
+                }
+            }
+        }
+
+        private bool _noInputDevicesFound;
+        public bool NoInputDevicesFound
+        {
+            get => _noInputDevicesFound;
+            set => SetProperty(ref _noInputDevicesFound, value);
+        }
+
+        private bool _noOutputDevicesFound;
+        public bool NoOutputDevicesFound
+        {
+            get => _noOutputDevicesFound;
+            set => SetProperty(ref _noOutputDevicesFound, value);
+        }
 
         public List<int> MidiChannels { get; } = [.. Enumerable.Range(1, 16)];
         public List<string> Themes { get; } = ["Light", "Dark", "System"];
@@ -52,8 +89,8 @@ namespace GP16Editor.ViewModels
 
         public ConfigurationViewModel()
         {
-            InputDevices = [];
-            OutputDevices = [];
+            _inputDevices = [];
+            _outputDevices = [];
             
             _selectedInputDevice = Preferences.Get("SelectedInputDevice", string.Empty);
             _selectedOutputDevice = Preferences.Get("SelectedOutputDevice", string.Empty);

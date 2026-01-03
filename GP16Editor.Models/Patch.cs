@@ -45,11 +45,13 @@ namespace GP16Editor.Models
                 data = data.Take(lastF7 -1).ToArray();
             }
             
-            ParsePatchData(data);
+            ParsePatchData(data, 0);
         }
 
-        public void ParsePatchData(byte[] data)
+        public int PatchNumber { get; set; }
+        public void ParsePatchData(byte[] data, int patchNumber)
         {
+            PatchNumber = patchNumber;
             // Parameters are parsed based on the offsets provided in GEMINI.md
             
             // Patch Name is at the beginning of the patch data.

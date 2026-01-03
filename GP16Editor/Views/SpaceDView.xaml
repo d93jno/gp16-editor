@@ -5,7 +5,7 @@
              x:Class="GP16Editor.Views.SpaceDView"
              x:DataType="vm:SpaceDViewModel">
     <HorizontalStackLayout>
-        <Picker Title="Mode" SelectedItem="{Binding Mode}">
+        <Picker Title="Mode" SelectedItem="{Binding Mode}" VerticalOptions="Center">
             <Picker.ItemsSource>
                 <x:Array Type="{x:Type x:String}">
                     <x:String>Mode 1</x:String>

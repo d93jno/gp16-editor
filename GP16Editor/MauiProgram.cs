@@ -40,6 +40,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<MainViewModel>(provider =>
             new MainViewModel(
                 provider.GetRequiredService<MidiService>(),
+                provider.GetRequiredService<PatchService>(),
                 provider
             ));
         builder.Services.AddSingleton<AppShell>();

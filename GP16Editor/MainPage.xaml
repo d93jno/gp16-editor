@@ -30,8 +30,7 @@
 
             <HorizontalStackLayout Grid.Row="0" Spacing="20" Padding="10">
                 <Label Text="HOME" VerticalOptions="Center" />
-                <Button Text="Request Patch"
-                        Command="{Binding RequestPatchCommand}" />
+                <Button Text="🔄" Command="{Binding RefreshPatchesCommand}" IsEnabled="{Binding CanRefresh}" />
                 <Button Text="Settings"
                         Command="{Binding ShowSettingsCommand}" />
                 <Label Text="{Binding CurrentPatch.PatchName}" VerticalOptions="Center" FontSize="Large" />

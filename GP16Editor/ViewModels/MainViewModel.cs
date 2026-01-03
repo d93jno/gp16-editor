@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Storage;
 using Microsoft.Maui.Controls;
@@ -18,9 +19,9 @@ namespace GP16Editor.ViewModels
     public partial class MainViewModel : ObservableObject
     {
         private readonly MidiService _midiService;
+        private readonly PatchService _patchService;
         private readonly IServiceProvider _serviceProvider;
         private Patch _currentPatch;
-        public ICommand RequestPatchCommand { get; }
 
         public Patch CurrentPatch
         {
@@ -53,6 +54,9 @@ namespace GP16Editor.ViewModels
             }
         }
 
+        public ObservableCollection<PatchListItem> AllPatches { get; } = new();
+        public ObservableCollection<PatchListItem> FilteredPatches { get; } = new();
+
         private PatchListItem? _selectedPatch;
         public PatchListItem? SelectedPatch
         {
@@ -67,9 +71,21 @@ namespace GP16Editor.ViewModels
             }
         }
 
-        public ObservableCollection<PatchListItem> FilteredPatches { get; } = new ObservableCollection<PatchListItem>();
-        private List<PatchListItem> AllPatches { get; } = new List<PatchListItem>();
+        private bool _isInputDeviceSelected;
+        public bool IsInputDeviceSelected
+        {
+            get => _isInputDeviceSelected;
+            set => SetProperty(ref _isInputDeviceSelected, value);
+        }
 
+        private bool _isOutputDeviceSelected;
+        public bool IsOutputDeviceSelected
+        {
+            get => _isOutputDeviceSelected;
+            set => SetProperty(ref _isOutputDeviceSelected, value);
+        }
+
+        public bool CanRefresh => IsInputDeviceSelected && IsOutputDeviceSelected;
 
         public EffectSequenceBlockViewModel BlockAViewModel { get; }
         public EffectSequenceBlockViewModel BlockBViewModel { get; }
@@ -90,15 +106,20 @@ namespace GP16Editor.ViewModels
         public ReverbViewModel ReverbViewModel { get; }
         public LineoutFilterViewModel LineoutFilterViewModel { get; }
 
-        public MainViewModel(MidiService midiService, IServiceProvider serviceProvider)
+        public MainViewModel(MidiService midiService, PatchService patchService, IServiceProvider serviceProvider)
         {
             _midiService = midiService;
+            _patchService = patchService;
             _serviceProvider = serviceProvider;
             _currentPatch = new Patch();
             CurrentPatch = _currentPatch;
-            
-            RequestPatchCommand = new Command(RequestPatch);
 
+            // Initialize device selection state from preferences
+            var selectedInput = Microsoft.Maui.Storage.Preferences.Get("SelectedInputDevice", string.Empty);
+            var selectedOutput = Microsoft.Maui.Storage.Preferences.Get("SelectedOutputDevice", string.Empty);
+            IsInputDeviceSelected = !string.IsNullOrEmpty(selectedInput);
+            IsOutputDeviceSelected = !string.IsNullOrEmpty(selectedOutput);
+            
             InitializePatches();
             FilterPatches();
 
@@ -186,6 +207,18 @@ namespace GP16Editor.ViewModels
         }
 
         [RelayCommand]
+        private async Task RefreshPatches()
+        {
+            var patches = await _patchService.GetAllPatchesAsync();
+            AllPatches.Clear();
+            foreach (var patch in patches)
+            {
+                AllPatches.Add(new PatchListItem(patch));
+            }
+            FilterPatches();
+        }
+
+        [RelayCommand]
         private async Task ShowSettings()
         {
             var viewModel = _serviceProvider.GetRequiredService<ConfigurationViewModel>();
@@ -200,6 +233,9 @@ namespace GP16Editor.ViewModels
                 if (result is bool saved && saved)
                 {
                     _midiService.SelectDevices(viewModel.SelectedInputDevice, viewModel.SelectedOutputDevice);
+                    IsInputDeviceSelected = !string.IsNullOrEmpty(viewModel.SelectedInputDevice);
+                    IsOutputDeviceSelected = !string.IsNullOrEmpty(viewModel.SelectedOutputDevice);
+                    OnPropertyChanged(nameof(CanRefresh));
                 }
             }
         }
@@ -215,15 +251,6 @@ namespace GP16Editor.ViewModels
             }
         }
 
-        private void RequestPatch()
-        {
-            // Temporary address and size for a single patch dump.
-            // This should be replaced with the correct values from the GP-16 manual.
-            var address = new byte[] { 0x00, 0x00, 0x00 };
-            var size = new byte[] { 0x00, 0x00, 0x46 };
-            _midiService.RequestDataDump(address, size);
-        }
-        
         private void OnEffectChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(EffectSequenceItem.IsEnabled) && sender is EffectSequenceItem item)

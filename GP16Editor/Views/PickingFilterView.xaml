@@ -10,7 +10,7 @@
         <controls:CircularSlider LabelText="Cutoff Frequency" Minimum="0" Maximum="100" Value="{Binding CutoffFrequency}" />
         <controls:CircularSlider LabelText="Q Control" Minimum="1.0" Maximum="5.0" Value="{Binding QControl}" />
 
-        <Picker Title="Up/Down" SelectedItem="{Binding UpDown}">
+        <Picker Title="Up/Down" SelectedItem="{Binding UpDown}" VerticalOptions="Center">
             <Picker.ItemsSource>
                 <x:Array Type="{x:Type x:String}">
                     <x:String>Up</x:String>

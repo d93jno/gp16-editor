@@ -50,6 +50,7 @@ namespace GP16Editor.Core
                     // The actual patch data starts after the address
                     var patchData = e.Data.Skip(6).ToArray();
                     incomingData.AddRange(patchData);
+                    Debug.WriteLine($"Received patch data: {patchData.Length} bytes, total so far: {incomingData.Count}");
 
                     if (incomingData.Count >= TOTAL_DATA_SIZE)
                     {
@@ -85,8 +86,9 @@ namespace GP16Editor.Core
                         if(patchData.Length == PATCH_SIZE)
                         {
                             var patch = new Patch();
-                            patch.ParsePatchData(patchData); 
+                            patch.ParsePatchData(patchData, i + 1); 
                             patches.Add(patch);
+                            Debug.WriteLine($"Parsed patch {i + 1}: {patch.PatchName}");
                         }
                     }
                 }
