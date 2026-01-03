@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="GP16Editor.Views.ProgressPopup">
+    <VerticalStackLayout Padding="30" Spacing="20" BackgroundColor="{DynamicResource ContentBackgroundColor}">
+        <Label Text="Loading patches..." FontSize="Medium" HorizontalOptions="Center" />
+        <ProgressBar x:Name="ProgressBar" Progress="0" HeightRequest="20" />
+        <Label x:Name="ProgressLabel" Text="0 / 128" HorizontalOptions="Center" />
+    </VerticalStackLayout>
+</toolkit:Popup>

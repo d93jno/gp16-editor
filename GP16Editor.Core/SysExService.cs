@@ -8,13 +8,13 @@ namespace GP16Editor.Core
     public class SysExService
     {
         // Manufacturer ID for Roland
-        private const byte MANUFACTURER_ID = 0x41;
+        public const byte MANUFACTURER_ID = 0x41;
         // Model ID for GP-16
-        private const byte MODEL_ID = 0x2A;
+        public const byte MODEL_ID = 0x2A;
         // Command ID for Data Set 1 (DT1)
-        private const byte COMMAND_ID_DT1 = 0x12;
+        public const byte COMMAND_ID_DT1 = 0x12;
         // Command ID for Request Data 1 (RQ1)
-        private const byte COMMAND_ID_RQ1 = 0x11;
+        public const byte COMMAND_ID_RQ1 = 0x11;
 
         /// <summary>
         /// Calculates the Roland 7-bit checksum for SysEx messages.

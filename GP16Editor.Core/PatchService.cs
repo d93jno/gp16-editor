@@ -1,61 +1,57 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using GP16Editor.Models;
 using Melanchall.DryWetMidi.Core;
 
 namespace GP16Editor.Core
 {
-    public class PatchService
+    public class PatchService(MidiService midiService, SysExService sysExService)
+
     {
-        private readonly MidiService _midiService;
-        private readonly SysExService _sysExService;
+        private readonly MidiService _midiService = midiService;
+        private readonly SysExService _sysExService = sysExService;
 
         private const int PATCH_SIZE = 70;
         private const int PATCHES_PER_GROUP = 64;
         private const int TOTAL_PATCHES = 128;
-        private const int GROUP_A_PATCH_COUNT = 64;
-        private const int GROUP_B_PATCH_COUNT = 64;
-        private const int GROUP_A_SIZE = PATCH_SIZE * GROUP_A_PATCH_COUNT; // 4480
-        private const int GROUP_B_SIZE = PATCH_SIZE * GROUP_B_PATCH_COUNT; // 4480
-        private const int TOTAL_DATA_SIZE = GROUP_A_SIZE + GROUP_B_SIZE; // 8960
-        
-        public PatchService(MidiService midiService, SysExService sysExService)
-        {
-            _midiService = midiService;
-            _sysExService = sysExService;
-        }
+
 
         public async Task<List<Patch>> GetAllPatchesAsync()
         {
+            return await GetAllPatchesAsync(null);
+        }
+
+        public async Task<List<Patch>> GetAllPatchesAsync(IProgress<int>? progress)
+        {
             var patches = new List<Patch>();
-            var incomingData = new List<byte>();
             var tcs = new TaskCompletionSource<bool>();
 
             void SysExHandler(object? sender, NormalSysExEvent e)
             {
-                // The data from NormalSysExEvent does not include F0 and F7.
-                // The actual payload is in e.Data. We need to check if this is a DT1 message.
-                // A DT1 message from GP-16 will start with: 41 dev 2A 12 ...
-                // But e.Data will be after the 41, so it will start with dev 2A 12 ...
-                // Let's assume the deviceId matches.
-                
-                if (e.Data.Length > 3 && e.Data[0] == _midiService.DeviceId && e.Data[1] == 0x2A && e.Data[2] == 0x12)
-                {
-                    // This is a DT1 message. The data follows the address.
-                    // The address is 3 bytes, so data starts at index 3+3=6 in the sysex message payload (e.Data)
-                    // The address bytes are e.Data[3], e.Data[4], e.Data[5]
-                    // The actual patch data starts after the address
-                    var patchData = e.Data.Skip(6).ToArray();
-                    incomingData.AddRange(patchData);
-                    Debug.WriteLine($"Received patch data: {patchData.Length} bytes, total so far: {incomingData.Count}");
+                var msgType = e.Data.Length > 3 ? e.Data[3] : (byte)0x00;
 
-                    if (incomingData.Count >= TOTAL_DATA_SIZE)
+                switch(msgType)
+                {
+                case SysExService.COMMAND_ID_DT1:
+                    Debug.WriteLine("[DEBUG] SysEx DT1 message received");
+                    var patchData = e.Data.Skip(4).ToArray();
+                    Debug.WriteLine($"[DEBUG] Received SysEx data chunk: {string.Join(" ", patchData.Select(b => b.ToString("X2")))}");
+
+                    var patch = new Patch();
+                    patch.ParsePatchData(patchData, patches.Count + 1); 
+                    patches.Add(patch);
+                    Debug.WriteLine($"[DEBUG] Parsed patch {patches.Count}: {patch.PatchName}");
+
+                    progress?.Report(patches.Count);
+
+                    // Release it once we have all data per group
+                    if (patches.Count == PATCHES_PER_GROUP || patches.Count == TOTAL_PATCHES)
                     {
                         tcs.TrySetResult(true);
                     }
+                    break;
+                default:
+                    Debug.WriteLine($"[DEBUG] Unknown SysEx message type received: {msgType:X2}");
+                    break;
                 }
             }
 
@@ -64,39 +60,23 @@ namespace GP16Editor.Core
             try
             {
                 // Request Group A
-                byte[] addressA = { 0x01, 0x00, 0x00 };
-                byte[] sizeA = { 0x00, 0x23, 0x00 }; // 4480 bytes
+                Debug.WriteLine("[DEBUG] Requesting Group A data dump");
+                byte[] addressA = [0x01, 0x00, 0x00];
+                byte[] sizeA = [0x00, 0x23, 0x00]; // 4480 bytes
                 await _midiService.RequestDataDump(addressA, sizeA);
 
+                await tcs.Task;
+                Debug.WriteLine("[DEBUG] Group A data received");
+
                 // Request Group B
-                byte[] addressB = { 0x02, 0x00, 0x00 };
-                byte[] sizeB = { 0x00, 0x23, 0x00 }; // 4480 bytes
+                tcs = new TaskCompletionSource<bool>();
+                Debug.WriteLine("[DEBUG] Requesting Group B data dump");
+                byte[] addressB = [0x02, 0x00, 0x00];
+                byte[] sizeB = [0x00, 0x23, 0x00]; // 4480 bytes
                 await _midiService.RequestDataDump(addressB, sizeB);
 
-                // Wait for data to arrive, with a timeout.
-                var timeoutTask = Task.Delay(5000);
-                var completedTask = await Task.WhenAny(tcs.Task, timeoutTask);
-
-                if (completedTask == tcs.Task)
-                {
-                    // Data received. Now parse it.
-                    for (int i = 0; i < TOTAL_PATCHES; i++)
-                    {
-                        var patchData = incomingData.Skip(i * PATCH_SIZE).Take(PATCH_SIZE).ToArray();
-                        if(patchData.Length == PATCH_SIZE)
-                        {
-                            var patch = new Patch();
-                            patch.ParsePatchData(patchData, i + 1); 
-                            patches.Add(patch);
-                            Debug.WriteLine($"Parsed patch {i + 1}: {patch.PatchName}");
-                        }
-                    }
-                }
-                else
-                {
-                    // Timeout
-                    Debug.WriteLine("Timeout waiting for patch data.");
-                }
+                await tcs.Task;
+                Debug.WriteLine("[DEBUG] Group B data received");
             }
             finally
             {

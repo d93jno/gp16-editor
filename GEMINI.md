@@ -68,10 +68,10 @@ These messages use a specific format that includes a Manufacturer ID, Device ID 
 1. Data Format
 The Roland Exclusive message format follows this sequence:
 Byte,Description,Value
-F0H,Exclusive Status,Start of System Exclusive message
-41H,Manufacturer ID,Roland ID
+0xF0,Exclusive Status,Start of System Exclusive message
+0x41,Manufacturer ID,Roland ID
 dev,Device ID,Unit Number (MIDI Channel - 1)
-2AH,Model ID,GP-16 Specific ID
+0x2A,Model ID,GP-16 Specific ID
 cmd,Command ID,11H (RQ1) or 12H (DT1)
 [body],Main Data,Address and Data bytes
 sum,Checksum,Error correction byte
@@ -417,7 +417,7 @@ Each message is transmitted with a known length or total amount. Each message in
 
 ---
 
-### = Request data 1 - RQ1 (11H)
+### = Request data 1 - RQ1 (0x11)
 
 This message is sent out when there is a need to acquire data from a device at the other end of the interface. It contains data for the address and size that specifies that requested data (address format and size of each model ID must match).
 
@@ -427,12 +427,12 @@ If it finds them and is ready for communication, the device will transmit a "Dat
 
 | Byte | Description |
 |------|-------------|
-| F0H | Exclusive status |
-| 41H | Manufacturer ID (Roland) |
+| 0xF0 | Exclusive status |
+| 0x41 | Manufacturer ID (Roland) |
 | DEV | Device ID |
 | MDL | Model ID |
-| 11H | Command ID |
-| aaH | Address MSB |
+| 0x11 | Command ID |
+| aa | Address MSB |
 | : | : |
 | : | : |
 | LSB | |
@@ -451,7 +451,7 @@ If it finds them and is ready for communication, the device will transmit a "Dat
 
 ---
 
-### = Data set 1 - DT1 (12H)
+### = Data set 1 - DT1 (0x12)
 
 This message corresponds to the actual data transfer process. Because every byte in the data is assigned a unique address, a DT1 message can convey the starting address of one or more data sets along with its (their) contents (all in a dependent format.
 
@@ -472,7 +472,7 @@ The MIDI standard inhibits any real time messages from interrupting an exclusive
 | : | : |
 | : | : |
 | sum | Check sum |
-| F7H | End of exclusive |
+| 0xF7 | End of exclusive |
 
 **Notes:**
 - A DT1 message is capable of providing only the valid data among those specified by an RQ1 message.
@@ -551,7 +551,7 @@ On receiving a WSD message, the remote device checks its memory for the specifie
 
 ---
 
-### = Request data - RQD (41H)
+### = Request data - RQD (0x41)
 
 This message is sent out when there is a need to acquire data from a device at the other end of the interface. It contains data for the address and size that specifies that requested data (address format and size of each model ID vary).
 
@@ -559,12 +559,12 @@ On receiving an RQD message, the remote device checks its memory for the data ad
 
 | Byte | Description |
 |------|-------------|
-| F0H | Exclusive status |
-| 41H | Manufacturer ID (Roland) |
+| 0xF0 | Exclusive status |
+| 0x41 | Manufacturer ID (Roland) |
 | DEV | Device ID |
 | MDL | Model ID |
-| 41H | Command ID |
-| aaH | Address MSB |
+| 0x41 | Command ID |
+| 0xaa | Address MSB |
 | : | : |
 | : | : |
 | LSB | |

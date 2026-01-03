@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Text;
 
 namespace GP16Editor.Models
@@ -51,9 +52,9 @@ namespace GP16Editor.Models
         public int PatchNumber { get; set; }
         public void ParsePatchData(byte[] data, int patchNumber)
         {
-            PatchNumber = patchNumber;
-            // Parameters are parsed based on the offsets provided in GEMINI.md
-            
+            var address = data[0] << 32 | data[1] << 16 | data[2] << 8 | data[3];
+            Debug.WriteLine($"[DEBUG] Parsing patch data for patch number {patchNumber}, address: {address:X4}");
+
             // Patch Name is at the beginning of the patch data.
             if (data.Length >= 16)
             {

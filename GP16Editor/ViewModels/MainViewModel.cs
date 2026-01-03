@@ -209,13 +209,29 @@ namespace GP16Editor.ViewModels
         [RelayCommand]
         private async Task RefreshPatches()
         {
-            var patches = await _patchService.GetAllPatchesAsync();
+            // Show progress popup
+            var progressPopup = new GP16Editor.Views.ProgressPopup();
+            int max = 128;
+            int current = 0;
+            var progress = new Progress<int>(value => {
+                current = value;
+                progressPopup.SetProgress(current, max);
+            });
+
+            // Show the popup (assumes MainPage is the current page)
+            var mainPage = Application.Current?.MainPage;
+            var popupTask = mainPage?.ShowPopupAsync(progressPopup);
+
+            var patches = await _patchService.GetAllPatchesAsync(progress);
             AllPatches.Clear();
             foreach (var patch in patches)
             {
                 AllPatches.Add(new PatchListItem(patch));
             }
             FilterPatches();
+
+            // Hide the popup
+            progressPopup.Close();
         }
 
         [RelayCommand]
@@ -223,8 +239,12 @@ namespace GP16Editor.ViewModels
         {
             var viewModel = _serviceProvider.GetRequiredService<ConfigurationViewModel>();
 
-            viewModel.InputDevices = _midiService.GetInputDevices();
-            viewModel.OutputDevices = _midiService.GetOutputDevices();
+            var inputDevices = _midiService.GetInputDevices();
+            var outputDevices = _midiService.GetOutputDevices();
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Assigning InputDevices to ConfigurationViewModel: {string.Join(", ", inputDevices)}");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Assigning OutputDevices to ConfigurationViewModel: {string.Join(", ", outputDevices)}");
+            viewModel.InputDevices = inputDevices;
+            viewModel.OutputDevices = outputDevices;
 
             var popup = new ConfigurationView(viewModel);
             if (Application.Current?.Windows.Count > 0 && Application.Current.Windows[0].Page != null)
@@ -247,6 +267,7 @@ namespace GP16Editor.ViewModels
                 // Temporary address for the compressor's sustain parameter.
                 // This should be replaced with the correct value from the GP-16 manual.
                 var address = new byte[] { 0x00, 0x00, 0x06 };
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Sending parameter change to MIDI device: Address={BitConverter.ToString(address)}, Value={CurrentPatch.Compressor.Sustain}");
                 _midiService.SendParameterChange(address, (byte)CurrentPatch.Compressor.Sustain);
             }
         }

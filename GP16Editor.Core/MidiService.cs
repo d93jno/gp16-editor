@@ -32,23 +32,31 @@ namespace GP16Editor.Core
 
         public IEnumerable<string> GetInputDevices()
         {
-            return InputDevice.GetAll().Select(d => d.Name);
+            var devices = InputDevice.GetAll().Select(d => d.Name).ToList();
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Listing Input Devices: {string.Join(", ", devices)}");
+            return devices;
         }
 
         public IEnumerable<string> GetOutputDevices()
         {
-            return OutputDevice.GetAll().Select(d => d.Name);
+            var devices = OutputDevice.GetAll().Select(d => d.Name).ToList();
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Listing Output Devices: {string.Join(", ", devices)}");
+            return devices;
         }
 
         public void SelectDevices(string? inputDeviceName, string? outputDeviceName)
         {
+
             var inputDevices = InputDevice.GetAll();
             var outputDevices = OutputDevice.GetAll();
+
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Available Input Devices: {string.Join(", ", inputDevices.Select(d => d.Name))}");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Available Output Devices: {string.Join(", ", outputDevices.Select(d => d.Name))}");
 
             var inputDevice = inputDevices.FirstOrDefault(d => d.Name == inputDeviceName);
             var outputDevice = outputDevices.FirstOrDefault(d => d.Name == outputDeviceName);
 
-            System.Diagnostics.Debug.WriteLine($"MIDI devices selected: Input='{inputDeviceName}', Output='{outputDeviceName}'");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] MIDI devices selected: Input='{inputDeviceName}', Output='{outputDeviceName}'");
 
             if (inputDevice != null && outputDevice != null)
             {
