@@ -5,10 +5,7 @@
              xmlns:controls="clr-namespace:GP16Editor.Controls"
              x:Class="GP16Editor.Views.AutoPanpotView"
              x:DataType="vm:AutoPanpotViewModel">
-    <Border Stroke="LightGray" StrokeThickness="1" Padding="5">
-        <VerticalStackLayout>
-        <Label Text="Auto Panpot" FontAttributes="Bold" />
-
+    <HorizontalStackLayout>
         <controls:CircularSlider LabelText="Rate" Minimum="0" Maximum="100" Value="{Binding Rate}" />
         <controls:CircularSlider LabelText="Depth" Minimum="0" Maximum="100" Value="{Binding Depth}" />
 
@@ -20,6 +17,6 @@
                 </x:Array>
             </Picker.ItemsSource>
         </Picker>
-        </VerticalStackLayout>
-    </Border>
+    </HorizontalStackLayout>
 </ContentView>
+

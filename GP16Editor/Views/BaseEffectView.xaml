@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="GP16Editor.Views.BaseEffectView"
+             xmlns:views="clr-namespace:GP16Editor.Views"
+             x:DataType="views:BaseEffectView">
+    <Frame Padding="0" Margin="5,0,5,0" HasShadow="True" BorderColor="{DynamicResource BorderColor}" BackgroundColor="{DynamicResource ContentBackgroundColor}" CornerRadius="8">
+        <Grid x:Name="RootGrid" RowDefinitions="Auto, *">
+            <!-- Header for Effect Name -->
+            <Border Grid.Row="0" BackgroundColor="{DynamicResource PrimaryColor}" StrokeShape="RoundRectangle 8,8,0,0">
+                <Label Text="{Binding EffectName}" 
+                       FontAttributes="Bold" 
+                       HorizontalOptions="FillAndExpand"
+                       HorizontalTextAlignment="Start"
+                       VerticalOptions="Center" 
+                       Padding="10,5,10,5"
+                       TextColor="{DynamicResource HeaderText}"/>
+            </Border>
+            
+            <!-- Content Area -->
+            <Border x:Name="ContentBorder" Grid.Row="1" Stroke="{DynamicResource BorderColor}" StrokeThickness="1" StrokeShape="RoundRectangle 0,0,8,8" Padding="10">
+            </Border>
+        </Grid>
+    </Frame>
+</ContentView>

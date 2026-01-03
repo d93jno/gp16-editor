@@ -5,13 +5,9 @@
              x:Class="GP16Editor.Views.ShortDelayView"
              xmlns:viewModels="clr-namespace:GP16Editor.ViewModels"
              x:DataType="viewModels:ShortDelayViewModel">
-    <Border Stroke="LightGray" StrokeThickness="1" Padding="5">
-        <VerticalStackLayout>
-        <Label Text="Short Delay" FontAttributes="Bold" />
-
+    <HorizontalStackLayout>
         <controls:CircularSlider LabelText="Delay Time (ms)" Minimum="0" Maximum="100" Value="{Binding DelayTime}" />
         <controls:CircularSlider LabelText="Effect Level" Minimum="0" Maximum="100" Value="{Binding EffectLevel}" />
-
-    </VerticalStackLayout>
-    </Border>
+    </HorizontalStackLayout>
 </ContentView>
+

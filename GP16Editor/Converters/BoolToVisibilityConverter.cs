@@ -1,17 +1,18 @@
+using System;
 using System.Globalization;
 using Microsoft.Maui.Controls;
 
 namespace GP16Editor.Converters
 {
-    public class BoolToOpacityConverter : IValueConverter
+    public class BoolToVisibilityConverter : IValueConverter
     {
         public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            if (value is bool isEnabled)
+            if (value is bool isVisible)
             {
-                return isEnabled ? 1.0 : 0.3;
+                return isVisible;
             }
-            return 1.0;
+            return false;
         }
 
         public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

@@ -5,10 +5,7 @@
              xmlns:controls="clr-namespace:GP16Editor.Controls"
              x:Class="GP16Editor.Views.PickingFilterView"
              x:DataType="vm:PickingFilterViewModel">
-    <Border Stroke="LightGray" StrokeThickness="1" Padding="5">
-        <VerticalStackLayout>
-        <Label Text="Picking Filter" FontAttributes="Bold" />
-
+    <HorizontalStackLayout>
         <controls:CircularSlider LabelText="Sensitivity" Minimum="0" Maximum="100" Value="{Binding Sensitivity}" />
         <controls:CircularSlider LabelText="Cutoff Frequency" Minimum="0" Maximum="100" Value="{Binding CutoffFrequency}" />
         <controls:CircularSlider LabelText="Q Control" Minimum="1.0" Maximum="5.0" Value="{Binding QControl}" />
@@ -21,6 +18,5 @@
                 </x:Array>
             </Picker.ItemsSource>
         </Picker>
-    </VerticalStackLayout>
-    </Border>
+    </HorizontalStackLayout>
 </ContentView>

@@ -6,6 +6,7 @@ using GP16Editor.Core;
 using GP16Editor.Views;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Input;
@@ -39,6 +40,37 @@ namespace GP16Editor.ViewModels
             }
         }
 
+        private string _searchText = "";
+        public string SearchText
+        {
+            get => _searchText;
+            set
+            {
+                if (SetProperty(ref _searchText, value))
+                {
+                    FilterPatches();
+                }
+            }
+        }
+
+        private PatchListItem? _selectedPatch;
+        public PatchListItem? SelectedPatch
+        {
+            get => _selectedPatch;
+            set
+            {
+                if (SetProperty(ref _selectedPatch, value))
+                {
+                    // Here you would load the actual patch data
+                    CurrentPatch = new Patch { PatchName = value?.Name ?? "New Patch" };
+                }
+            }
+        }
+
+        public ObservableCollection<PatchListItem> FilteredPatches { get; } = new ObservableCollection<PatchListItem>();
+        private List<PatchListItem> AllPatches { get; } = new List<PatchListItem>();
+
+
         public EffectSequenceBlockViewModel BlockAViewModel { get; }
         public EffectSequenceBlockViewModel BlockBViewModel { get; }
 
@@ -66,6 +98,9 @@ namespace GP16Editor.ViewModels
             CurrentPatch = _currentPatch;
             
             RequestPatchCommand = new Command(RequestPatch);
+
+            InitializePatches();
+            FilterPatches();
 
             // Initialize Block A with demo effects
             var blockAEffects = new List<EffectSequenceItem>
@@ -121,13 +156,51 @@ namespace GP16Editor.ViewModels
             }
         }
         
-        [RelayCommand]
-        private void ShowSettings()
+        private void InitializePatches()
         {
-            var popup = _serviceProvider.GetRequiredService<ConfigurationView>();
-            if (Application.Current?.MainPage != null)
+            for (int i = 1; i <= 128; i++)
             {
-                Application.Current.MainPage.ShowPopup(popup);
+                var group = (i - 1) < 64 ? "A" : "B";
+                var patchInGroup = (i - 1) % 64;
+                var bank = patchInGroup / 8 + 1;
+                var patchInBank = patchInGroup % 8 + 1;
+                AllPatches.Add(new PatchListItem
+                {
+                    PatchNumber = i,
+                    Id = $"{group}{bank}{patchInBank}",
+                    Name = $"Patch {i}"
+                });
+            }
+        }
+
+        private void FilterPatches()
+        {
+            var searchText = SearchText?.ToLower() ?? "";
+            var filtered = AllPatches.Where(p => p.DisplayName.ToLower().Contains(searchText));
+
+            FilteredPatches.Clear();
+            foreach (var patch in filtered)
+            {
+                FilteredPatches.Add(patch);
+            }
+        }
+
+        [RelayCommand]
+        private async Task ShowSettings()
+        {
+            var viewModel = _serviceProvider.GetRequiredService<ConfigurationViewModel>();
+
+            viewModel.InputDevices = _midiService.GetInputDevices();
+            viewModel.OutputDevices = _midiService.GetOutputDevices();
+
+            var popup = new ConfigurationView(viewModel);
+            if (Application.Current?.Windows.Count > 0 && Application.Current.Windows[0].Page != null)
+            {
+                var result = await Application.Current.Windows[0].Page!.ShowPopupAsync(popup);
+                if (result is bool saved && saved)
+                {
+                    _midiService.SelectDevices(viewModel.SelectedInputDevice, viewModel.SelectedOutputDevice);
+                }
             }
         }
 

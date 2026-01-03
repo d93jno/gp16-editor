@@ -5,15 +5,12 @@
              x:Class="GP16Editor.Views.PitchShifterView"
              xmlns:viewModels="clr-namespace:GP16Editor.ViewModels"
              x:DataType="viewModels:PitchShifterViewModel">
-    <Border Stroke="LightGray" StrokeThickness="1" Padding="5">
-        <VerticalStackLayout>
-        <Label Text="Pitch Shifter" FontAttributes="Bold" />
-
+    <HorizontalStackLayout>
         <controls:CircularSlider LabelText="Chromatic (semitones)" Minimum="-12" Maximum="12" Value="{Binding Chromatic}" />
         <controls:CircularSlider LabelText="Fine" Minimum="-50" Maximum="50" Value="{Binding Fine}" />
         <controls:CircularSlider LabelText="Balance" Minimum="0" Maximum="100" Value="{Binding Balance}" />
         <controls:CircularSlider LabelText="Feedback" Minimum="0" Maximum="100" Value="{Binding Feedback}" />
         <controls:CircularSlider LabelText="Pre Delay (ms)" Minimum="0" Maximum="100" Value="{Binding PreDelay}" />
-    </VerticalStackLayout>
-    </Border>
+    </HorizontalStackLayout>
 </ContentView>
+

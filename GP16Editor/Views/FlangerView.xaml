@@ -5,15 +5,11 @@
              x:Class="GP16Editor.Views.FlangerView"
              xmlns:viewModels="clr-namespace:GP16Editor.ViewModels"
              x:DataType="viewModels:FlangerViewModel">
-    <Border Stroke="LightGray" StrokeThickness="1" Padding="5">
-        <VerticalStackLayout>
-        <Label Text="Flanger" FontAttributes="Bold" />
-
+    <HorizontalStackLayout>
         <controls:CircularSlider LabelText="Rate" Minimum="0" Maximum="100" Value="{Binding Rate}" />
         <controls:CircularSlider LabelText="Depth" Minimum="0" Maximum="100" Value="{Binding Depth}" />
         <controls:CircularSlider LabelText="Manual" Minimum="0" Maximum="100" Value="{Binding Manual}" />
         <controls:CircularSlider LabelText="Resonance" Minimum="0" Maximum="100" Value="{Binding Resonance}" />
-
-        </VerticalStackLayout>
-    </Border>
+    </HorizontalStackLayout>
 </ContentView>
+

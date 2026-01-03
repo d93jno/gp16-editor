@@ -5,15 +5,11 @@
              xmlns:controls="clr-namespace:GP16Editor.Controls"
              x:Class="GP16Editor.Views.LineoutFilterView"
              x:DataType="vm:LineoutFilterViewModel">
-    <Border Stroke="LightGray" StrokeThickness="1" Padding="5">
-        <VerticalStackLayout>
-        <Label Text="Lineout Filter" FontAttributes="Bold" />
-
+    <HorizontalStackLayout>
         <controls:CircularSlider LabelText="Presence" Minimum="0" Maximum="100" Value="{Binding Presence}" />
         <controls:CircularSlider LabelText="Treble" Minimum="0" Maximum="100" Value="{Binding Treble}" />
         <controls:CircularSlider LabelText="Middle" Minimum="0" Maximum="100" Value="{Binding Middle}" />
         <controls:CircularSlider LabelText="Bass" Minimum="0" Maximum="100" Value="{Binding Bass}" />
-
-        </VerticalStackLayout>
-    </Border>
+    </HorizontalStackLayout>
 </ContentView>
+

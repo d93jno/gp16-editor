@@ -5,13 +5,10 @@
              xmlns:controls="clr-namespace:GP16Editor.Controls"
              x:Class="GP16Editor.Views.NoiseSuppressorView"
              x:DataType="vm:NoiseSuppressorViewModel">
-    <Border Stroke="LightGray" StrokeThickness="1" Padding="5">
-        <VerticalStackLayout>
-        <Label Text="Noise Suppressor" FontAttributes="Bold" />
-
+    <HorizontalStackLayout>
         <controls:CircularSlider LabelText="Sensitivity" Minimum="0" Maximum="100" Value="{Binding Sensitivity}" />
         <controls:CircularSlider LabelText="Release" Minimum="0" Maximum="100" Value="{Binding Release}" />
         <controls:CircularSlider LabelText="Level" Minimum="0" Maximum="100" Value="{Binding Level}" />
-        </VerticalStackLayout>
-    </Border>
+    </HorizontalStackLayout>
 </ContentView>
+

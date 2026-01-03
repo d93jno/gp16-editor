@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
-    <Color x:Key="PrimaryColor">#7B61FF</Color>
-    <Color x:Key="SecondaryColor">#6A5ACD</Color>
-    <Color x:Key="BackgroundColor">#1F1F1F</Color>
-    <Color x:Key="TextColor">#F2F2F2</Color>
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    x:Class="GP16Editor.Resources.Styles.DarkTheme">
+    <Color x:Key="PrimaryColor">#6E45E2</Color>
+    <Color x:Key="SecondaryColor">#3A2D61</Color>
+    <Color x:Key="BackgroundColor">#121212</Color>
+    <Color x:Key="TextColor">#FFFFFF</Color>
+    <Color x:Key="HeaderText">#FFFFFF</Color>
+    <Color x:Key="BorderColor">#444444</Color>
+    <Color x:Key="ContentBackgroundColor">#1F1F1F</Color>
 </ResourceDictionary>

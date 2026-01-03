@@ -4,47 +4,139 @@
              x:Class="GP16Editor.MainPage"
              xmlns:viewModels="clr-namespace:GP16Editor.ViewModels"
              xmlns:views="clr-namespace:GP16Editor.Views"
+             xmlns:models="clr-namespace:GP16Editor.Models"
              x:DataType="viewModels:MainViewModel"
              x:Name="mainPage">
 
-    <Grid RowDefinitions="Auto, *">
+    <Grid ColumnDefinitions="300, *">
 
-    <HorizontalStackLayout Grid.Row="0" Spacing="20" Padding="10">
-        <Label Text="HOME" VerticalOptions="Center" />
-        <Button Text="Request Patch"
-                Command="{Binding RequestPatchCommand}" />
-        <Button Text="Settings"
-                Command="{Binding ShowSettingsCommand}" />
-    </HorizontalStackLayout>
+        <!-- Left Panel: Patch List -->
+        <Grid Grid.Column="0" RowDefinitions="Auto, *">
+            <SearchBar Grid.Row="0" Placeholder="Search patches..." Text="{Binding SearchText}" />
+            <CollectionView Grid.Row="1"
+                            ItemsSource="{Binding FilteredPatches}"
+                            SelectedItem="{Binding SelectedPatch}"
+                            SelectionMode="Single">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:PatchListItem">
+                        <Label Text="{Binding DisplayName}" Padding="10"/>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Grid>
 
-    <ScrollView Grid.Row="1">
-        <VerticalStackLayout Padding="30,0" Spacing="25">
-            <HorizontalStackLayout Spacing="20">
-                <views:EffectSequenceBlockView BindingContext="{Binding BlockAViewModel}" />
-                <views:EffectSequenceBlockView BindingContext="{Binding BlockBViewModel}" />
+        <!-- Right Panel: Patch Editor -->
+        <Grid Grid.Column="1" RowDefinitions="Auto, *">
+
+            <HorizontalStackLayout Grid.Row="0" Spacing="20" Padding="10">
+                <Label Text="HOME" VerticalOptions="Center" />
+                <Button Text="Request Patch"
+                        Command="{Binding RequestPatchCommand}" />
+                <Button Text="Settings"
+                        Command="{Binding ShowSettingsCommand}" />
+                <Label Text="{Binding CurrentPatch.PatchName}" VerticalOptions="Center" FontSize="Large" />
             </HorizontalStackLayout>
 
-            <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="10">
-                <views:CompressorView Grid.Row="0" Grid.Column="0" BindingContext="{Binding CompressorViewModel}" IsVisible="{Binding IsCompressorEnabled}" />
-                <views:DistortionOverdriveView Grid.Row="0" Grid.Column="1" BindingContext="{Binding DistortionOverdriveViewModel}" IsVisible="{Binding IsDistortionOverdriveEnabled}" />
-                <views:PickingFilterView Grid.Row="0" Grid.Column="2" BindingContext="{Binding PickingFilterViewModel}" IsVisible="{Binding IsPickingFilterEnabled}" />
-                <views:StepPhaserView Grid.Row="1" Grid.Column="0" BindingContext="{Binding StepPhaserViewModel}" IsVisible="{Binding IsStepPhaserEnabled}" />
-                <views:ParametricEQView Grid.Row="1" Grid.Column="1" BindingContext="{Binding ParametricEQViewModel}" IsVisible="{Binding IsParametricEQEnabled}" />
-                <views:NoiseSuppressorView Grid.Row="1" Grid.Column="2" BindingContext="{Binding NoiseSuppressorViewModel}" IsVisible="{Binding IsNoiseSuppressorEnabled}" />
-                <views:ShortDelayView Grid.Row="2" Grid.Column="0" BindingContext="{Binding ShortDelayViewModel}" IsVisible="{Binding IsShortDelayEnabled}" />
-                <views:ChorusView Grid.Row="2" Grid.Column="1" BindingContext="{Binding ChorusViewModel}" IsVisible="{Binding IsChorusEnabled}" />
-                <views:FlangerView Grid.Row="2" Grid.Column="2" BindingContext="{Binding FlangerViewModel}" IsVisible="{Binding IsFlangerEnabled}" />
-                <views:PitchShifterView Grid.Row="3" Grid.Column="0" BindingContext="{Binding PitchShifterViewModel}" IsVisible="{Binding IsPitchShifterEnabled}" />
-                <views:SpaceDView Grid.Row="3" Grid.Column="1" BindingContext="{Binding SpaceDViewModel}" IsVisible="{Binding IsSpaceDEnabled}" />
-                <views:AutoPanpotView Grid.Row="3" Grid.Column="2" BindingContext="{Binding AutoPanpotViewModel}" IsVisible="{Binding IsAutoPanpotEnabled}" />
-                <views:TapDelayView Grid.Row="4" Grid.Column="0" BindingContext="{Binding TapDelayViewModel}" IsVisible="{Binding IsTapDelayEnabled}" />
-                <views:ReverbView Grid.Row="4" Grid.Column="1" BindingContext="{Binding ReverbViewModel}" IsVisible="{Binding IsReverbEnabled}" />
-                <views:LineoutFilterView Grid.Row="4" Grid.Column="2" BindingContext="{Binding LineoutFilterViewModel}" IsVisible="{Binding IsLineoutFilterEnabled}" />
-            </Grid>
+            <ScrollView Grid.Row="1">
+                <VerticalStackLayout Padding="30,0" Spacing="25">
+                    <HorizontalStackLayout Spacing="20">
+                        <views:EffectSequenceBlockView BindingContext="{Binding BlockAViewModel}" />
+                        <views:EffectSequenceBlockView BindingContext="{Binding BlockBViewModel}" />
+                    </HorizontalStackLayout>
 
-        </VerticalStackLayout>
-    </ScrollView>
+                    <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="10">
+                        <views:BaseEffectView Grid.Row="0" Grid.Column="0" EffectName="Compressor" IsVisible="{Binding IsCompressorEnabled}">
+                            <views:BaseEffectView.EffectContent>
+                                <views:CompressorView BindingContext="{Binding CompressorViewModel}" />
+                            </views:BaseEffectView.EffectContent>
+                        </views:BaseEffectView>
+                        <views:BaseEffectView Grid.Row="0" Grid.Column="1" EffectName="Distortion / Overdrive" IsVisible="{Binding IsDistortionOverdriveEnabled}">
+                            <views:BaseEffectView.EffectContent>
+                                <views:DistortionOverdriveView BindingContext="{Binding DistortionOverdriveViewModel}" />
+                            </views:BaseEffectView.EffectContent>
+                        </views:BaseEffectView>
+                        <views:BaseEffectView Grid.Row="0" Grid.Column="2" EffectName="Picking Filter" IsVisible="{Binding IsPickingFilterEnabled}">
+                            <views:BaseEffectView.EffectContent>
+                                <views:PickingFilterView BindingContext="{Binding PickingFilterViewModel}" />
+                            </views:BaseEffectView.EffectContent>
+                        </views:BaseEffectView>
+                        <views:BaseEffectView Grid.Row="1" Grid.Column="0" EffectName="Step Phaser" IsVisible="{Binding IsStepPhaserEnabled}">
+                            <views:BaseEffectView.EffectContent>
+                                <views:StepPhaserView BindingContext="{Binding StepPhaserViewModel}" />
+                            </views:BaseEffectView.EffectContent>
+                        </views:BaseEffectView>
+                        <views:BaseEffectView Grid.Row="1" Grid.Column="1" EffectName="Parametric EQ" IsVisible="{Binding IsParametricEQEnabled}">
+                            <views:BaseEffectView.EffectContent>
+                                <views:ParametricEQView BindingContext="{Binding ParametricEQViewModel}" />
+                            </views:BaseEffectView.EffectContent>
+                        </views:BaseEffectView>
+                        <views:BaseEffectView Grid.Row="1" Grid.Column="2" EffectName="Noise Suppressor" IsVisible="{Binding IsNoiseSuppressorEnabled}">
+                            <views:BaseEffectView.EffectContent>
+                                <views:NoiseSuppressorView BindingContext="{Binding NoiseSuppressorViewModel}" />
+                            </views:BaseEffectView.EffectContent>
+                        </views:BaseEffectView>
+                        <views:BaseEffectView Grid.Row="2" Grid.Column="0" EffectName="Short Delay" IsVisible="{Binding IsShortDelayEnabled}">
+                            <views:BaseEffectView.EffectContent>
+                                <views:ShortDelayView BindingContext="{Binding ShortDelayViewModel}" />
+                            </views:BaseEffectView.EffectContent>
+                        </views:BaseEffectView>
+                        <views:BaseEffectView Grid.Row="2" Grid.Column="1" EffectName="Chorus" IsVisible="{Binding IsChorusEnabled}">
+                            <views:BaseEffectView.EffectContent>
+                                <views:ChorusView BindingContext="{Binding ChorusViewModel}" />
+                            </views:BaseEffectView.EffectContent>
+                        </views:BaseEffectView>
+                        <views:BaseEffectView Grid.Row="2" Grid.Column="2" EffectName="Flanger" IsVisible="{Binding IsFlangerEnabled}">
+                            <views:BaseEffectView.EffectContent>
+                                <views:FlangerView BindingContext="{Binding FlangerViewModel}" />
+                            </views:BaseEffectView.EffectContent>
+                        </views:BaseEffectView>
+                        <views:BaseEffectView Grid.Row="3" Grid.Column="0" EffectName="Pitch Shifter" IsVisible="{Binding IsPitchShifterEnabled}">
+                            <views:BaseEffectView.EffectContent>
+                                <views:PitchShifterView BindingContext="{Binding PitchShifterViewModel}" />
+                            </views:BaseEffectView.EffectContent>
+                        </views:BaseEffectView>
+                        <views:BaseEffectView Grid.Row="3" Grid.Column="1" EffectName="Space-D" IsVisible="{Binding IsSpaceDEnabled}">
+                            <views:BaseEffectView.EffectContent>
+                                <views:SpaceDView BindingContext="{Binding SpaceDViewModel}" />
+                            </views:BaseEffectView.EffectContent>
+                        </views:BaseEffectView>
+                        <views:BaseEffectView Grid.Row="3" Grid.Column="2" EffectName="Auto Panpot" IsVisible="{Binding IsAutoPanpotEnabled}">
+                            <views:BaseEffectView.EffectContent>
+                                <views:AutoPanpotView BindingContext="{Binding AutoPanpotViewModel}" />
+                            </views:BaseEffectView.EffectContent>
+                        </views:BaseEffectView>
+                        <views:BaseEffectView Grid.Row="4" Grid.Column="0" EffectName="Tap Delay" IsVisible="{Binding IsTapDelayEnabled}">
+                            <views:BaseEffectView.EffectContent>
+                                <views:TapDelayView BindingContext="{Binding TapDelayViewModel}" />
+                            </views:BaseEffectView.EffectContent>
+                        </views:BaseEffectView>
+                        <views:BaseEffectView Grid.Row="4" Grid.Column="1" EffectName="Reverb" IsVisible="{Binding IsReverbEnabled}">
+                            <views:BaseEffectView.EffectContent>
+                                <views:ReverbView BindingContext="{Binding ReverbViewModel}" />
+                            </views:BaseEffectView.EffectContent>
+                        </views:BaseEffectView>
+                        <views:BaseEffectView Grid.Row="4" Grid.Column="2" EffectName="Lineout Filter" IsVisible="{Binding IsLineoutFilterEnabled}">
+                            <views:BaseEffectView.EffectContent>
+                                <views:LineoutFilterView BindingContext="{Binding LineoutFilterViewModel}" />
+                            </views:BaseEffectView.EffectContent>
+                        </views:BaseEffectView>
+                    </Grid>
 
-</Grid>
+                </VerticalStackLayout>
+            </ScrollView>
+        </Grid>
+    </Grid>
 
 </ContentPage>
+
+
+
+
+
+
+
+
+
+
+
+

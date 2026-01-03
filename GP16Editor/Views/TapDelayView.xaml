@@ -5,43 +5,50 @@
              xmlns:controls="clr-namespace:GP16Editor.Controls"
              x:Class="GP16Editor.Views.TapDelayView"
              x:DataType="vm:TapDelayViewModel">
-    <Border Stroke="LightGray" StrokeThickness="1" Padding="5">
-        <VerticalStackLayout>
-        <Label Text="Tap Delay" FontAttributes="Bold" />
-
+    <HorizontalStackLayout>
         <!-- Center Tap -->
-        <Label Text="Center Tap" FontAttributes="Italic" />
-        <controls:CircularSlider LabelText="Time (ms)" Minimum="0" Maximum="1200" Value="{Binding CenterTapTime}" />
-        <controls:CircularSlider LabelText="Level" Minimum="0" Maximum="100" Value="{Binding CenterTapLevel}" />
+        <VerticalStackLayout>
+            <Label Text="Center Tap" FontAttributes="Italic" />
+            <controls:CircularSlider LabelText="Time (ms)" Minimum="0" Maximum="1200" Value="{Binding CenterTapTime}" />
+            <controls:CircularSlider LabelText="Level" Minimum="0" Maximum="100" Value="{Binding CenterTapLevel}" />
+        </VerticalStackLayout>
 
         <!-- Left Tap -->
-        <Label Text="Left Tap" FontAttributes="Italic" />
-        <controls:CircularSlider LabelText="Time (ms)" Minimum="0" Maximum="1200" Value="{Binding LeftTapTime}" />
-        <controls:CircularSlider LabelText="Level" Minimum="0" Maximum="100" Value="{Binding LeftTapLevel}" />
+        <VerticalStackLayout>
+            <Label Text="Left Tap" FontAttributes="Italic" />
+            <controls:CircularSlider LabelText="Time (ms)" Minimum="0" Maximum="1200" Value="{Binding LeftTapTime}" />
+            <controls:CircularSlider LabelText="Level" Minimum="0" Maximum="100" Value="{Binding LeftTapLevel}" />
+        </VerticalStackLayout>
 
         <!-- Right Tap -->
-        <Label Text="Right Tap" FontAttributes="Italic" />
-        <controls:CircularSlider LabelText="Time (ms)" Minimum="0" Maximum="1200" Value="{Binding RightTapTime}" />
-        <controls:CircularSlider LabelText="Level" Minimum="0" Maximum="100" Value="{Binding RightTapLevel}" />
+        <VerticalStackLayout>
+            <Label Text="Right Tap" FontAttributes="Italic" />
+            <controls:CircularSlider LabelText="Time (ms)" Minimum="0" Maximum="1200" Value="{Binding RightTapTime}" />
+            <controls:CircularSlider LabelText="Level" Minimum="0" Maximum="100" Value="{Binding RightTapLevel}" />
+        </VerticalStackLayout>
 
         <!-- Feedback -->
-        <Label Text="Feedback" FontAttributes="Italic" />
-        <controls:CircularSlider LabelText="Feedback" Minimum="0" Maximum="100" Value="{Binding Feedback}" />
+        <VerticalStackLayout>
+            <Label Text="Feedback" FontAttributes="Italic" />
+            <controls:CircularSlider LabelText="Feedback" Minimum="0" Maximum="100" Value="{Binding Feedback}" />
+        </VerticalStackLayout>
 
         <!-- Cutoff -->
-        <Label Text="Cutoff" FontAttributes="Italic" />
-        <Picker Title="Cutoff" SelectedItem="{Binding Cutoff}">
-            <Picker.ItemsSource>
-                <x:Array Type="{x:Type x:String}">
-                    <x:String>Thru</x:String>
-                    <x:String>500 Hz</x:String>
-                    <x:String>1 kHz</x:String>
-                    <x:String>2 kHz</x:String>
-                    <x:String>4 kHz</x:String>
-                    <x:String>8 kHz</x:String>
-                </x:Array>
-            </Picker.ItemsSource>
-        </Picker>
-    </VerticalStackLayout>
-    </Border>
+        <VerticalStackLayout>
+            <Label Text="Cutoff" FontAttributes="Italic" />
+            <Picker Title="Cutoff" SelectedItem="{Binding Cutoff}">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>Thru</x:String>
+                        <x:String>500 Hz</x:String>
+                        <x:String>1 kHz</x:String>
+                        <x:String>2 kHz</x:String>
+                        <x:String>4 kHz</x:String>
+                        <x:String>8 kHz</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+        </VerticalStackLayout>
+    </HorizontalStackLayout>
 </ContentView>
+

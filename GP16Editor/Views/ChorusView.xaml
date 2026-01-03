@@ -5,15 +5,11 @@
              xmlns:controls="clr-namespace:GP16Editor.Controls"
              x:Class="GP16Editor.Views.ChorusView"
              x:DataType="vm:ChorusViewModel">
-    <Border Stroke="LightGray" StrokeThickness="1" Padding="5">
-        <VerticalStackLayout>
-        <Label Text="Chorus" FontAttributes="Bold" />
-
+    <HorizontalStackLayout>
         <controls:CircularSlider LabelText="Pre Delay (ms)" Minimum="0" Maximum="100" Value="{Binding PreDelay}" />
         <controls:CircularSlider LabelText="Rate" Minimum="0" Maximum="100" Value="{Binding Rate}" />
         <controls:CircularSlider LabelText="Depth" Minimum="0" Maximum="100" Value="{Binding Depth}" />
         <controls:CircularSlider LabelText="Effect Level" Minimum="0" Maximum="100" Value="{Binding EffectLevel}" />
-
-        </VerticalStackLayout>
-    </Border>
+    </HorizontalStackLayout>
 </ContentView>
+

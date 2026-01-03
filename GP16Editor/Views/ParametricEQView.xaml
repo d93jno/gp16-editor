@@ -5,32 +5,36 @@
              xmlns:controls="clr-namespace:GP16Editor.Controls"
              x:Class="GP16Editor.Views.ParametricEQView"
              x:DataType="vm:ParametricEQViewModel">
-    <Border Stroke="LightGray" StrokeThickness="1" Padding="5">
-        <VerticalStackLayout>
-        <Label Text="Parametric EQ" FontAttributes="Bold" />
-
+    <HorizontalStackLayout>
         <!-- Low Band -->
-        <Label Text="Low Band" FontAttributes="Italic" />
-        <controls:CircularSlider LabelText="Frequency (Hz)" Minimum="60" Maximum="250" Value="{Binding LowFreq}" />
-        <controls:CircularSlider LabelText="Level (dB)" Minimum="-12" Maximum="12" Value="{Binding LowLevel}" />
+        <VerticalStackLayout>
+            <Label Text="Low Band" FontAttributes="Italic" />
+            <controls:CircularSlider LabelText="Frequency (Hz)" Minimum="60" Maximum="250" Value="{Binding LowFreq}" />
+            <controls:CircularSlider LabelText="Level (dB)" Minimum="-12" Maximum="12" Value="{Binding LowLevel}" />
+        </VerticalStackLayout>
 
         <!-- Low Mid Band -->
-        <Label Text="Low Mid Band" FontAttributes="Italic" />
-        <controls:CircularSlider LabelText="Frequency (Hz)" Minimum="125" Maximum="1000" Value="{Binding LowMidFreq}" />
-        <controls:CircularSlider LabelText="Q" Minimum="1.0" Maximum="5.0" Value="{Binding LowMidQ}" />
-        <controls:CircularSlider LabelText="Level (dB)" Minimum="-12" Maximum="12" Value="{Binding LowMidLevel}" />
+        <VerticalStackLayout>
+            <Label Text="Low Mid Band" FontAttributes="Italic" />
+            <controls:CircularSlider LabelText="Frequency (Hz)" Minimum="125" Maximum="1000" Value="{Binding LowMidFreq}" />
+            <controls:CircularSlider LabelText="Q" Minimum="1.0" Maximum="5.0" Value="{Binding LowMidQ}" />
+            <controls:CircularSlider LabelText="Level (dB)" Minimum="-12" Maximum="12" Value="{Binding LowMidLevel}" />
+        </VerticalStackLayout>
 
         <!-- High Mid Band -->
-        <Label Text="High Mid Band" FontAttributes="Italic" />
-        <controls:CircularSlider LabelText="Frequency (Hz)" Minimum="500" Maximum="4000" Value="{Binding HighMidFreq}" />
-        <controls:CircularSlider LabelText="Q" Minimum="1.0" Maximum="5.0" Value="{Binding HighMidQ}" />
-        <controls:CircularSlider LabelText="Level (dB)" Minimum="-12" Maximum="12" Value="{Binding HighMidLevel}" />
+        <VerticalStackLayout>
+            <Label Text="High Mid Band" FontAttributes="Italic" />
+            <controls:CircularSlider LabelText="Frequency (Hz)" Minimum="500" Maximum="4000" Value="{Binding HighMidFreq}" />
+            <controls:CircularSlider LabelText="Q" Minimum="1.0" Maximum="5.0" Value="{Binding HighMidQ}" />
+            <controls:CircularSlider LabelText="Level (dB)" Minimum="-12" Maximum="12" Value="{Binding HighMidLevel}" />
+        </VerticalStackLayout>
 
         <!-- High Band -->
-        <Label Text="High Band" FontAttributes="Italic" />
-        <controls:CircularSlider LabelText="Frequency (Hz)" Minimum="2000" Maximum="8000" Value="{Binding HighFreq}" />
-        <controls:CircularSlider LabelText="Level (dB)" Minimum="-12" Maximum="12" Value="{Binding HighLevel}" />
-        
-    </VerticalStackLayout>
-    </Border>
+        <VerticalStackLayout>
+            <Label Text="High Band" FontAttributes="Italic" />
+            <controls:CircularSlider LabelText="Frequency (Hz)" Minimum="2000" Maximum="8000" Value="{Binding HighFreq}" />
+            <controls:CircularSlider LabelText="Level (dB)" Minimum="-12" Maximum="12" Value="{Binding HighLevel}" />
+        </VerticalStackLayout>
+    </HorizontalStackLayout>
 </ContentView>
+

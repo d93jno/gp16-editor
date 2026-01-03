@@ -12,6 +12,7 @@ public partial class ConfigurationView : Popup
 
     private void OnSaveButtonClicked(object sender, EventArgs e)
     {
-        Close();
+        Close(true);
     }
 }
+

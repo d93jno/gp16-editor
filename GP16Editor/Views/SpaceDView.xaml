@@ -4,10 +4,7 @@
              xmlns:vm="clr-namespace:GP16Editor.ViewModels"
              x:Class="GP16Editor.Views.SpaceDView"
              x:DataType="vm:SpaceDViewModel">
-    <Border Stroke="LightGray" StrokeThickness="1" Padding="5">
-        <VerticalStackLayout>
-        <Label Text="Space-D" FontAttributes="Bold" />
-
+    <HorizontalStackLayout>
         <Picker Title="Mode" SelectedItem="{Binding Mode}">
             <Picker.ItemsSource>
                 <x:Array Type="{x:Type x:String}">
@@ -18,6 +15,6 @@
                 </x:Array>
             </Picker.ItemsSource>
         </Picker>
-    </VerticalStackLayout>
-    </Border>
+    </HorizontalStackLayout>
 </ContentView>
+

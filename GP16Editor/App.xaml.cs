@@ -15,12 +15,7 @@ public partial class App : Application
 		InitializeComponent();
 
         var theme = Preferences.Get("SelectedTheme", "System");
-        UserAppTheme = theme switch
-        {
-            "Light" => AppTheme.Light,
-            "Dark" => AppTheme.Dark,
-            _ => AppTheme.Unspecified
-        };
+        ThemeManager.SetTheme(theme);
 
 		_midiService = midiService;
 		_shell = shell;

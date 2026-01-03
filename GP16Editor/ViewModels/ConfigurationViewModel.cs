@@ -9,32 +9,52 @@ namespace GP16Editor.ViewModels
 {
     public partial class ConfigurationViewModel : ObservableObject
     {
-        private readonly MidiService _midiService;
+        public IEnumerable<string> InputDevices { get; set; }
+        public IEnumerable<string> OutputDevices { get; set; }
 
-        public IEnumerable<string> InputDevices => _midiService.GetInputDevices();
-        public IEnumerable<string> OutputDevices => _midiService.GetOutputDevices();
-        public List<int> MidiChannels { get; } = Enumerable.Range(1, 16).ToList();
-        public List<string> Themes { get; } = new List<string> { "Light", "Dark", "System" };
+        public List<int> MidiChannels { get; } = [.. Enumerable.Range(1, 16)];
+        public List<string> Themes { get; } = ["Light", "Dark", "System"];
 
-        [ObservableProperty]
         private string _selectedInputDevice;
-
-        [ObservableProperty]
-        private string _selectedOutputDevice;
-
-        [ObservableProperty]
-        private int _selectedInputChannel;
-
-        [ObservableProperty]
-        private int _selectedOutputChannel;
-        
-        [ObservableProperty]
-        private string _selectedTheme;
-
-        public ConfigurationViewModel(MidiService midiService)
+        public string SelectedInputDevice
         {
-            _midiService = midiService;
+            get => _selectedInputDevice;
+            set => SetProperty(ref _selectedInputDevice, value);
+        }
 
+        private string _selectedOutputDevice;
+        public string SelectedOutputDevice
+        {
+            get => _selectedOutputDevice;
+            set => SetProperty(ref _selectedOutputDevice, value);
+        }
+
+        private int _selectedInputChannel;
+        public int SelectedInputChannel
+        {
+            get => _selectedInputChannel;
+            set => SetProperty(ref _selectedInputChannel, value);
+        }
+
+        private int _selectedOutputChannel;
+        public int SelectedOutputChannel
+        {
+            get => _selectedOutputChannel;
+            set => SetProperty(ref _selectedOutputChannel, value);
+        }
+        
+        private string _selectedTheme;
+        public string SelectedTheme
+        {
+            get => _selectedTheme;
+            set => SetProperty(ref _selectedTheme, value);
+        }
+
+        public ConfigurationViewModel()
+        {
+            InputDevices = [];
+            OutputDevices = [];
+            
             _selectedInputDevice = Preferences.Get("SelectedInputDevice", string.Empty);
             _selectedOutputDevice = Preferences.Get("SelectedOutputDevice", string.Empty);
             _selectedInputChannel = Preferences.Get("SelectedInputChannel", 1);
@@ -51,17 +71,7 @@ namespace GP16Editor.ViewModels
             Preferences.Set("SelectedOutputChannel", SelectedOutputChannel);
             Preferences.Set("SelectedTheme", SelectedTheme);
 
-            _midiService.SelectDevices(SelectedInputDevice, SelectedOutputDevice);
-            
-            if (App.Current != null)
-            {
-                App.Current.UserAppTheme = SelectedTheme switch
-                {
-                    "Light" => AppTheme.Light,
-                    "Dark" => AppTheme.Dark,
-                    _ => AppTheme.Unspecified
-                };
-            }
+            ThemeManager.SetTheme(SelectedTheme);
         }
     }
 }
