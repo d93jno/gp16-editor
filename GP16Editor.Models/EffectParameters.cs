@@ -40,8 +40,8 @@ namespace GP16Editor.Models
 
     public class PickingFilterParameters : NotifyPropertyChangedBase
     {
-        private int _sensitivity;
-        public int Sensitivity { get => _sensitivity; set => SetProperty(ref _sensitivity, value, nameof(Sensitivity)); }
+        private int _sens;
+        public int Sens { get => _sens; set => SetProperty(ref _sens, value, nameof(Sens)); }
 
         private int _cutoffFrequency;
         public int CutoffFrequency { get => _cutoffFrequency; set => SetProperty(ref _cutoffFrequency, value, nameof(CutoffFrequency)); }
@@ -67,35 +67,56 @@ namespace GP16Editor.Models
         private int _resonance;
         public int Resonance { get => _resonance; set => SetProperty(ref _resonance, value, nameof(Resonance)); }
 
-        private int _stepRate;
-        public int StepRate { get => _stepRate; set => SetProperty(ref _stepRate, value, nameof(StepRate)); }
+        private int _lfoStep;
+        public int LfoStep { get => _lfoStep; set => SetProperty(ref _lfoStep, value, nameof(LfoStep)); }
     }
 
     public class ParametricEQParameters : NotifyPropertyChangedBase
     {
-        private int _lowGain;
-        public int LowGain { get => _lowGain; set => SetProperty(ref _lowGain, value, nameof(LowGain)); }
-        
-        private int _highGain;
-        public int HighGain { get => _highGain; set => SetProperty(ref _highGain, value, nameof(HighGain)); }
+        private int _hiFreq;
+        public int HiFreq { get => _hiFreq; set => SetProperty(ref _hiFreq, value, nameof(HiFreq)); }
 
-        private int _midFreq;
-        public int MidFreq { get => _midFreq; set => SetProperty(ref _midFreq, value, nameof(MidFreq)); }
-        
-        private int _midQ;
-        public int MidQ { get => _midQ; set => SetProperty(ref _midQ, value, nameof(MidQ)); }
-        
-        private int _midGain;
-        public int MidGain { get => _midGain; set => SetProperty(ref _midGain, value, nameof(MidGain)); }
+        private int _hiLevel;
+        public int HiLevel { get => _hiLevel; set => SetProperty(ref _hiLevel, value, nameof(HiLevel)); }
+
+        private int _hmFreq;
+        public int HMFreq { get => _hmFreq; set => SetProperty(ref _hmFreq, value, nameof(HMFreq)); }
+
+        private int _hmQ;
+        public int HMQ { get => _hmQ; set => SetProperty(ref _hmQ, value, nameof(HMQ)); }
+
+        private int _hmLevel;
+        public int HMLevel { get => _hmLevel; set => SetProperty(ref _hmLevel, value, nameof(HMLevel)); }
+
+        private int _lmFreq;
+        public int LMFreq { get => _lmFreq; set => SetProperty(ref _lmFreq, value, nameof(LMFreq)); }
+
+        private int _lmQ;
+        public int LMQ { get => _lmQ; set => SetProperty(ref _lmQ, value, nameof(LMQ)); }
+
+        private int _lmLevel;
+        public int LMLevel { get => _lmLevel; set => SetProperty(ref _lmLevel, value, nameof(LMLevel)); }
+
+        private int _loFreq;
+        public int LoFreq { get => _loFreq; set => SetProperty(ref _loFreq, value, nameof(LoFreq)); }
+
+        private int _loLevel;
+        public int LoLevel { get => _loLevel; set => SetProperty(ref _loLevel, value, nameof(LoLevel)); }
+
+        private int _outLevel;
+        public int OutLevel { get => _outLevel; set => SetProperty(ref _outLevel, value, nameof(OutLevel)); }
     }
 
     public class NoiseSuppressorParameters : NotifyPropertyChangedBase
     {
-        private int _threshold;
-        public int Threshold { get => _threshold; set => SetProperty(ref _threshold, value, nameof(Threshold)); }
+        private int _sens;
+        public int Sens { get => _sens; set => SetProperty(ref _sens, value, nameof(Sens)); }
 
         private int _release;
         public int Release { get => _release; set => SetProperty(ref _release, value, nameof(Release)); }
+
+        private int _level;
+        public int Level { get => _level; set => SetProperty(ref _level, value, nameof(Level)); }
     }
 
     public class ShortDelayParameters : NotifyPropertyChangedBase
@@ -111,6 +132,9 @@ namespace GP16Editor.Models
         
         private int _modDepth;
         public int ModDepth { get => _modDepth; set => SetProperty(ref _modDepth, value, nameof(ModDepth)); }
+
+        private int _effectLevel;
+        public int EffectLevel { get => _effectLevel; set => SetProperty(ref _effectLevel, value, nameof(EffectLevel)); }
     }
 
     public class ChorusParameters : NotifyPropertyChangedBase
@@ -126,6 +150,9 @@ namespace GP16Editor.Models
         
         private int _feedback;
         public int Feedback { get => _feedback; set => SetProperty(ref _feedback, value, nameof(Feedback)); }
+
+        private int _effectLevel;
+        public int EffectLevel { get => _effectLevel; set => SetProperty(ref _effectLevel, value, nameof(EffectLevel)); }
     }
 
     public class FlangerParameters : NotifyPropertyChangedBase
@@ -145,6 +172,15 @@ namespace GP16Editor.Models
 
     public class PitchShifterParameters : NotifyPropertyChangedBase
     {
+        private int _balance;
+        public int Balance { get => _balance; set => SetProperty(ref _balance, value, nameof(Balance)); }
+
+        private int _balanceLSB;
+        public int BalanceLSB { get => _balanceLSB; set => SetProperty(ref _balanceLSB, value, nameof(BalanceLSB)); }
+
+        private int _chromatic;
+        public int Chromatic { get => _chromatic; set => SetProperty(ref _chromatic, value, nameof(Chromatic)); }
+
         private int _coarse;
         public int Coarse { get => _coarse; set => SetProperty(ref _coarse, value, nameof(Coarse)); }
 
@@ -166,6 +202,9 @@ namespace GP16Editor.Models
 
     public class AutoPanpotParameters : NotifyPropertyChangedBase
     {
+        private int _mode;
+        public int Mode { get => _mode; set => SetProperty(ref _mode, value, nameof(Mode)); }
+        
         private int _rate;
         public int Rate { get => _rate; set => SetProperty(ref _rate, value, nameof(Rate)); }
         
@@ -180,15 +219,48 @@ namespace GP16Editor.Models
     {
         private int _delayTimeL;
         public int DelayTimeL { get => _delayTimeL; set => SetProperty(ref _delayTimeL, value, nameof(DelayTimeL)); }
-        
+
         private int _delayTimeR;
         public int DelayTimeR { get => _delayTimeR; set => SetProperty(ref _delayTimeR, value, nameof(DelayTimeR)); }
-        
+
         private int _delayTimeC;
         public int DelayTimeC { get => _delayTimeC; set => SetProperty(ref _delayTimeC, value, nameof(DelayTimeC)); }
 
         private int _feedback;
         public int Feedback { get => _feedback; set => SetProperty(ref _feedback, value, nameof(Feedback)); }
+
+        private int _rLevel;
+        public int RLevel { get => _rLevel; set => SetProperty(ref _rLevel, value, nameof(RLevel)); }
+
+        private int _cLevel;
+        public int CLevel { get => _cLevel; set => SetProperty(ref _cLevel, value, nameof(CLevel)); }
+
+        private int _lLevel;
+        public int LLevel { get => _lLevel; set => SetProperty(ref _lLevel, value, nameof(LLevel)); }
+
+        private int _cutoffMSB;
+        public int CutoffMSB { get => _cutoffMSB; set => SetProperty(ref _cutoffMSB, value, nameof(CutoffMSB)); }
+
+        private int _cutoffLSB;
+        public int CutoffLSB { get => _cutoffLSB; set => SetProperty(ref _cutoffLSB, value, nameof(CutoffLSB)); }
+
+        private int _cTapMSB;
+        public int CTapMSB { get => _cTapMSB; set => SetProperty(ref _cTapMSB, value, nameof(CTapMSB)); }
+
+        private int _cTapLSB;
+        public int CTapLSB { get => _cTapLSB; set => SetProperty(ref _cTapLSB, value, nameof(CTapLSB)); }
+
+        private int _lTapMSB;
+        public int LTapMSB { get => _lTapMSB; set => SetProperty(ref _lTapMSB, value, nameof(LTapMSB)); }
+
+        private int _rTapMSB;
+        public int RTapMSB { get => _rTapMSB; set => SetProperty(ref _rTapMSB, value, nameof(RTapMSB)); }
+
+        private int _rTapLSB;
+        public int RTapLSB { get => _rTapLSB; set => SetProperty(ref _rTapLSB, value, nameof(RTapLSB)); }
+
+        private int _lTapLSB;
+        public int LTapLSB { get => _lTapLSB; set => SetProperty(ref _lTapLSB, value, nameof(LTapLSB)); }
     }
 
     public class ReverbParameters : NotifyPropertyChangedBase
@@ -204,11 +276,44 @@ namespace GP16Editor.Models
 
         private int _hfDamp;
         public int HFDamp { get => _hfDamp; set => SetProperty(ref _hfDamp, value, nameof(HFDamp)); }
+
+        private int _cutoffMSB;
+        public int CutoffMSB { get => _cutoffMSB; set => SetProperty(ref _cutoffMSB, value, nameof(CutoffMSB)); }
+
+        private int _cutoffLSB;
+        public int CutoffLSB { get => _cutoffLSB; set => SetProperty(ref _cutoffLSB, value, nameof(CutoffLSB)); }
+
+        private int _effectLevel;
+        public int EffectLevel { get => _effectLevel; set => SetProperty(ref _effectLevel, value, nameof(EffectLevel)); }
+
+        private int _decay;
+        public int Decay { get => _decay; set => SetProperty(ref _decay, value, nameof(Decay)); }
+
+        private int _mode;
+        public int Mode { get => _mode; set => SetProperty(ref _mode, value, nameof(Mode)); }
     }
 
     public class LineoutFilterParameters : NotifyPropertyChangedBase
     {
         private int _type;
         public int Type { get => _type; set => SetProperty(ref _type, value, nameof(Type)); }
+
+        private int _presence;
+        public int Presence { get => _presence; set => SetProperty(ref _presence, value, nameof(Presence)); }
+
+        private int _treble;
+        public int Treble { get => _treble; set => SetProperty(ref _treble, value, nameof(Treble)); }
+
+        private int _level;
+        public int Level { get => _level; set => SetProperty(ref _level, value, nameof(Level)); }
+
+        private int _bass;
+        public int Bass { get => _bass; set => SetProperty(ref _bass, value, nameof(Bass)); }
+
+        private int _masterVolume;
+        public int MasterVolume { get => _masterVolume; set => SetProperty(ref _masterVolume, value, nameof(MasterVolume)); }
+
+        private int _outputChannel;
+        public int OutputChannel { get => _outputChannel; set => SetProperty(ref _outputChannel, value, nameof(OutputChannel)); }
     }
 }

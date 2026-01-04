@@ -219,7 +219,7 @@ namespace GP16Editor.ViewModels
             });
 
             // Show the popup (assumes MainPage is the current page)
-            var mainPage = Application.Current?.MainPage;
+            var mainPage = Application.Current?.Windows[0].Page;
             var popupTask = mainPage?.ShowPopupAsync(progressPopup);
 
             var patches = await _patchService.GetAllPatchesAsync(progress);

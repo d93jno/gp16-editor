@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Text;
+using System.Text.RegularExpressions;
 using GP16Editor.Models;
 using Melanchall.DryWetMidi.Core;
 
@@ -10,7 +12,8 @@ namespace GP16Editor.Core
         private readonly MidiService _midiService = midiService;
         private readonly SysExService _sysExService = sysExService;
 
-        private const int PATCH_SIZE = 70;
+        private const int PATCH_SIZE = 0x7F;
+        private const int PATCH_OFFSET = 0x80;
         private const int PATCHES_PER_GROUP = 64;
         private const int TOTAL_PATCHES = 128;
 
@@ -20,10 +23,47 @@ namespace GP16Editor.Core
             return await GetAllPatchesAsync(null);
         }
 
+        public static string HexDump(byte[] bytes)
+        {
+            if (bytes == null || bytes.Length == 0)
+            {
+                return "";
+            }
+
+            var sb = new StringBuilder();
+            for (int i = 0; i < bytes.Length; i += 16)
+            {
+                sb.AppendFormat("{0:x8}: ", i);
+                for (int j = 0; j < 16; j++)
+                {
+                    if (i + j < bytes.Length)
+                    {
+                        sb.AppendFormat("{0:x2} ", bytes[i + j]);
+                    }
+                    else
+                    {
+                        sb.Append("   ");
+                    }
+                }
+                sb.Append(" ");
+                for (int j = 0; j < 16; j++)
+                {
+                    if (i + j < bytes.Length)
+                    {
+                        char c = (char)bytes[i + j];
+                        sb.Append(char.IsControl(c) ? '.' : c);
+                    }
+                }
+                sb.AppendLine();
+            }
+            return sb.ToString();
+        }
+
         public async Task<List<Patch>> GetAllPatchesAsync(IProgress<int>? progress)
         {
             var patches = new List<Patch>();
             var tcs = new TaskCompletionSource<bool>();
+            var byteBuffer = new List<byte>();
 
             void SysExHandler(object? sender, NormalSysExEvent e)
             {
@@ -32,19 +72,16 @@ namespace GP16Editor.Core
                 switch(msgType)
                 {
                 case SysExService.COMMAND_ID_DT1:
-                    Debug.WriteLine("[DEBUG] SysEx DT1 message received");
-                    var patchData = e.Data.Skip(4).ToArray();
-                    Debug.WriteLine($"[DEBUG] Received SysEx data chunk: {string.Join(" ", patchData.Select(b => b.ToString("X2")))}");
-
-                    var patch = new Patch();
-                    patch.ParsePatchData(patchData, patches.Count + 1); 
-                    patches.Add(patch);
-                    Debug.WriteLine($"[DEBUG] Parsed patch {patches.Count}: {patch.PatchName}");
-
-                    progress?.Report(patches.Count);
+                    var address = (e.Data[4] << 32) | (e.Data[5] << 16) | e.Data[6] << 8 | e.Data[7];
+                    Debug.WriteLine($"[DEBUG] SysEx DT1 message received {e.Data.Length} bytes, address {address:X8}");
+                    //Debug.WriteLine(HexDump(e.Data));
+                    var patchData = e.Data.Skip(8).Take(e.Data.Length - 10).ToArray();
+                    byteBuffer.AddRange(patchData);
+                    Debug.WriteLine("[DEBUG] Current patch buffer size: " + patchData.Length);
+                    //Debug.WriteLine(HexDump(patchData));
 
                     // Release it once we have all data per group
-                    if (patches.Count == PATCHES_PER_GROUP || patches.Count == TOTAL_PATCHES)
+                    if (e.Data.Length < 254)
                     {
                         tcs.TrySetResult(true);
                     }
@@ -66,10 +103,14 @@ namespace GP16Editor.Core
                 await _midiService.RequestDataDump(addressA, sizeA);
 
                 await tcs.Task;
+                var groupABytes = byteBuffer.ToArray();
                 Debug.WriteLine("[DEBUG] Group A data received");
+                //Debug.WriteLine(HexDump(groupABytes));
+                var groupAPatches = ParsePatchBuffer(groupABytes, progress);
 
                 // Request Group B
                 tcs = new TaskCompletionSource<bool>();
+                byteBuffer.Clear();
                 Debug.WriteLine("[DEBUG] Requesting Group B data dump");
                 byte[] addressB = [0x02, 0x00, 0x00];
                 byte[] sizeB = [0x00, 0x23, 0x00]; // 4480 bytes
@@ -77,10 +118,34 @@ namespace GP16Editor.Core
 
                 await tcs.Task;
                 Debug.WriteLine("[DEBUG] Group B data received");
+                var groupBBytes = byteBuffer.ToArray();
+                var groupBPatches = ParsePatchBuffer(groupBBytes, progress);
             }
             finally
             {
                 _midiService.SysExReceived -= SysExHandler;
+            }
+
+            return patches;
+        }
+
+        private static List<Patch> ParsePatchBuffer(byte[] buffer, IProgress<int>? progress)
+        {
+            var patches = new List<Patch>();
+            int totalPatches = buffer.Length / PATCH_SIZE;
+            Debug.WriteLine($"[DEBUG] Parsing {totalPatches} patches from buffer of size {buffer.Length} bytes");
+            Debug.WriteLine(HexDump(buffer));
+
+            for (int i = 0; i < totalPatches; i++)
+            {
+                var patchBytes = buffer.Skip(i * PATCH_OFFSET).Take(PATCH_SIZE).ToArray();
+                Debug.WriteLine($"[DEBUG] Parsing patch {i + 1}");
+                Debug.WriteLine(HexDump(patchBytes));
+                var patch = new Patch();
+                patch.ParsePatchData(patchBytes);
+                patches.Add(patch);
+                Debug.WriteLine($"[DEBUG] Parsed patch {i + 1}: {patch.PatchName}");
+                progress?.Report(i + 1);
             }
 
             return patches;

@@ -1,9 +1,9 @@
 # ADDRESS MAPPING OF PARAMETERS
 
-The address is displayed under 7-level hexadecimal notation.
+The address is displayed under 7-bit hexadecimal notation.
 
-| Address | MSB | |LSB | |
-|---------|-----|-|----|--|
+| Address | MSB | | LSB |  |
+|---------|-----|-|-----|--|
 | 7bits hex | 0A | Db | Ee |
 | Binary | 0000 abbc | 0ddd dddd | 0eee eeee |
 | | < Description > | | |
@@ -231,11 +231,13 @@ With the GP-16 assigned to MIDI Receiv Chanel No. 1, transmit thef following mes
 Hwne the GP-16 receis any data and this command at the end from an exernal MIDI vecies, the GP-16 will chage its' sound. If it is impossible to receive the SOUND CHANGE REUQEST command the sound will change whent the GP-16 is manualy switched into Edit Mode. The SOUND CHANGE REQUEST command is included in the bulk dump data.
 
 **EXAMPLE**
-When the GP-16 is set to MIDI REecieve CHannel No 1 in the Play Mode, tramsitting two messages to the GP-16 activates the GP-16 effect bypass function, turning all effects off.
+When the GP-16 is set to MIDI Reecieve Channel No 1 in the Play Mode, transmitting two messages to the GP-16 activates the GP-16 effect bypass function, turning all effects off.
 
 <code>
 F0 41 00 2A 12 00 00 0D 00 00 73 F7
+</code>
 <br/>
+<code>
  F0 41 00 2A 12 00 00 75 00 00 F7
 </code>
 
@@ -243,133 +245,123 @@ F0 41 00 2A 12 00 00 0D 00 00 73 F7
 | Offset<br/>Address | Range | Description |
 | -------------------|-------|-------------|
 | 75 | 0000 0000 | |
-| ...| ... | Dummy ignored if received |
+| ...| ... | Dummy - ignored if received |
 | 7F | 0000 0000 | |
 
 ### Table 4
 | Offset | Description | Nr | Parameters |
 |--------|-------------|----|------------|
-| 5C| 0000 0000 | 0 | COMPRESSOR  TONE |
-|   | 0000 0001 | 1 | ATTACK |
-|   | 0000 0010 | 2 | SUSTART |
-|   | 0000 0011 | 3 | LEVEL |
-|   | 0000 0100 | 4 | DISTORTION | D2-00-D0 |
-|   | 0000 0101 | 5 | DISTORTION | D2-00-D0 |
-|   | 0000 0110 | 6 | | LEVEL |
-|   | 0000 0111 | 7 | OUTHATCH | D2-00-D0 |
-|   | 0000 1000 | 8 | | EDUTS |
-|   | 0000 1001 | 9 | | PHANG FILTER |
-|   | 0000 1010 | 10 | | LEVEL |
-|   | 0000 1011 | 11 | | LEVEL |
-|   | 0000 1100 | 12 | | 0 |
-|   | 0000 1101 | 13 | | 0 |
-|   | 0000 1110 | 14 | | UPHSXS |
-|   | 0000 1111 | 15 | STEP PANZER | LEVEL |
-|   | 0001 0000 | 16 | | UPTH |
-|   | 0001 A001D | 17 | | MANLAL |
-|   | 0001 AA101 | 18 | | RESONANCE |
-|   | 0001 AA110 | 19 | | TAP DELAY |
-|   | 0001 D100H | 20 | PARAMETRIC E: | HI FREC |
-|   | 0001 01D16 | 21 | HI LEVEL |
-|   | 0001 01106 | 22 | D-W UREQ |
-|   | 0001 100sB | 23 | D-W LEV |
-|   | 0001 100sB | 24 | D-W LEV |
-|   | 0001 1000E | 25 | L-W FTEC |
-|   | 0001 101sB | 26 | L-W FREC |
-|   | 0001 101sH | 27 | LO FTEC |
-|   | 0001 1000H | 28 | LO FREC |
-|   | 0001 100sH | 29 | LO LEVEL |
-|   | 0001 1101B | 30 | DST LAY |
-|   | 0001 1100E | 31 | SDIST SUPPRESSION | RELEASE |
-|   | 0010 D005H | 32 | LEVEL |
-|   | 0010 0A01H | 33 | LEVEL |
-|   | 0010 0A01H | 34 | SHORT DELAY | SHIFT DELAY |
-|   | 0010 0A01H | 35 | E.LEVEL |
-|   | 0010 D100H | 36 | CHDRLS | F DELAY |
-|   | 0010 0A101 | 37 | RATE |
-|   | 0010 0A11H | 38 | DEPTH |
-|   | 0010 0000H | 39 | CHDRLS | DEPTH |
-|   | 0010 0000H | 40 | FLANGER | RATE |
-|   | 0010 0001E | 41 | DEPTH |
-|   | 0010 0101H | 42 | RESONANCE |
-|   | 0010 100sH | 43 | PITCH SHIFTER | BALANCE |
-|   | 0010 100sH | 44 | CHROMATIC |
-|   | 0010 110sB | 45 | FINE |
-|   | 0010 110sH | 46 | F.BACK |
-|   | 0010 000sB | 47 | |
-|   | 0001D-0001E | 48 | SPACE D | |
-|   | 0001D-0011H | 49 | AUTO PANPOT | |
-|   | 0001D-0011H | 50 | |
-|   | D001D-0E11H | 51 | DEPTH |
+| 5C| 0000 0000 | 0  | **COMPRESSOR**  TONE |
+|   | 0000 0001 | 1  | ATTACK |
+|   | 0000 0010 | 2  | SUSTART |
+|   | 0000 0011 | 3  | LEVEL |
+|   |           |    |       |
+|   | 0000 0100 | 4  | **DISTORTION** TONE |
+|   | 0000 0101 | 5  | DISTORTION |
+|   | 0000 0110 | 6  | LEVEL |
+|   | 0000 0111 | 7  | **OVERDRIVE** TONE |
+|   | 0000 1000 | 8  | DRIVE |
+|   | 0000 1001 | 9  | TURBO |
+|   | 0000 1010 | 10 | LEVEL |
+|   |           |    |       |
+|   | 0000 1011 | 11 | **PICKING FILTER** SENS |
+|   | 0000 1100 | 12 | CUTOFF FREQ |
+|   | 0000 1101 | 13 | Q |
+|   | 0000 1110 | 14 | UP/DOWN |
+|   |           |    |       |
+|   | 0000 1111 | 15 | **STEP PHANSER** RATE |
+|   | 0001 0000 | 16 | DEPTH |
+|   | 0001 0001 | 17 | MANLAL |
+|   | 0001 0010 | 18 | RESONANCE |
+|   | 0001 0011 | 19 | LFO STEP |
+|   |           |    |       |
+|   | 0001 0100 | 20 | **PARAMETRIC EQ** HI FREQ |
+|   | 0001 0101 | 21 | HI LEVEL |
+|   | 0001 0110 | 22 | H.M FREQ |
+|   | 0001 0111 | 23 | H.MID Q |
+|   | 0001 1000 | 24 | H.M LEV |
+|   | 0001 1001 | 25 | L.M FREQ |
+|   | 0001 1010 | 26 | L.MID Q |
+|   | 0001 1011 | 27 | L.M LEV |
+|   | 0001 1100 | 28 | LO FREQ |
+|   | 0001 1101 | 29 | LO LEVEL |
+|   | 0001 1110 | 30 | OUT LEV |
+|   |           |    |       |
+|   | 0001 1111 | 31 | **NOISE SUPPRESSION** SENS |
+|   | 0010 0000 | 32 | RELEASE |
+|   | 0010 0001 | 33 | LEVEL |
+|   |           |    |       |
+|   | 0010 0010 | 34 | **SHORT DELAY** D. TIME |
+|   | 0010 0011 | 35 | E. LEVEL |
+|   |           |    |       |
+|   | 0010 0100 | 36 | **CHORUS** P. DELAY |
+|   | 0010 0101 | 37 | RATE |
+|   | 0010 0110 | 38 | DEPTH |
+|   | 0010 0111 | 39 | E. LEVEL |
+|   |           |    |       |
+|   | 0010 1000 | 40 | **FLANGER** RATE |
+|   | 0010 1001 | 41 | DEPTH |
+|   | 0010 1010 | 42 | MANUAL |
+|   | 0010 1011 | 43 | RESONANCE |
+|   |           |    |       |
+|   | 0010 1100 | 44 | **PITCH SHIFTER** BALANCE |
+|   | 0010 1101 | 45 | CHROMATIC |
+|   | 0010 1110 | 46 | FINE |
+|   | 0010 1111 | 47 | F. BACK |
+|   | 0011 0000 | 48 | P. DELAY |
+|   |           |    |       |
+|   | 0011 0001 | 49 | **SPACE D** MODE |
+|   |           |    |       |
+|   | 0011 0010 | 50 | **AUTO PANPOT** RATE |
+|   | 0011 0011 | 51 | DEPTH |
+|   | 0011 0100 | 52 | MODE |
+|   |           |    |       |
+|   | 0011 0101 | 53 | **TAP DELAY** C. TAP |
+|   | 0011 0110 | 54 | L. TAP |
+|   | 0011 0111 | 55 | R. TAP |
+|   | 0011 1000 | 56 | C. LEVEL |
+|   | 0011 1001 | 57 | L. LEVEL |
+|   | 0011 1010 | 58 | R. LEVEL |
+|   | 0011 1011 | 59 | F. BACK |
+|   | 0011 1100 | 60 | CUTOFF |
+|   |           |    |       |
+|   | 0011 1101 | 61 | **REVERB** DECAY |
+|   | 0011 1110 | 62 | MODE |
+|   | 0011 1111 | 63 | CUTOFF |
+|   | 0100 0000 | 64 | P. DELAY |
+|   | 0100 0001 | 65 | E. LEVEL |
+|   |           |    |       |
+|   | 0100 0010 | 66 | **LINEOUT FILTER** PRESENCE |
+|   | 0100 0011 | 67 | TREBLE |
+|   | 0100 0100 | 68 | MIDDLE |
+|   | 0100 0101 | 69 | BASS |
+|   |           |    |       |
+|   | 0100 0110 | 70 | **MASTER VOLUME** |
+|   |           |    |       |
+|   | 0111 1111 | 127 | **EXPRESSION ASSIGN** OFF |
 
+**Address Map**
 
-
-
-**Address Mappings:**
-
-| Address | Block | Sub Block | Reference |
-|---------|-------|-----------|-----------|
-| 00-10-00 | | | Table 1 |
-| | Men: | Tenporary | Area |
-| 0E-10-00 | | verifiable | Internal A-): | |
-| | | | -|Internal A-)|-> Table 1 |
-| | | | -lbaaa A-):-> Table 3 |
-| | | | Banks A-12-> |
-| 01:00-10 | | | |
-| | -|Internal| | |
-| | -|Memory Area| | -B-a-3-> |
-| | -lbaaa| | -[N-a-3 |
-| D2-00-D0 | | | |
-| | -|Internal|-|Internal E-)|-> |
-| | -|Memory Area| -lbaaa| -[N-a-3 |
-| | -lbaaa| -B-a-3-> |
-| | | -Crtpaat| E-|-|-> |
-| 08-00-10 | -|Internal| -|Internal A-)|-> |
-| | -|Memory Area| -lbaaa| -B-B-R |
-| -IAtt)| | | |
-| | -|Internal| | |
-| | -|Memory Area| | |
-| | -lbaaa| -B-B-R |
-| 01-00-D0 | | |
-| | -(Internal)- | Table 1 |
-| | -lbaaa| Table 3 |
-| 01-00-10 | | |
-| | -(Internal)- | -E-s-)-|-> Table 1 |
-| | -lbaaa| |
-| | -(Nunur)- | -[N-a-3 |
-| D1-00-D0 | | |
-| | -|Internal|- | |
-| | -lbaaa| -[N-a-3 |
-| | -(Nunur)- | |
-| D1-00-10 | -(Internal)- | -E-r-|-|-> |
-| | -lbaaa| |
-| | -(Nunur)- | -[N-a-3 |
-| | | Banks |
-| | -(Internal)- | -E-s-|-|-> |
-| | -lbaaa| |
-
-### Description
-
-The leftmost two variables H and G are assigned as follows:
-
-**H: Bank Dump Type**
-- `summary:Bulk_/(Equal) A()`
-
-**G: Temporary - Internal Bank**
-- `0-;`
-
-### Parameter Address Format
-
-| Base ADDD | Patch NUMBER | 5 | |(Group->Bank->Number)| |
-|-----------|--------------|---|--|--------------------|---|
-| | | H | G | | |
-| | 7 | # A - | 5 | 5 | |
-| | | | | | |
-
-**Performance - Parameter Address:**
-[Content shows address mapping structure]
-
----
+| Address  |  Block             | Sub Block | Reference           |
+|----------|--------------------|-----------|---------------------|
+| 00-00-00 | Non<br/>verifiable |           | Table 1<br/>Table 2 |
+| 00-01-00 | Area               |           | Table 1<br/>Table 3 |
+| 01-00-00 |                    |           |                     |
+| 02-00-00 |                    |           |                     |
+| 03-00-00 |                    |           |                     |
+| 04-00-00 |                    |           |                     |
+| 05-00-00 |                    |           |                     |
+| 06-00-00 |                    |           |                     |
+| 07-00-00 |                    |           |                     |
+| 08-00-00 | Verifiable         |           | Table 1<br/>Table 2 |
+| 08-01-00 | Area               |           | Table 1<br/>Table 3 |
+| 09-00-00 |                    |           |                     |
+| 0A-00-00 |                    |           |                     |
+| 0B-00-00 |                    |           |                     |
+| 0C-00-00 |                    |           |                     |
+| 0D-00-00 |                    |           |                     |
+| 0E-00-00 |                    |           |                     |
+| 0F-00-00 |                    |           |                     |
 
 ## Parameter Memory Areas
 
@@ -378,178 +370,3 @@ The actual effective location of each parameter is the Base Address figure of ea
 ### Editable Area for Parameter Settings
 
 This is the data area for parameters settings to be memorized and edited. When the TRANSMIT is changed, value in the RCV DT becomes the present value in the TMP area (if receive function is enabled) or DT is TMP (patch current). Displayed on the panel will be AMHIED into this area from the transmit section is a executed from the TMP area(1) of the DISC before the actual information of memory changes is executed from the TMP area(1) of the DISC before the actual content will not be changed.
-
-#### Table 1: Temporary/Internal Data Structure
-
-**Address Mappings:**
-
-| Start Address | Description |
-|--------------|-------------|
-| 00 00 00H | Verifiable internal Data (Group) |
-| 00 71 00H | Verifiable internal Data (Group) |
-| 0A 00 00H | Verifiable internal Data (All) |
-| 0B 77 00H | Verifiable internal Data (All) |
-
-**Internal Memory Area:**
-
-| Address Range | Description | Type |
-|--------------|-------------|------|
-| 01 DD 00H | Verifiable internal Data (Number) | A-[-] |
-| 02 00 00H | Non-verifiable internal Data (Bank) | A-[-] |
-| 03 DD 00H | Non-verifiable internal Data (Bank) | B-S-R |
-| 04 00 00H | Non-verifiable Internal Data (Bank) | A-[-] |
-| 05 DD 00H | Non-verifiable internal Data (All) | B-S-R |
-| 06 00 00H | Non-verifiable internal Data (All) | A-[-] |
-| 07 71 00H | Non-verifiable internal Data (All) | B-S-R |
-| 08 DD 00H | Verifiable internal Data (Number) | A-[-] |
-| 0A 71 00H | Verifiable internal Data (All) | A-[-] |
-| 0B DD 00H | Verifiable internal Data (Name) | A-[-] |
-| 0E 71 00H | Verifiable internal Data (Name) | B-S-R |
-
----
-
-## Detailed Parameter Addresses
-
-### Performance Parameters
-
-| Offset | Description | Range | Effect |
-|--------|-------------|-------|--------|
-| 00H:0000 | basahl:DATT RATE | + 0 + | (EFFECT 1-5) |
-| 0DH:0000 | basahl:DATT RATE | + 0 + | (EFFECT 1-5) |
-| 02H:0000 | basahl:DATT RATE | CIDST 4 | + 0 + | (EFFECT 1-5) |
-| 03H:0000 | basahl:DATT RATE | CIDST 4 | + 0 + | (EFFECT 1-5) |
-| 04H:0000 | basahl:DATT RATE | CIDST 5 | 0 0-1 | (EFFECT 1-5) |
-| 04H:0000 | DIDD:DATT RATE | CIDST 6 | | (FTDD) |
-| 05H:0000 | masahl:DATT RATE | CIDST-R | ** E - 10 | (EFFECT 1-5) |
-| 07H:0000 | masahl:DATT RATE | CIDST-R | ** S - 10 | (EFFECT 1-5) |
-| 07H:0000 | masahl:DATT RATE | CIDST-7 | ** L - 10 | (EFFECT 1-5) |
-| 08H:0000 | masahl:1-DATT RATE | CIDST-5 | ** G - 10 | (EFFECT 1-5) |
-| 0AH:0000 | masahl:2-DATT RATE | CIDST-R | | (EFFECT 1-5) |
-| 0AH:0000 | DIBB:1:DATT ROTA | CIDST-R | 11 | (FTDD5) |
-| 0BH:0000 | masahl:1:DATT RATE | CIDST-R | | MODE SELECT |
-
-**More Select Block R-2:**
-- (CIDST-A)/ALGH
-- FTAB = (FTCB-DIATT-0-0)
-
-**Configuration COEFFICIENT Block H-1:**
-- 00H:0000 configuration EFFECT 01:OFF
-- 01H:0000 1A:AHIEFFECT 02:OFF LSN
-
-### Block and Effect Parameters
-
-| ID | Effect Type | Block | Range |
-|----|-------------|-------|-------|
-| 0 | MODE SELECT Block A-2 | 0-|(DISTORTION_/_.OVERDRIVE) |
-| 1 | CIDST | | A - (-128) |
-| 2 | EFFECT OR:OFF Block R-5 | 0 | (OFF_/_ON) |
-| 3 | EFFECT OR:OFF Block R-5 | 0 | (OFF_/_ON) |
-| 4 | EFFECT OR:OFF Block R-5 | 0 | (OFF_/_ON) |
-| 5 | EFFECT OR:OFF Block A-2 | 0 | (OFF_/_ON) |
-| 6 | EFFECT OR:OFF Block A-2 | 0 | (OFF_/_ON) |
-| 7 | EFFECT OR:OFF Block A-2 | 0 | (OFF_/_ON) |
-| 8 | EFFECT OR:OFF Block A-3 | 0 | (OFF_/_ON) |
-| 9 | EFFECT OR:OFF Block A-3 | 0 | (OFF_/_ON) |
-| A | EFFECT OR:OFF Block A-3 | 0 | (OFF_/_ON) |
-
----
-
-## Extended Parameter Mappings (Page 2)
-
-
-### Master Volume and Expression
-
-| Offset | Parameter | Range |
-|--------|-----------|-------|
-
----
-
-## GPIO Channel MIDI Information (Page 3)
-
-### Table 2: GPIO Channel MIDI Receive Settings
-
-**TEG 0000 DOmahl** - MIDV -> (pacas 1) receive)
-**TEG 0000 DOmahl**
-
-The GPIO CHANNEL NIGLI:LST (minimum receive on the CH (= 10) bandel puts on In tenures): Date area
-
-#### Example Configuration
-
-While the CH is set to MDLI Receive Channel No. 1, transmit the following NIGLI message from the CH to generate the CIT 10 effect byway: hanwaa: turnbas all effects off.
-
-F0: 41 DD: 2A: 12: 01 (U: 00 00 DD 01: 51 1: F7
-
----
-
-### Table 3: Additional MIDI Parameters
-
-| Offset | Address | Description |
-|--------|---------|-------------|
-| TEG-0000 DOO0H | | HEMVD 1 (pacas 1) recive) |
-
-
----
-
-## Table 4: Offset Address Configurations
-
-### Memory Area Blocks
-
-
-### Extended Mappings
-
-| Offset | Parameter | Notes |
-|--------|-----------|-------|
-| 0E011-D100H 52 | MODI | C-TAP |
-| 0E011-D101B 53 | TAP DELAY | L-TAP |
-| 0E011-D110B 54 | | |
-| 0E011-1000H 55 | | R-LEVEL |
-| 0E011-1000B 56 | | C.LEVEL |
-| 0E011-1010H 57 | | L.LEVEL |
-| 0E011-1001E 58 | | R-LEVEL |
-| 1A01E-D000B 59 | RTESS | DECAY |
-| 1A01E-D001H 60 | | MODE |
-| 1A01E-1000H 61 | CSTDFF WEG | LINEOUT FILTER |
-| 0A01D-0A01H 62 | | TREBLE |
-| 0A01D-0A11H 63 | | MIDDLE |
-| 0A01D-0000H 64 | | BASS |
-| 0A01D-0010H 65 | MASTER VOLUME | |
-- 0E011-|111B0-127 - EXPRESSION ASSIGN GR1 | | C-TAP |
-- 0E011-D100H 52 | | | L-TAP |
-- 0E011-D101B 53 | | | |
-- 0E011-D110B 54 | | | |
-- 0E011-1000H 55 | | | |
-- 0E011-1000B 56 | | | |
-- 0E011-1010H 57 | | | |
-- 0E011-1001E 58 | | | R-LEVEL |
-- 0E010-E000B 60 | | | L.LEVEL |
-- 0E010-E001H 61 | | | L.LEVEL |
-- 0E010-E010B 62 | | | R-DELAY |
-- 0E010-E010H 63 | | | TREBLE |
-- 0E010-E100B 64 | | | MIDDLE |
-- 0E010-E100H 65 | | | BASS |
-- 0E010-E101B 66 | MASTER VOLUME | |
-
----
-
-## JOINT DATA Parameters and Effects
-
-**JOINT DATA parameters**, which define the owner of the NWOS effects, should ALWOS be based on system EXCLUSIVE message (rather than setting individually) regardless of the RFD DDS setting.
-
-### Example
-
-While the CH is set to MDLI Receive Channel No. 1, transmit the following NIGLI message from the CH through DATA DUTPUT CHANNEL data of patch R-1 (rom the internal memory area data.
-
-**Command Sequence:**
-```
-F0: 41 DD: 2A: 12: 01 (U: 00 00 DD 01: DD DY 01: 51: F7
-```
-
-### Table 2 Continued
-
-| Offset | Description |
-|--------|-------------|
-| TEH:Oaaa aaahlSDDNG CHANGE INDDCT For Temporary Area B – 127 (FTXDD) |
-
----
-
-*End of Document*

@@ -104,9 +104,6 @@ namespace GP16Editor.Core
             {
                 var dataBytes = new List<byte> { 0xF0 };
                 dataBytes.AddRange(sysExEvent.Data);
-                dataBytes.Add(0xF7);
-                var hex = string.Join(" ", dataBytes.Select(b => b.ToString("X2")));
-                System.Diagnostics.Debug.WriteLine($"MIDI IN: {hex}");
 
                 SysExReceived?.Invoke(this, sysExEvent);
             }
