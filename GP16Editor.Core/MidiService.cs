@@ -102,9 +102,16 @@ namespace GP16Editor.Core
         {
             if (e.Event is NormalSysExEvent sysExEvent)
             {
-                var dataBytes = new List<byte> { 0xF0 };
-                dataBytes.AddRange(sysExEvent.Data);
+                // The NormalSysExEvent.Data does not include F0 and F7, so we need to add them back
+                // to have the full message for parsing.
+                var fullMessage = new List<byte>
+                {
+                    0xF0
+                };
+                fullMessage.AddRange(sysExEvent.Data);
+                fullMessage.Add(0xF7);
 
+                // The old event, which passes the raw DryWetMidi event
                 SysExReceived?.Invoke(this, sysExEvent);
             }
         }

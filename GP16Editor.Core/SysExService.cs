@@ -32,12 +32,7 @@ namespace GP16Editor.Core
             byte remainder = (byte)(sum % 128);
             byte checksum = (byte)(128 - remainder);
 
-            if (checksum == 128)
-            {
-                checksum = 0;
-            }
-
-            return checksum;
+            return (byte)(checksum % 128);
         }
 
         // Method to build a DT1 (Data Set 1) message
@@ -104,6 +99,57 @@ namespace GP16Editor.Core
             sysexMessage.Add(0xF7); // SysEx End
 
             return sysexMessage;
+        }
+
+        public Models.ParsedDT1Message ParseDt1Message(byte[] sysexData)
+        {
+            var parsedMessage = new Models.ParsedDT1Message();
+
+            // Basic validation for a DT1 message
+            // F0 41 dev 2A 12 adr adr adr data... chk F7
+            if (sysexData == null || sysexData.Length < 9 || // Minimal DT1 is F0 41 dev 2A 12 adr adr adr chk F7 (no data)
+                sysexData[0] != 0xF0 ||
+                sysexData[sysexData.Length - 1] != 0xF7 ||
+                sysexData[1] != MANUFACTURER_ID ||
+                sysexData[3] != MODEL_ID ||
+                sysexData[4] != COMMAND_ID_DT1)
+            {
+                parsedMessage.IsValid = false;
+                return parsedMessage;
+            }
+
+            // Extract address and data
+            var addressBytes = sysexData.Skip(5).Take(3).ToArray();
+            var dataBytes = sysexData.Skip(8).Take(sysexData.Length - 10).ToArray();
+
+            // Verify checksum
+            var messageBody = new List<byte>();
+            messageBody.AddRange(addressBytes);
+            messageBody.AddRange(dataBytes);
+
+            var calculatedChecksum = CalculateChecksum(messageBody);
+            var receivedChecksum = sysexData[sysexData.Length - 2];
+
+            if (calculatedChecksum != receivedChecksum)
+            {
+                parsedMessage.IsValid = false;
+                return parsedMessage;
+            }
+
+            parsedMessage.IsValid = true;
+            parsedMessage.Data = dataBytes;
+
+            // Parse address bytes from the 3-byte address field
+            var msb = addressBytes[0]; 
+            
+            parsedMessage.Address.IsVerifiable = (msb & 0b01000000) != 0;
+            parsedMessage.Address.DumpType = (Models.BulkDumpType)((msb >> 4) & 0b00000011);
+            parsedMessage.Address.IsTemporaryMemory = (msb & 0b00001000) != 0;
+
+            parsedMessage.Address.PatchNumber = addressBytes[1] & 0x7F; // 7-bit value
+            parsedMessage.Address.ParameterAddress = addressBytes[2] & 0x7F; // 7-bit value
+
+            return parsedMessage;
         }
     }
 }

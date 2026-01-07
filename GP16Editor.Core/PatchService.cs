@@ -72,13 +72,22 @@ namespace GP16Editor.Core
                 switch(msgType)
                 {
                 case SysExService.COMMAND_ID_DT1:
-                    var address = (e.Data[4] << 32) | (e.Data[5] << 16) | e.Data[6] << 8 | e.Data[7];
-                    Debug.WriteLine($"[DEBUG] SysEx DT1 message received {e.Data.Length} bytes, address {address:X8}");
-                    //Debug.WriteLine(HexDump(e.Data));
-                    var patchData = e.Data.Skip(8).Take(e.Data.Length - 10).ToArray();
-                    byteBuffer.AddRange(patchData);
-                    Debug.WriteLine("[DEBUG] Current patch buffer size: " + patchData.Length);
-                    //Debug.WriteLine(HexDump(patchData));
+                    var msgWithF0 = new List<byte> { 0xF0 };
+                    msgWithF0.AddRange(e.Data);
+                    var f0array = msgWithF0.ToArray();
+                    Debug.WriteLine($"[DEBUG] SysEx DT1 message received {f0array.Length} bytes");
+                    //Debug.WriteLine(HexDump(f0array));
+                    var dt1Msg = _sysExService.ParseDt1Message(f0array);
+                    if (!dt1Msg.IsValid)
+                    {
+                        Debug.WriteLine("[DEBUG] Invalid DT1 message received, ignoring.");
+                        return;
+                    }
+
+                    Debug.WriteLine($"[DEBUG] DT1: Temp Mem: {dt1Msg.Address.IsTemporaryMemory}, Dump Type: {dt1Msg.Address.DumpType}, Verifiable: {dt1Msg.Address.IsVerifiable}, Patch Number: {dt1Msg.Address.PatchNumber}, Parameter Address: {dt1Msg.Address.ParameterAddress}");
+                    Debug.WriteLine($"[DEBUG] DT1: Current patch buffer size: {dt1Msg.Data.Length}");
+                    //Debug.WriteLine(HexDump(dt1Msg.Data));
+                    byteBuffer.AddRange(dt1Msg.Data);
 
                     // Release it once we have all data per group
                     if (e.Data.Length < 254)
@@ -109,17 +118,17 @@ namespace GP16Editor.Core
                 var groupAPatches = ParsePatchBuffer(groupABytes, progress);
 
                 // Request Group B
-                tcs = new TaskCompletionSource<bool>();
-                byteBuffer.Clear();
-                Debug.WriteLine("[DEBUG] Requesting Group B data dump");
-                byte[] addressB = [0x02, 0x00, 0x00];
-                byte[] sizeB = [0x00, 0x23, 0x00]; // 4480 bytes
-                await _midiService.RequestDataDump(addressB, sizeB);
+                // tcs = new TaskCompletionSource<bool>();
+                // byteBuffer.Clear();
+                // Debug.WriteLine("[DEBUG] Requesting Group B data dump");
+                // byte[] addressB = [0x02, 0x00, 0x00];
+                // byte[] sizeB = [0x00, 0x23, 0x00]; // 4480 bytes
+                // await _midiService.RequestDataDump(addressB, sizeB);
 
-                await tcs.Task;
-                Debug.WriteLine("[DEBUG] Group B data received");
-                var groupBBytes = byteBuffer.ToArray();
-                var groupBPatches = ParsePatchBuffer(groupBBytes, progress);
+                // await tcs.Task;
+                // Debug.WriteLine("[DEBUG] Group B data received");
+                // var groupBBytes = byteBuffer.ToArray();
+                // var groupBPatches = ParsePatchBuffer(groupBBytes, progress);
             }
             finally
             {
@@ -139,8 +148,8 @@ namespace GP16Editor.Core
             for (int i = 0; i < totalPatches; i++)
             {
                 var patchBytes = buffer.Skip(i * PATCH_OFFSET).Take(PATCH_SIZE).ToArray();
-                Debug.WriteLine($"[DEBUG] Parsing patch {i + 1}");
-                Debug.WriteLine(HexDump(patchBytes));
+                //Debug.WriteLine($"[DEBUG] Parsing patch {i + 1}");
+                //Debug.WriteLine(HexDump(patchBytes));
                 var patch = new Patch();
                 patch.ParsePatchData(patchBytes);
                 patches.Add(patch);

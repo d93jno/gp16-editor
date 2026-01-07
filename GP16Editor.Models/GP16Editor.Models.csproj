@@ -7,9 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="NotifyPropertyChangedBase.cs" />
     <Compile Include="EffectParameters.cs" />
+    <Compile Include="NotifyPropertyChangedBase.cs" />
     <Compile Include="Patch.cs" />
+    <Compile Include="SysExMessages.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="SysExMessages.cs" />
   </ItemGroup>
 
 </Project>

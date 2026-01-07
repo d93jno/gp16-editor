@@ -83,7 +83,8 @@ The GP-16 recognizes two primary commands for data communication:
 Request Data 1 (RQ1) — 11
 HThis command is sent to the GP-16 to request it to transmit a specific set of data. Upon receiving this, the GP-16 checks the address and size. If they are valid, it transmits the requested data using a "Data Set 1" message.
 
-Data Set 1 (DT1) — 12HThis command carries the actual data. It is used in two ways:
+Data Set 1 (DT1) — 12H
+This command carries the actual data. It is used in two ways:
 From External Device to GP-16: To change settings or load patches.
 From GP-16 to External Device: In response to an RQ1 command or during a manual Bulk Dump.
 
