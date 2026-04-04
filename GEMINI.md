@@ -5,13 +5,55 @@ It maps out the hardware architecture, the SysEx protocol requirements, and the 
 # General Code Guidance
 * Don't write comments, only the generated code
 * The system is implemented using C#
-* Consider all PropertyChanged events as nullable
 * Don't do any git updates
+* Treat all `PropertyChanged` event invocations as nullable (use `?.Invoke`)
+
+## Architecture
+
+Four projects with a strict dependency direction: `GP16Editor` / `GP16Editor.Cli` → `GP16Editor.Core` → `GP16Editor.Models`.
+
+**GP16Editor.Models** — Pure data layer, no external dependencies.
+- `Patch.cs` — top-level model; parses a 127-byte binary patch buffer into typed effect parameter objects
+- `EffectParameters.cs` — one class per effect (15 total), all inheriting `NotifyPropertyChangedBase`
+- `SysExMessages.cs` — `ParsedDT1Message`, `DT1Address`, `BulkDumpType` enum for decoded SysEx
+- `NotifyPropertyChangedBase.cs` — lightweight MVVM base (`SetProperty<T>`)
+
+**GP16Editor.Core** — MIDI communication and patch retrieval, no UI dependency.
+- `MidiService` — owns the DryWetMidi `IInputDevice`/`IOutputDevice` lifecycle; fires `SysExReceived` and `ErrorOccurred` events; enforces 50ms inter-message delay required by the GP-16
+- `SysExService` — stateless; builds/parses Roland DT1 (0x12) and RQ1 (0x11) SysEx frames including the 7-bit checksum
+- `PatchService` — orchestrates bulk-dump requests (Group A / Group B) by sending RQ1 messages and waiting for DT1 responses; parses 128 patches
+- `HexDump` — static debug utility; `HexDump.Print(bytes, label)` writes a traditional hex dump to `Debug.WriteLine`
+
+**GP16Editor** — .NET MAUI UI, MVVM with CommunityToolkit.Mvvm.
+- Services registered as singletons in `MauiProgram.cs`: `SysExService` → `MidiService` → `PatchService` → `MainViewModel`
+- `MainViewModel` — central coordinator; holds `CurrentPatch`, `AllPatches`, `FilteredPatches`; owns one ViewModel instance per effect; dispatches MIDI parameter-change sends on property changes
+- One `*ViewModel` per effect (15 effects) plus `ConfigurationViewModel` and `EffectSequenceBlockViewModel`
+- `ConfigurationViewModel` — manages device selection and persists settings via `Preferences`
+
+**GP16Editor.Cli** — headless console app for MIDI testing/dev without a GUI.
 
 # C# setup
 * Use .NET MAUI as the graphical library
 * Use C# Dev Kit to manage the application build
 * Use Melanchall.DryWetMidi to send and receiev SysEx messages
+
+## Build & Run
+
+This is a .NET 9 MAUI solution. Use the C# Dev Kit extension in VS Code (or `dotnet` CLI) to build.
+
+```bash
+# Build the MAUI app (Windows target)
+dotnet build GP16Editor/GP16Editor.csproj -f net9.0-windows10.0.19041.0
+
+# Build the CLI tool
+dotnet build GP16Editor.Cli/GP16Editor.Cli.csproj
+
+# Run the CLI tool
+dotnet run --project GP16Editor.Cli/GP16Editor.Cli.csproj
+
+# Build entire solution
+dotnet build gp16editor.sln
+```
 
 # MIDI & SysEx Implementation
 * When sending SysEx, the device require a small delay (typically 20ms–50ms) between large messages to prevent buffer overflow on the device side.

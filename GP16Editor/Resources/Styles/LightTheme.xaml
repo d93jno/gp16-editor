@@ -9,4 +9,6 @@
     <Color x:Key="HeaderText">#FFFFFF</Color>
     <Color x:Key="BorderColor">#CCCCCC</Color>
     <Color x:Key="ContentBackgroundColor">#FFFFFF</Color>
+    <Color x:Key="InputBackgroundColor">#E8E8E8</Color>
+    <Color x:Key="DisabledTextColor">#AAAAAA</Color>
 </ResourceDictionary>

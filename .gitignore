@@ -76,3 +76,5 @@ proguard/
 # Secrets and config (if any)
 # appsettings.json (if contains secrets)
 # *.pfx (certificates)
+
+.claude/

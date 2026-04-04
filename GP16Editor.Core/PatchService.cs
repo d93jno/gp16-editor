@@ -61,42 +61,64 @@ namespace GP16Editor.Core
 
         public async Task<List<Patch>> GetAllPatchesAsync(IProgress<int>? progress)
         {
+            return await GetPatchesAsync(includeGroupA: true, includeGroupB: true, progress);
+        }
+
+        public async Task<List<Patch>> GetPatchesAsync(bool includeGroupA, bool includeGroupB, IProgress<int>? progress = null)
+        {
+            if (!includeGroupA && !includeGroupB)
+            {
+                throw new ArgumentException("At least one patch group must be selected.");
+            }
+
             var patches = new List<Patch>();
             var tcs = new TaskCompletionSource<bool>();
             var byteBuffer = new List<byte>();
 
             void SysExHandler(object? sender, NormalSysExEvent e)
             {
-                var msgType = e.Data.Length > 3 ? e.Data[3] : (byte)0x00;
+                // Reconstruct the full message correctly
+                var fullMsg = new List<byte>();
+                if (e.Data[0] != 0xF0) fullMsg.Add(0xF0);
+                fullMsg.AddRange(e.Data);
+                if (fullMsg.Last() != 0xF7) fullMsg.Add(0xF7);
+                
+                var f0array = fullMsg.ToArray();
+                var msgType = f0array.Length > 4 ? f0array[4] : (byte)0x00;
 
                 switch(msgType)
                 {
                 case SysExService.COMMAND_ID_DT1:
-                    var msgWithF0 = new List<byte> { 0xF0 };
-                    msgWithF0.AddRange(e.Data);
-                    var f0array = msgWithF0.ToArray();
-                    Debug.WriteLine($"[DEBUG] SysEx DT1 message received {f0array.Length} bytes");
-                    //Debug.WriteLine(HexDump(f0array));
                     var dt1Msg = _sysExService.ParseDt1Message(f0array);
                     if (!dt1Msg.IsValid)
                     {
-                        Debug.WriteLine("[DEBUG] Invalid DT1 message received, ignoring.");
+                        Console.WriteLine($"[MIDI] DT1 received ({f0array.Length} bytes) but failed validation.");
+                        Console.WriteLine($"[MIDI] Header: {BitConverter.ToString(f0array.Take(10).ToArray()).Replace("-", " ")}");
+                        
+                        // Manual check for diagnostics
+                        var addr = f0array.Skip(5).Take(3).ToArray();
+                        var data = f0array.Skip(8).Take(f0array.Length - 10).ToArray();
+                        var body = new List<byte>();
+                        body.AddRange(addr);
+                        body.AddRange(data);
+                        var calculated = _sysExService.CalculateChecksum(body);
+                        var received = f0array[f0array.Length - 2];
+                        Console.WriteLine($"[MIDI] Checksum - Received: {received:X2}, Calculated: {calculated:X2}");
                         return;
                     }
 
-                    Debug.WriteLine($"[DEBUG] DT1: Temp Mem: {dt1Msg.Address.IsTemporaryMemory}, Dump Type: {dt1Msg.Address.DumpType}, Verifiable: {dt1Msg.Address.IsVerifiable}, Patch Number: {dt1Msg.Address.PatchNumber}, Parameter Address: {dt1Msg.Address.ParameterAddress}");
-                    Debug.WriteLine($"[DEBUG] DT1: Current patch buffer size: {dt1Msg.Data.Length}");
-                    //Debug.WriteLine(HexDump(dt1Msg.Data));
                     byteBuffer.AddRange(dt1Msg.Data);
+                    Console.Write($"\r[MIDI] Data received: {byteBuffer.Count} / 8192 bytes...");
 
-                    // Release it once we have all data per group
-                    if (e.Data.Length < 254)
+                    // Release once we have accumulated the expected bytes for the group
+                    if (byteBuffer.Count >= 8192)
                     {
+                        Console.WriteLine();
                         tcs.TrySetResult(true);
                     }
                     break;
                 default:
-                    Debug.WriteLine($"[DEBUG] Unknown SysEx message type received: {msgType:X2}");
+                    Console.WriteLine($"[MIDI] Received other message type: {msgType:X2}");
                     break;
                 }
             }
@@ -105,30 +127,39 @@ namespace GP16Editor.Core
 
             try
             {
-                // Request Group A
-                Debug.WriteLine("[DEBUG] Requesting Group A data dump");
-                byte[] addressA = [0x01, 0x00, 0x00];
-                byte[] sizeA = [0x00, 0x23, 0x00]; // 4480 bytes
-                await _midiService.RequestDataDump(addressA, sizeA);
+                var progressOffset = 0;
+                if (includeGroupA)
+                {
+                    tcs = new TaskCompletionSource<bool>();
+                    byteBuffer.Clear();
+                    Console.WriteLine("[MIDI] Requesting Group A (64 patches)...");
+                    byte[] addressA = [0x01, 0x00, 0x00];
+                    byte[] sizeA = [0x00, 0x40, 0x00];
+                    await _midiService.RequestDataDump(addressA, sizeA);
 
-                await tcs.Task;
-                var groupABytes = byteBuffer.ToArray();
-                Debug.WriteLine("[DEBUG] Group A data received");
-                //Debug.WriteLine(HexDump(groupABytes));
-                var groupAPatches = ParsePatchBuffer(groupABytes, progress);
+                    await tcs.Task;
+                    var groupABytes = byteBuffer.ToArray();
+                    Console.WriteLine($"[MIDI] Group A received: {groupABytes.Length} bytes");
+                    var groupAPatches = ParsePatchBuffer(groupABytes, progress, progressOffset);
+                    patches.AddRange(groupAPatches);
+                    progressOffset += groupAPatches.Count;
+                }
 
-                // Request Group B
-                // tcs = new TaskCompletionSource<bool>();
-                // byteBuffer.Clear();
-                // Debug.WriteLine("[DEBUG] Requesting Group B data dump");
-                // byte[] addressB = [0x02, 0x00, 0x00];
-                // byte[] sizeB = [0x00, 0x23, 0x00]; // 4480 bytes
-                // await _midiService.RequestDataDump(addressB, sizeB);
+                if (includeGroupB)
+                {
+                    tcs = new TaskCompletionSource<bool>();
+                    byteBuffer.Clear();
+                    Console.WriteLine("[MIDI] Requesting Group B (64 patches)...");
+                    byte[] addressB = [0x02, 0x00, 0x00];
+                    byte[] sizeB = [0x00, 0x40, 0x00];
+                    await _midiService.RequestDataDump(addressB, sizeB);
 
-                // await tcs.Task;
-                // Debug.WriteLine("[DEBUG] Group B data received");
-                // var groupBBytes = byteBuffer.ToArray();
-                // var groupBPatches = ParsePatchBuffer(groupBBytes, progress);
+                    await tcs.Task;
+                    var groupBBytes = byteBuffer.ToArray();
+                    Console.WriteLine($"[MIDI] Group B received: {groupBBytes.Length} bytes");
+                    var groupBPatches = ParsePatchBuffer(groupBBytes, progress, progressOffset);
+                    patches.AddRange(groupBPatches);
+                }
             }
             finally
             {
@@ -138,7 +169,7 @@ namespace GP16Editor.Core
             return patches;
         }
 
-        private static List<Patch> ParsePatchBuffer(byte[] buffer, IProgress<int>? progress)
+        private static List<Patch> ParsePatchBuffer(byte[] buffer, IProgress<int>? progress, int progressOffset = 0)
         {
             var patches = new List<Patch>();
             int totalPatches = buffer.Length / PATCH_SIZE;
@@ -154,7 +185,7 @@ namespace GP16Editor.Core
                 patch.ParsePatchData(patchBytes);
                 patches.Add(patch);
                 Debug.WriteLine($"[DEBUG] Parsed patch {i + 1}: {patch.PatchName}");
-                progress?.Report(i + 1);
+                progress?.Report(progressOffset + i + 1);
             }
 
             return patches;

@@ -7,6 +7,8 @@
     <Color x:Key="BackgroundColor">#121212</Color>
     <Color x:Key="TextColor">#FFFFFF</Color>
     <Color x:Key="HeaderText">#FFFFFF</Color>
-    <Color x:Key="BorderColor">#444444</Color>
+    <Color x:Key="BorderColor">#555555</Color>
     <Color x:Key="ContentBackgroundColor">#1F1F1F</Color>
+    <Color x:Key="InputBackgroundColor">#2D2D2D</Color>
+    <Color x:Key="DisabledTextColor">#666666</Color>
 </ResourceDictionary>

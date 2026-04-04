@@ -10,8 +10,17 @@ namespace GP16Editor;
 
 public static class MauiProgram
 {
+#if WINDOWS
+	[System.Runtime.InteropServices.DllImport("kernel32.dll")]
+	private static extern bool AttachConsole(int dwProcessId);
+#endif
+
 	public static MauiApp CreateMauiApp()
 	{
+#if WINDOWS
+		AttachConsole(-1); // -1 = attach to the parent process's console
+#endif
+
 		var builder = MauiApp.CreateBuilder();
 		builder
 			.UseMauiApp<App>()

@@ -119,6 +119,15 @@ namespace GP16Editor.ViewModels
             var selectedOutput = Microsoft.Maui.Storage.Preferences.Get("SelectedOutputDevice", string.Empty);
             IsInputDeviceSelected = !string.IsNullOrEmpty(selectedInput);
             IsOutputDeviceSelected = !string.IsNullOrEmpty(selectedOutput);
+
+            _midiService.ErrorOccurred += OnMidiErrorOccurred;
+
+            if (IsInputDeviceSelected && IsOutputDeviceSelected)
+            {
+                _midiService.InputChannel = Microsoft.Maui.Storage.Preferences.Get("SelectedInputChannel", 1);
+                _midiService.OutputChannel = Microsoft.Maui.Storage.Preferences.Get("SelectedOutputChannel", 1);
+                _midiService.SelectDevices(selectedInput, selectedOutput);
+            }
             
             InitializePatches();
             FilterPatches();
@@ -209,29 +218,52 @@ namespace GP16Editor.ViewModels
         [RelayCommand]
         private async Task RefreshPatches()
         {
-            // Show progress popup
+            var mainPage = Application.Current?.Windows[0].Page;
+
+            if (!_midiService.IsConnected)
+            {
+                if (mainPage != null)
+                    await mainPage.DisplayAlert("Not Connected", "MIDI devices are not connected. Open Settings and select your MIDI input and output devices.", "OK");
+                return;
+            }
+
             var progressPopup = new GP16Editor.Views.ProgressPopup();
-            int max = 128;
             int current = 0;
             var progress = new Progress<int>(value => {
                 current = value;
-                progressPopup.SetProgress(current, max);
+                progressPopup.SetProgress(current, 128);
             });
 
-            // Show the popup (assumes MainPage is the current page)
-            var mainPage = Application.Current?.Windows[0].Page;
-            var popupTask = mainPage?.ShowPopupAsync(progressPopup);
+            mainPage?.ShowPopupAsync(progressPopup);
 
-            var patches = await _patchService.GetAllPatchesAsync(progress);
-            AllPatches.Clear();
-            foreach (var patch in patches)
+            try
             {
-                AllPatches.Add(new PatchListItem(patch));
+                var patches = await _patchService.GetAllPatchesAsync(progress);
+                AllPatches.Clear();
+                foreach (var patch in patches)
+                {
+                    AllPatches.Add(new PatchListItem(patch));
+                }
+                FilterPatches();
             }
-            FilterPatches();
+            finally
+            {
+                progressPopup.Close();
+            }
+        }
 
-            // Hide the popup
-            progressPopup.Close();
+        private void OnMidiErrorOccurred(object? sender, string error)
+        {
+            IsInputDeviceSelected = false;
+            IsOutputDeviceSelected = false;
+            OnPropertyChanged(nameof(CanRefresh));
+
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                var page = Application.Current?.Windows[0].Page;
+                if (page != null)
+                    await page.DisplayAlert("MIDI Error", error, "OK");
+            });
         }
 
         [RelayCommand]
@@ -253,8 +285,8 @@ namespace GP16Editor.ViewModels
                 if (result is bool saved && saved)
                 {
                     _midiService.SelectDevices(viewModel.SelectedInputDevice, viewModel.SelectedOutputDevice);
-                    IsInputDeviceSelected = !string.IsNullOrEmpty(viewModel.SelectedInputDevice);
-                    IsOutputDeviceSelected = !string.IsNullOrEmpty(viewModel.SelectedOutputDevice);
+                    IsInputDeviceSelected = _midiService.IsConnected;
+                    IsOutputDeviceSelected = _midiService.IsConnected;
                     OnPropertyChanged(nameof(CanRefresh));
                 }
             }

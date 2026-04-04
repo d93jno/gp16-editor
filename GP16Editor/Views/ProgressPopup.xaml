@@ -2,10 +2,28 @@
 <toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-             x:Class="GP16Editor.Views.ProgressPopup">
-    <VerticalStackLayout Padding="30" Spacing="20" BackgroundColor="{DynamicResource ContentBackgroundColor}">
-        <Label Text="Loading patches..." FontSize="Medium" HorizontalOptions="Center" />
-        <ProgressBar x:Name="ProgressBar" Progress="0" HeightRequest="20" />
-        <Label x:Name="ProgressLabel" Text="0 / 128" HorizontalOptions="Center" />
-    </VerticalStackLayout>
+             x:Class="GP16Editor.Views.ProgressPopup"
+             Color="#CC000000">
+    <Border BackgroundColor="{DynamicResource ContentBackgroundColor}"
+            Stroke="{DynamicResource BorderColor}"
+            StrokeThickness="1"
+            StrokeShape="RoundRectangle 12"
+            Padding="32,28"
+            MinimumWidthRequest="300">
+        <VerticalStackLayout Spacing="20">
+            <Label Text="Loading patches..."
+                   FontSize="16"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   TextColor="{DynamicResource TextColor}" />
+            <ProgressBar x:Name="ProgressBar"
+                         Progress="0"
+                         HeightRequest="8" />
+            <Label x:Name="ProgressLabel"
+                   Text="0 / 128"
+                   HorizontalOptions="Center"
+                   TextColor="{DynamicResource TextColor}"
+                   Opacity="0.7" />
+        </VerticalStackLayout>
+    </Border>
 </toolkit:Popup>

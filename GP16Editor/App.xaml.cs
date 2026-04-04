@@ -12,6 +12,9 @@ public partial class App : Application
 
 	public App(MidiService midiService, AppShell shell)
 	{
+		Trace.Listeners.Add(new TextWriterTraceListener(Console.Out) { Name = "Console" });
+		Trace.AutoFlush = true;
+
 		InitializeComponent();
 
         var theme = Preferences.Get("SelectedTheme", "System");

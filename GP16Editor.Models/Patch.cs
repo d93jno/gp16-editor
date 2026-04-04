@@ -29,6 +29,32 @@ namespace GP16Editor.Models
         public LineoutFilterParameters LineoutFilter { get; } = new LineoutFilterParameters();
 
         public int PatchNumber { get; set; }
+        public int BlockB2Mode { get; private set; }
+        public string BlockB2ModeName => BlockB2Mode switch
+        {
+            0 => "Chorus",
+            1 => "Flanger",
+            2 => "Pitch Shifter",
+            3 => "Space-D",
+            _ => "Unknown"
+        };
+
+        public bool IsCompressorEnabled { get; private set; }
+        public bool IsDistortionOverdriveEnabled { get; private set; }
+        public bool IsPickingFilterEnabled { get; private set; }
+        public bool IsStepPhaserEnabled { get; private set; }
+        public bool IsParametricEQEnabled { get; private set; }
+        public bool IsNoiseSuppressorEnabled { get; private set; }
+        public bool IsShortDelayEnabled { get; private set; }
+        public bool IsBlockB2Enabled { get; private set; }
+        public bool IsChorusEnabled { get; private set; }
+        public bool IsFlangerEnabled { get; private set; }
+        public bool IsPitchShifterEnabled { get; private set; }
+        public bool IsSpaceDEnabled { get; private set; }
+        public bool IsAutoPanpotEnabled { get; private set; }
+        public bool IsTapDelayEnabled { get; private set; }
+        public bool IsReverbEnabled { get; private set; }
+        public bool IsLineoutFilterEnabled { get; private set; }
 
         public void ParsePatchData(byte[] data)
         {
@@ -47,6 +73,30 @@ namespace GP16Editor.Models
             for (int i = 0; i <= 4 && i < data.Length; i++) BlockA.Add(data[i]);
             for (int i = 6; i <= 10 && i < data.Length; i++) BlockB.Add(data[i]);
 
+            if (data.Length > 0x0E)
+            {
+                BlockB2Mode = data[0x0C] & 0x03;
+                var onOffHigh = data[0x0D];
+                var onOffLow = data[0x0E];
+                DistortionOverdrive.IsDistortion = (onOffHigh & 0x40) == 0;
+                IsLineoutFilterEnabled = (onOffHigh & 0x10) != 0;
+                IsReverbEnabled = (onOffHigh & 0x08) != 0;
+                IsTapDelayEnabled = (onOffHigh & 0x04) != 0;
+                IsAutoPanpotEnabled = (onOffHigh & 0x02) != 0;
+                IsBlockB2Enabled = (onOffHigh & 0x01) != 0;
+                IsShortDelayEnabled = (onOffLow & 0x40) != 0;
+                IsNoiseSuppressorEnabled = (onOffLow & 0x20) != 0;
+                IsParametricEQEnabled = (onOffLow & 0x10) != 0;
+                IsStepPhaserEnabled = (onOffLow & 0x08) != 0;
+                IsPickingFilterEnabled = (onOffLow & 0x04) != 0;
+                IsDistortionOverdriveEnabled = (onOffLow & 0x02) != 0;
+                IsCompressorEnabled = (onOffLow & 0x01) != 0;
+                IsChorusEnabled = IsBlockB2Enabled && BlockB2Mode == 0;
+                IsFlangerEnabled = IsBlockB2Enabled && BlockB2Mode == 1;
+                IsPitchShifterEnabled = IsBlockB2Enabled && BlockB2Mode == 2;
+                IsSpaceDEnabled = IsBlockB2Enabled && BlockB2Mode == 3;
+            }
+
             // Compressor (A-1, 0x0F-0x12)
             if (data.Length > 0x12)
             {
@@ -56,13 +106,19 @@ namespace GP16Editor.Models
                 Compressor.Level = data[0x12];
             }
 
-            // Distortion/Overdrive (A-2, 0x13-0x16)
-            if (data.Length > 0x16)
+            if (DistortionOverdrive.IsDistortion && data.Length > 0x15)
             {
                 DistortionOverdrive.Tone = (sbyte)data[0x13] - 50;
                 DistortionOverdrive.Drive = data[0x14];
-                DistortionOverdrive.Turbo = data[0x15] != 0;
-                DistortionOverdrive.Level = data[0x16];
+                DistortionOverdrive.Turbo = false;
+                DistortionOverdrive.Level = data[0x15];
+            }
+            else if (!DistortionOverdrive.IsDistortion && data.Length > 0x19)
+            {
+                DistortionOverdrive.Tone = (sbyte)data[0x16] - 50;
+                DistortionOverdrive.Drive = data[0x17];
+                DistortionOverdrive.Turbo = data[0x18] != 0;
+                DistortionOverdrive.Level = data[0x19];
             }
 
             // Picking Filter (A-3, 0x1A-0x1D)

@@ -24,7 +24,7 @@
     </Style>
 
     <Style TargetType="Button">
-        <Setter Property="TextColor" Value="{DynamicResource TextColor}" />
+        <Setter Property="TextColor" Value="{DynamicResource HeaderText}" />
         <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryColor}" />
         <Setter Property="FontFamily" Value="OpenSansRegular"/>
         <Setter Property="FontSize" Value="14"/>
@@ -39,7 +39,7 @@
                     <VisualState x:Name="Normal" />
                     <VisualState x:Name="Disabled">
                         <VisualState.Setters>
-                            <Setter Property="TextColor" Value="{DynamicResource SecondaryColor}" />
+                            <Setter Property="TextColor" Value="{DynamicResource DisabledTextColor}" />
                             <Setter Property="BackgroundColor" Value="{DynamicResource SecondaryColor}" />
                         </VisualState.Setters>
                     </VisualState>
@@ -90,7 +90,7 @@
 
     <Style TargetType="Editor">
         <Setter Property="TextColor" Value="{DynamicResource TextColor}" />
-        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource InputBackgroundColor}" />
         <Setter Property="FontFamily" Value="OpenSansRegular"/>
         <Setter Property="FontSize" Value="14" />
         <Setter Property="PlaceholderColor" Value="{DynamicResource SecondaryColor}" />
@@ -112,7 +112,7 @@
 
     <Style TargetType="Entry">
         <Setter Property="TextColor" Value="{DynamicResource TextColor}" />
-        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource InputBackgroundColor}" />
         <Setter Property="FontFamily" Value="OpenSansRegular"/>
         <Setter Property="FontSize" Value="14" />
         <Setter Property="PlaceholderColor" Value="{DynamicResource SecondaryColor}" />
@@ -195,7 +195,7 @@
     <Style TargetType="Picker">
         <Setter Property="TextColor" Value="{DynamicResource TextColor}" />
         <Setter Property="TitleColor" Value="{DynamicResource TextColor}" />
-        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource InputBackgroundColor}" />
         <Setter Property="FontFamily" Value="OpenSansRegular"/>
         <Setter Property="FontSize" Value="14" />
         <Setter Property="MinimumHeightRequest" Value="44"/>
@@ -260,7 +260,7 @@
         <Setter Property="TextColor" Value="{DynamicResource TextColor}" />
         <Setter Property="PlaceholderColor" Value="{DynamicResource SecondaryColor}" />
         <Setter Property="CancelButtonColor" Value="{DynamicResource SecondaryColor}" />
-        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource InputBackgroundColor}" />
         <Setter Property="FontFamily" Value="OpenSansRegular" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="MinimumHeightRequest" Value="44"/>

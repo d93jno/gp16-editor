@@ -16,6 +16,7 @@ namespace GP16Editor.Core
         public int InputChannel { get; set; } = 1;
         public int OutputChannel { get; set; } = 1;
         public byte DeviceId { get; set; } = 0;
+        public bool IsConnected => _inputDevice != null && _outputDevice != null;
 
         public event EventHandler<NormalSysExEvent>? SysExReceived;
         public event EventHandler<string>? ErrorOccurred;
@@ -46,17 +47,15 @@ namespace GP16Editor.Core
 
         public void SelectDevices(string? inputDeviceName, string? outputDeviceName)
         {
-
-            var inputDevices = InputDevice.GetAll();
-            var outputDevices = OutputDevice.GetAll();
-
-            System.Diagnostics.Debug.WriteLine($"[DEBUG] Available Input Devices: {string.Join(", ", inputDevices.Select(d => d.Name))}");
-            System.Diagnostics.Debug.WriteLine($"[DEBUG] Available Output Devices: {string.Join(", ", outputDevices.Select(d => d.Name))}");
+            var inputDevices = InputDevice.GetAll().ToList();
+            var outputDevices = OutputDevice.GetAll().ToList();
 
             var inputDevice = inputDevices.FirstOrDefault(d => d.Name == inputDeviceName);
             var outputDevice = outputDevices.FirstOrDefault(d => d.Name == outputDeviceName);
 
-            System.Diagnostics.Debug.WriteLine($"[DEBUG] MIDI devices selected: Input='{inputDeviceName}', Output='{outputDeviceName}'");
+            // Dispose of all other devices that were not selected
+            foreach (var d in inputDevices.Where(d => d != inputDevice)) d.Dispose();
+            foreach (var d in outputDevices.Where(d => d != outputDevice)) d.Dispose();
 
             if (inputDevice != null && outputDevice != null)
             {
@@ -67,11 +66,10 @@ namespace GP16Editor.Core
 
                     _inputDevice.EventReceived += OnEventReceived;
                     _inputDevice.StartEventsListening();
-                    DeviceId = (byte)(OutputChannel - 1);
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Error starting MIDI devices: {ex.Message}");
+                    Console.WriteLine($"[MIDI] Error starting devices: {ex.Message}");
 
                     if (_inputDevice != null)
                     {
@@ -91,8 +89,10 @@ namespace GP16Editor.Core
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine($"MIDI devices not available: Input='{inputDeviceName}' ({inputDevice != null}), Output='{outputDeviceName}' ({outputDevice != null})");
                 ErrorOccurred?.Invoke(this, "Selected MIDI devices are not available.");
+                // Ensure we dispose the ones we did find if the other is missing
+                inputDevice?.Dispose();
+                outputDevice?.Dispose();
                 _inputDevice = null;
                 _outputDevice = null;
             }
@@ -100,18 +100,11 @@ namespace GP16Editor.Core
 
         private void OnEventReceived(object? sender, MidiEventReceivedEventArgs e)
         {
+            if (_disposed)
+                return;
+
             if (e.Event is NormalSysExEvent sysExEvent)
             {
-                // The NormalSysExEvent.Data does not include F0 and F7, so we need to add them back
-                // to have the full message for parsing.
-                var fullMessage = new List<byte>
-                {
-                    0xF0
-                };
-                fullMessage.AddRange(sysExEvent.Data);
-                fullMessage.Add(0xF7);
-
-                // The old event, which passes the raw DryWetMidi event
                 SysExReceived?.Invoke(this, sysExEvent);
             }
         }
@@ -120,19 +113,14 @@ namespace GP16Editor.Core
         {
             if (_outputDevice == null)
             {
-                System.Diagnostics.Debug.WriteLine("MIDI Output device not selected.");
                 return;
             }
 
-            // The NormalSysExEvent constructor expects the data bytes *without* F0 and F7.
-            // My BuildDt1Message and BuildRq1Message methods return the full SysEx message
-            // including F0 and F7. So I need to strip them for the DryWetMidi library.
             var sysExDataWithoutF0F7 = data.Skip(1).Take(data.Count - 2).ToArray();
             var sysExEvent = new NormalSysExEvent(sysExDataWithoutF0F7);
             
             _outputDevice.SendEvent(sysExEvent);
-            // Implement the required delay for Roland devices between large messages
-            await Task.Delay(50); // 50ms delay as specified in GEMINI.md
+            await Task.Delay(50); 
         }
 
         public void Dispose()
@@ -148,28 +136,26 @@ namespace GP16Editor.Core
 
             if (disposing)
             {
-                // Dispose managed resources
                 try
                 {
                     if (_inputDevice != null)
                     {
-                        System.Diagnostics.Debug.WriteLine("Stopping MIDI input device event listening");
-                        _inputDevice.StopEventsListening();
+                        Console.WriteLine("[MIDI] Closing input device...");
+                        _inputDevice.EventReceived -= OnEventReceived;
                         _inputDevice.Dispose();
                         _inputDevice = null;
                     }
                     
                     if (_outputDevice != null)
                     {
+                        Console.WriteLine("[MIDI] Closing output device...");
                         _outputDevice.Dispose();
                         _outputDevice = null;
                     }
-                    
-                    System.Diagnostics.Debug.WriteLine("MIDI service disposed successfully");
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Error disposing MIDI service: {ex.Message}");
+                    Console.WriteLine($"[MIDI] Error during dispose: {ex.Message}");
                 }
             }
 

@@ -4,39 +4,104 @@
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:viewModels="clr-namespace:GP16Editor.ViewModels"
              x:Class="GP16Editor.Views.ConfigurationView"
-             x:DataType="viewModels:ConfigurationViewModel">
-    <VerticalStackLayout Padding="20" Spacing="10" BackgroundColor="{DynamicResource ContentBackgroundColor}">
-        <Label Text="MIDI Settings" FontSize="Large" FontAttributes="Bold" TextColor="{DynamicResource TextColor}" />
+             x:DataType="viewModels:ConfigurationViewModel"
+             Color="#CC000000">
+    <Border BackgroundColor="{DynamicResource ContentBackgroundColor}"
+            Stroke="{DynamicResource BorderColor}"
+            StrokeThickness="1"
+            StrokeShape="RoundRectangle 12"
+            Padding="28,24"
+            MinimumWidthRequest="380">
+        <VerticalStackLayout Spacing="16">
 
-        <Picker Title="Select Input Device"
-                ItemsSource="{Binding InputDevices}"
-                SelectedItem="{Binding SelectedInputDevice}"
-                TextColor="{DynamicResource TextColor}" />
-        <Label Text="No input devices found." IsVisible="{Binding NoInputDevicesFound}" TextColor="{DynamicResource TextColor}" />
+            <Label Text="MIDI Settings"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   TextColor="{DynamicResource TextColor}" />
 
-        <Picker Title="Select Output Device"
-                ItemsSource="{Binding OutputDevices}"
-                SelectedItem="{Binding SelectedOutputDevice}"
-                TextColor="{DynamicResource TextColor}" />
-        <Label Text="No output devices found." IsVisible="{Binding NoOutputDevicesFound}" TextColor="{DynamicResource TextColor}" />
+            <BoxView HeightRequest="1"
+                     BackgroundColor="{DynamicResource BorderColor}"
+                     Margin="0,0,0,4" />
 
-        <Picker Title="Select Input Channel"
-                ItemsSource="{Binding MidiChannels}"
-                SelectedItem="{Binding SelectedInputChannel}"
-                TextColor="{DynamicResource TextColor}" />
+            <Label Text="Input Device" FontSize="12" TextColor="{DynamicResource TextColor}" Opacity="0.7" Margin="0,0,0,-8" />
+            <Border Stroke="{DynamicResource BorderColor}" StrokeThickness="1" StrokeShape="RoundRectangle 6"
+                    BackgroundColor="{DynamicResource InputBackgroundColor}" Padding="4,0">
+                <Picker Title="Select Input Device"
+                        ItemsSource="{Binding InputDevices}"
+                        SelectedItem="{Binding SelectedInputDevice}"
+                        TextColor="{DynamicResource TextColor}"
+                        TitleColor="{DynamicResource TextColor}"
+                        BackgroundColor="Transparent" />
+            </Border>
+            <Label Text="No input devices found."
+                   IsVisible="{Binding NoInputDevicesFound}"
+                   TextColor="#E05555"
+                   FontSize="12" />
 
-        <Picker Title="Select Output Channel"
-                ItemsSource="{Binding MidiChannels}"
-                SelectedItem="{Binding SelectedOutputChannel}"
-                TextColor="{DynamicResource TextColor}" />
+            <Label Text="Output Device" FontSize="12" TextColor="{DynamicResource TextColor}" Opacity="0.7" Margin="0,0,0,-8" />
+            <Border Stroke="{DynamicResource BorderColor}" StrokeThickness="1" StrokeShape="RoundRectangle 6"
+                    BackgroundColor="{DynamicResource InputBackgroundColor}" Padding="4,0">
+                <Picker Title="Select Output Device"
+                        ItemsSource="{Binding OutputDevices}"
+                        SelectedItem="{Binding SelectedOutputDevice}"
+                        TextColor="{DynamicResource TextColor}"
+                        TitleColor="{DynamicResource TextColor}"
+                        BackgroundColor="Transparent" />
+            </Border>
+            <Label Text="No output devices found."
+                   IsVisible="{Binding NoOutputDevicesFound}"
+                   TextColor="#E05555"
+                   FontSize="12" />
 
-        <Picker Title="Select Theme"
-                ItemsSource="{Binding Themes}"
-                SelectedItem="{Binding SelectedTheme}"
-                TextColor="{DynamicResource TextColor}" />
+            <Grid ColumnDefinitions="*,16,*" ColumnSpacing="0">
+                <VerticalStackLayout Grid.Column="0" Spacing="4">
+                    <Label Text="Input Channel" FontSize="12" TextColor="{DynamicResource TextColor}" Opacity="0.7" />
+                    <Border Stroke="{DynamicResource BorderColor}" StrokeThickness="1" StrokeShape="RoundRectangle 6"
+                            BackgroundColor="{DynamicResource InputBackgroundColor}" Padding="4,0">
+                        <Picker Title="Channel"
+                                ItemsSource="{Binding MidiChannels}"
+                                SelectedItem="{Binding SelectedInputChannel}"
+                                TextColor="{DynamicResource TextColor}"
+                                TitleColor="{DynamicResource TextColor}"
+                                BackgroundColor="Transparent" />
+                    </Border>
+                </VerticalStackLayout>
 
-        <Button Text="Save"
-                Command="{Binding SaveCommand}" 
-                Clicked="OnSaveButtonClicked"/>
-    </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="2" Spacing="4">
+                    <Label Text="Output Channel" FontSize="12" TextColor="{DynamicResource TextColor}" Opacity="0.7" />
+                    <Border Stroke="{DynamicResource BorderColor}" StrokeThickness="1" StrokeShape="RoundRectangle 6"
+                            BackgroundColor="{DynamicResource InputBackgroundColor}" Padding="4,0">
+                        <Picker Title="Channel"
+                                ItemsSource="{Binding MidiChannels}"
+                                SelectedItem="{Binding SelectedOutputChannel}"
+                                TextColor="{DynamicResource TextColor}"
+                                TitleColor="{DynamicResource TextColor}"
+                                BackgroundColor="Transparent" />
+                    </Border>
+                </VerticalStackLayout>
+            </Grid>
+
+            <Label Text="Theme" FontSize="12" TextColor="{DynamicResource TextColor}" Opacity="0.7" Margin="0,0,0,-8" />
+            <Border Stroke="{DynamicResource BorderColor}" StrokeThickness="1" StrokeShape="RoundRectangle 6"
+                    BackgroundColor="{DynamicResource InputBackgroundColor}" Padding="4,0">
+                <Picker Title="Select Theme"
+                        ItemsSource="{Binding Themes}"
+                        SelectedItem="{Binding SelectedTheme}"
+                        TextColor="{DynamicResource TextColor}"
+                        TitleColor="{DynamicResource TextColor}"
+                        BackgroundColor="Transparent" />
+            </Border>
+
+            <BoxView HeightRequest="1"
+                     BackgroundColor="{DynamicResource BorderColor}"
+                     Margin="0,4,0,0" />
+
+            <Button Text="Save"
+                    Command="{Binding SaveCommand}"
+                    Clicked="OnSaveButtonClicked"
+                    HorizontalOptions="End"
+                    MinimumWidthRequest="100" />
+
+        </VerticalStackLayout>
+    </Border>
 </toolkit:Popup>
