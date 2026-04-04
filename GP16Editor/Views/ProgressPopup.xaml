@@ -10,20 +10,34 @@
             StrokeShape="RoundRectangle 12"
             Padding="32,28"
             MinimumWidthRequest="300">
-        <VerticalStackLayout Spacing="20">
+        <VerticalStackLayout Spacing="16">
             <Label Text="Loading patches..."
                    FontSize="16"
                    FontAttributes="Bold"
                    HorizontalOptions="Center"
                    TextColor="{DynamicResource TextColor}" />
-            <ProgressBar x:Name="ProgressBar"
-                         Progress="0"
-                         HeightRequest="8" />
-            <Label x:Name="ProgressLabel"
-                   Text="0 / 128"
-                   HorizontalOptions="Center"
-                   TextColor="{DynamicResource TextColor}"
-                   Opacity="0.7" />
+            <VerticalStackLayout Spacing="4">
+                <Label x:Name="BytesLabel"
+                       Text="Data received: 0 / 16384 bytes"
+                       FontSize="12"
+                       HorizontalOptions="Center"
+                       TextColor="{DynamicResource TextColor}"
+                       Opacity="0.7" />
+                <ProgressBar x:Name="BytesProgressBar"
+                             Progress="0"
+                             HeightRequest="6" />
+            </VerticalStackLayout>
+            <VerticalStackLayout Spacing="4">
+                <Label x:Name="ProgressLabel"
+                       Text="Patches parsed: 0 / 128"
+                       FontSize="12"
+                       HorizontalOptions="Center"
+                       TextColor="{DynamicResource TextColor}"
+                       Opacity="0.7" />
+                <ProgressBar x:Name="ProgressBar"
+                             Progress="0"
+                             HeightRequest="6" />
+            </VerticalStackLayout>
         </VerticalStackLayout>
     </Border>
 </toolkit:Popup>

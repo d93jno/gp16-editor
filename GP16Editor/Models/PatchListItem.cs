@@ -5,6 +5,7 @@ namespace GP16Editor.Models
         public string Id { get; set; } = "";
         public string Name { get; set; } = "";
         public int PatchNumber { get; set; }
+        public Patch? SourcePatch { get; set; }
 
         public string DisplayName => $"{Id} - {Name}";
 
@@ -14,6 +15,7 @@ namespace GP16Editor.Models
         {
             PatchNumber = patch.PatchNumber;
             Name = patch.PatchName;
+            SourcePatch = patch;
             var group = (PatchNumber - 1) < 64 ? "A" : "B";
             var patchInGroup = (PatchNumber - 1) % 64;
             var bank = patchInGroup / 8 + 1;

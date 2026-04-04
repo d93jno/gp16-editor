@@ -43,83 +43,83 @@
                         <views:EffectSequenceBlockView BindingContext="{Binding BlockBViewModel}" />
                     </HorizontalStackLayout>
 
-                    <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="10">
-                        <views:BaseEffectView Grid.Row="0" Grid.Column="0" EffectName="Compressor" IsVisible="{Binding IsCompressorEnabled}">
+                    <FlexLayout Wrap="Wrap" Direction="Row" AlignContent="Start" AlignItems="Start">
+                        <views:BaseEffectView EffectName="Compressor" IsVisible="{Binding IsCompressorEnabled}" Margin="0,0,10,10">
                             <views:BaseEffectView.EffectContent>
                                 <views:CompressorView BindingContext="{Binding CompressorViewModel}" />
                             </views:BaseEffectView.EffectContent>
                         </views:BaseEffectView>
-                        <views:BaseEffectView Grid.Row="0" Grid.Column="1" EffectName="Distortion / Overdrive" IsVisible="{Binding IsDistortionOverdriveEnabled}">
+                        <views:BaseEffectView EffectName="Distortion / Overdrive" IsVisible="{Binding IsDistortionOverdriveEnabled}" Margin="0,0,10,10">
                             <views:BaseEffectView.EffectContent>
                                 <views:DistortionOverdriveView BindingContext="{Binding DistortionOverdriveViewModel}" />
                             </views:BaseEffectView.EffectContent>
                         </views:BaseEffectView>
-                        <views:BaseEffectView Grid.Row="0" Grid.Column="2" EffectName="Picking Filter" IsVisible="{Binding IsPickingFilterEnabled}">
+                        <views:BaseEffectView EffectName="Picking Filter" IsVisible="{Binding IsPickingFilterEnabled}" Margin="0,0,10,10">
                             <views:BaseEffectView.EffectContent>
                                 <views:PickingFilterView BindingContext="{Binding PickingFilterViewModel}" />
                             </views:BaseEffectView.EffectContent>
                         </views:BaseEffectView>
-                        <views:BaseEffectView Grid.Row="1" Grid.Column="0" EffectName="Step Phaser" IsVisible="{Binding IsStepPhaserEnabled}">
+                        <views:BaseEffectView EffectName="Step Phaser" IsVisible="{Binding IsStepPhaserEnabled}" Margin="0,0,10,10">
                             <views:BaseEffectView.EffectContent>
                                 <views:StepPhaserView BindingContext="{Binding StepPhaserViewModel}" />
                             </views:BaseEffectView.EffectContent>
                         </views:BaseEffectView>
-                        <views:BaseEffectView Grid.Row="1" Grid.Column="1" EffectName="Parametric EQ" IsVisible="{Binding IsParametricEQEnabled}">
+                        <views:BaseEffectView EffectName="Parametric EQ" IsVisible="{Binding IsParametricEQEnabled}" Margin="0,0,10,10">
                             <views:BaseEffectView.EffectContent>
                                 <views:ParametricEQView BindingContext="{Binding ParametricEQViewModel}" />
                             </views:BaseEffectView.EffectContent>
                         </views:BaseEffectView>
-                        <views:BaseEffectView Grid.Row="1" Grid.Column="2" EffectName="Noise Suppressor" IsVisible="{Binding IsNoiseSuppressorEnabled}">
+                        <views:BaseEffectView EffectName="Noise Suppressor" IsVisible="{Binding IsNoiseSuppressorEnabled}" Margin="0,0,10,10">
                             <views:BaseEffectView.EffectContent>
                                 <views:NoiseSuppressorView BindingContext="{Binding NoiseSuppressorViewModel}" />
                             </views:BaseEffectView.EffectContent>
                         </views:BaseEffectView>
-                        <views:BaseEffectView Grid.Row="2" Grid.Column="0" EffectName="Short Delay" IsVisible="{Binding IsShortDelayEnabled}">
+                        <views:BaseEffectView EffectName="Short Delay" IsVisible="{Binding IsShortDelayEnabled}" Margin="0,0,10,10">
                             <views:BaseEffectView.EffectContent>
                                 <views:ShortDelayView BindingContext="{Binding ShortDelayViewModel}" />
                             </views:BaseEffectView.EffectContent>
                         </views:BaseEffectView>
-                        <views:BaseEffectView Grid.Row="2" Grid.Column="1" EffectName="Chorus" IsVisible="{Binding IsChorusEnabled}">
+                        <views:BaseEffectView EffectName="Chorus" IsVisible="{Binding IsChorusEnabled}" Margin="0,0,10,10">
                             <views:BaseEffectView.EffectContent>
                                 <views:ChorusView BindingContext="{Binding ChorusViewModel}" />
                             </views:BaseEffectView.EffectContent>
                         </views:BaseEffectView>
-                        <views:BaseEffectView Grid.Row="2" Grid.Column="2" EffectName="Flanger" IsVisible="{Binding IsFlangerEnabled}">
+                        <views:BaseEffectView EffectName="Flanger" IsVisible="{Binding IsFlangerEnabled}" Margin="0,0,10,10">
                             <views:BaseEffectView.EffectContent>
                                 <views:FlangerView BindingContext="{Binding FlangerViewModel}" />
                             </views:BaseEffectView.EffectContent>
                         </views:BaseEffectView>
-                        <views:BaseEffectView Grid.Row="3" Grid.Column="0" EffectName="Pitch Shifter" IsVisible="{Binding IsPitchShifterEnabled}">
+                        <views:BaseEffectView EffectName="Pitch Shifter" IsVisible="{Binding IsPitchShifterEnabled}" Margin="0,0,10,10">
                             <views:BaseEffectView.EffectContent>
                                 <views:PitchShifterView BindingContext="{Binding PitchShifterViewModel}" />
                             </views:BaseEffectView.EffectContent>
                         </views:BaseEffectView>
-                        <views:BaseEffectView Grid.Row="3" Grid.Column="1" EffectName="Space-D" IsVisible="{Binding IsSpaceDEnabled}">
+                        <views:BaseEffectView EffectName="Space-D" IsVisible="{Binding IsSpaceDEnabled}" Margin="0,0,10,10">
                             <views:BaseEffectView.EffectContent>
                                 <views:SpaceDView BindingContext="{Binding SpaceDViewModel}" />
                             </views:BaseEffectView.EffectContent>
                         </views:BaseEffectView>
-                        <views:BaseEffectView Grid.Row="3" Grid.Column="2" EffectName="Auto Panpot" IsVisible="{Binding IsAutoPanpotEnabled}">
+                        <views:BaseEffectView EffectName="Auto Panpot" IsVisible="{Binding IsAutoPanpotEnabled}" Margin="0,0,10,10">
                             <views:BaseEffectView.EffectContent>
                                 <views:AutoPanpotView BindingContext="{Binding AutoPanpotViewModel}" />
                             </views:BaseEffectView.EffectContent>
                         </views:BaseEffectView>
-                        <views:BaseEffectView Grid.Row="4" Grid.Column="0" EffectName="Tap Delay" IsVisible="{Binding IsTapDelayEnabled}">
+                        <views:BaseEffectView EffectName="Tap Delay" IsVisible="{Binding IsTapDelayEnabled}" Margin="0,0,10,10">
                             <views:BaseEffectView.EffectContent>
                                 <views:TapDelayView BindingContext="{Binding TapDelayViewModel}" />
                             </views:BaseEffectView.EffectContent>
                         </views:BaseEffectView>
-                        <views:BaseEffectView Grid.Row="4" Grid.Column="1" EffectName="Reverb" IsVisible="{Binding IsReverbEnabled}">
+                        <views:BaseEffectView EffectName="Reverb" IsVisible="{Binding IsReverbEnabled}" Margin="0,0,10,10">
                             <views:BaseEffectView.EffectContent>
                                 <views:ReverbView BindingContext="{Binding ReverbViewModel}" />
                             </views:BaseEffectView.EffectContent>
                         </views:BaseEffectView>
-                        <views:BaseEffectView Grid.Row="4" Grid.Column="2" EffectName="Lineout Filter" IsVisible="{Binding IsLineoutFilterEnabled}">
+                        <views:BaseEffectView EffectName="Lineout Filter" IsVisible="{Binding IsLineoutFilterEnabled}" Margin="0,0,10,10">
                             <views:BaseEffectView.EffectContent>
                                 <views:LineoutFilterView BindingContext="{Binding LineoutFilterViewModel}" />
                             </views:BaseEffectView.EffectContent>
                         </views:BaseEffectView>
-                    </Grid>
+                    </FlexLayout>
 
                 </VerticalStackLayout>
             </ScrollView>

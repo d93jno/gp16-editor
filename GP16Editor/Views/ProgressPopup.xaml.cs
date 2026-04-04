@@ -12,7 +12,13 @@ namespace GP16Editor.Views
         public void SetProgress(int value, int max)
         {
             ProgressBar.Progress = (double)value / max;
-            ProgressLabel.Text = $"{value} / {max}";
+            ProgressLabel.Text = $"Patches parsed: {value} / {max}";
+        }
+
+        public void SetByteProgress(int bytes, int totalBytes)
+        {
+            BytesProgressBar.Progress = (double)bytes / totalBytes;
+            BytesLabel.Text = $"Data received: {bytes} / {totalBytes} bytes";
         }
     }
 }

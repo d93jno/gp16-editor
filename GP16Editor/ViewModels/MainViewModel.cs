@@ -65,8 +65,12 @@ namespace GP16Editor.ViewModels
             {
                 if (SetProperty(ref _selectedPatch, value))
                 {
-                    // Here you would load the actual patch data
-                    CurrentPatch = new Patch { PatchName = value?.Name ?? "New Patch" };
+                    if (value?.SourcePatch != null)
+                        CurrentPatch = value.SourcePatch;
+                    else
+                        CurrentPatch = new Patch { PatchName = value?.Name ?? "New Patch" };
+                    SyncEffectStatesFromPatch();
+                    SyncEffectParametersFromPatch();
                 }
             }
         }
@@ -184,6 +188,9 @@ namespace GP16Editor.ViewModels
             {
                 effect.PropertyChanged += OnEffectChanged;
             }
+
+            SyncEffectStatesFromPatch();
+            SyncEffectParametersFromPatch();
         }
         
         private void InitializePatches()
@@ -228,17 +235,19 @@ namespace GP16Editor.ViewModels
             }
 
             var progressPopup = new GP16Editor.Views.ProgressPopup();
-            int current = 0;
+            var totalExpectedBytes = 16384;
             var progress = new Progress<int>(value => {
-                current = value;
-                progressPopup.SetProgress(current, 128);
+                progressPopup.SetProgress(value, 128);
+            });
+            var byteProgress = new Progress<int>(bytes => {
+                progressPopup.SetByteProgress(bytes, totalExpectedBytes);
             });
 
             mainPage?.ShowPopupAsync(progressPopup);
 
             try
             {
-                var patches = await _patchService.GetAllPatchesAsync(progress);
+                var patches = await _patchService.GetAllPatchesAsync(progress, byteProgress);
                 AllPatches.Clear();
                 foreach (var patch in patches)
                 {
@@ -327,6 +336,186 @@ namespace GP16Editor.ViewModels
                     case "Lineout Filter": OnPropertyChanged(nameof(IsLineoutFilterEnabled)); break;
                 }
             }
+        }
+
+        private void SyncEffectStatesFromPatch()
+        {
+            var patch = CurrentPatch;
+            foreach (var effect in BlockAViewModel.Effects)
+            {
+                effect.IsEnabled = effect.Name switch
+                {
+                    "Compressor" => patch.IsCompressorEnabled,
+                    "Distortion/Overdrive" => patch.IsDistortionOverdriveEnabled,
+                    "Picking Filter" => patch.IsPickingFilterEnabled,
+                    "Step Phaser" => patch.IsStepPhaserEnabled,
+                    "Parametric EQ" => patch.IsParametricEQEnabled,
+                    "Noise Suppressor" => patch.IsNoiseSuppressorEnabled,
+                    _ => effect.IsEnabled
+                };
+            }
+            foreach (var effect in BlockBViewModel.Effects)
+            {
+                effect.IsEnabled = effect.Name switch
+                {
+                    "Short Delay" => patch.IsShortDelayEnabled,
+                    "Chorus" => patch.IsChorusEnabled,
+                    "Flanger" => patch.IsFlangerEnabled,
+                    "Pitch Shifter" => patch.IsPitchShifterEnabled,
+                    "Space-D" => patch.IsSpaceDEnabled,
+                    "Auto Panpot" => patch.IsAutoPanpotEnabled,
+                    "Tap Delay" => patch.IsTapDelayEnabled,
+                    "Reverb" => patch.IsReverbEnabled,
+                    "Lineout Filter" => patch.IsLineoutFilterEnabled,
+                    _ => effect.IsEnabled
+                };
+            }
+        }
+
+        private void SyncEffectParametersFromPatch()
+        {
+            var patch = CurrentPatch;
+
+            CompressorViewModel.Sustain = patch.Compressor.Sustain;
+            CompressorViewModel.Attack = patch.Compressor.Attack;
+            CompressorViewModel.Tone = patch.Compressor.Tone;
+            CompressorViewModel.Level = patch.Compressor.Level;
+
+            DistortionOverdriveViewModel.Drive = patch.DistortionOverdrive.Drive;
+            DistortionOverdriveViewModel.Turbo = patch.DistortionOverdrive.Turbo;
+            DistortionOverdriveViewModel.Tone = patch.DistortionOverdrive.Tone;
+            DistortionOverdriveViewModel.Level = patch.DistortionOverdrive.Level;
+
+            PickingFilterViewModel.Sensitivity = patch.PickingFilter.Sens;
+            PickingFilterViewModel.CutoffFrequency = patch.PickingFilter.CutoffFrequency;
+            PickingFilterViewModel.QControl = ParameterValueTranslator.TranslateLinear(patch.PickingFilter.Q, 0, 40, 1, 5);
+            PickingFilterViewModel.UpDown = patch.PickingFilter.IsUp ? "Up" : "Down";
+
+            StepPhaserViewModel.Rate = patch.StepPhaser.Rate;
+            StepPhaserViewModel.Depth = patch.StepPhaser.Depth;
+            StepPhaserViewModel.Manual = patch.StepPhaser.Manual;
+            StepPhaserViewModel.Resonance = patch.StepPhaser.Resonance;
+            StepPhaserViewModel.LfoStep = patch.StepPhaser.LfoStep;
+
+            ParametricEQViewModel.LowFreq = patch.ParametricEQ.LoFreq;
+            ParametricEQViewModel.LowLevel = patch.ParametricEQ.LoLevel;
+            ParametricEQViewModel.LowMidFreq = patch.ParametricEQ.LMFreq;
+            ParametricEQViewModel.LowMidQ = patch.ParametricEQ.LMQ;
+            ParametricEQViewModel.LowMidLevel = patch.ParametricEQ.LMLevel;
+            ParametricEQViewModel.HighMidFreq = patch.ParametricEQ.HMFreq;
+            ParametricEQViewModel.HighMidQ = patch.ParametricEQ.HMQ;
+            ParametricEQViewModel.HighMidLevel = patch.ParametricEQ.HMLevel;
+            ParametricEQViewModel.HighFreq = patch.ParametricEQ.HiFreq;
+            ParametricEQViewModel.HighLevel = patch.ParametricEQ.HiLevel;
+
+            NoiseSuppressorViewModel.Sensitivity = patch.NoiseSuppressor.Sens;
+            NoiseSuppressorViewModel.Release = patch.NoiseSuppressor.Release;
+            NoiseSuppressorViewModel.Level = patch.NoiseSuppressor.Level;
+
+            ShortDelayViewModel.DelayTime = patch.ShortDelay.DelayTime;
+            ShortDelayViewModel.EffectLevel = patch.ShortDelay.EffectLevel;
+
+            ChorusViewModel.PreDelay = patch.Chorus.PreDelay;
+            ChorusViewModel.Rate = patch.Chorus.Rate;
+            ChorusViewModel.Depth = patch.Chorus.Depth;
+            ChorusViewModel.EffectLevel = patch.Chorus.EffectLevel;
+
+            FlangerViewModel.Rate = patch.Flanger.Rate;
+            FlangerViewModel.Depth = patch.Flanger.Depth;
+            FlangerViewModel.Manual = patch.Flanger.Manual;
+            FlangerViewModel.Resonance = patch.Flanger.Resonance;
+
+            PitchShifterViewModel.Chromatic = patch.PitchShifter.Chromatic;
+            PitchShifterViewModel.Fine = patch.PitchShifter.Fine;
+            PitchShifterViewModel.Balance = patch.PitchShifter.BalanceLSB;
+            PitchShifterViewModel.Feedback = patch.PitchShifter.Feedback;
+            PitchShifterViewModel.PreDelay = patch.PitchShifter.PreDelay;
+
+            SpaceDViewModel.Mode = $"Mode {Math.Clamp(patch.SpaceD.Mode + 1, 1, 4)}";
+
+            AutoPanpotViewModel.Rate = patch.AutoPanpot.Rate;
+            AutoPanpotViewModel.Depth = patch.AutoPanpot.Depth;
+            AutoPanpotViewModel.Mode = patch.AutoPanpot.Mode == 0 ? "Panning" : "Tremolo";
+
+            TapDelayViewModel.CenterTapTime = Math.Clamp(DecodeMsValue(patch.TapDelay.CTapMSB, patch.TapDelay.CTapLSB), 0, 1200);
+            TapDelayViewModel.LeftTapTime = Math.Clamp(DecodeMsValue(patch.TapDelay.LTapMSB, patch.TapDelay.LTapLSB), 0, 1200);
+            TapDelayViewModel.RightTapTime = Math.Clamp(DecodeMsValue(patch.TapDelay.RTapMSB, patch.TapDelay.RTapLSB), 0, 1200);
+            TapDelayViewModel.CenterTapLevel = patch.TapDelay.CLevel;
+            TapDelayViewModel.LeftTapLevel = patch.TapDelay.LLevel;
+            TapDelayViewModel.RightTapLevel = patch.TapDelay.RLevel;
+            TapDelayViewModel.Feedback = patch.TapDelay.Feedback;
+            TapDelayViewModel.Cutoff = GetCutoffName(DecodeCombinedValue(patch.TapDelay.CutoffMSB, patch.TapDelay.CutoffLSB));
+
+            ReverbViewModel.Mode = GetReverbModeName(patch.Reverb.Mode);
+            ReverbViewModel.Decay = TranslateReverbDecay(patch.Reverb.Decay);
+            ReverbViewModel.PreDelay = patch.Reverb.PreDelay;
+            ReverbViewModel.EffectLevel = patch.Reverb.EffectLevel;
+            var reverbCutoffRaw = DecodeCombinedValue(patch.Reverb.CutoffMSB, patch.Reverb.CutoffLSB);
+            ReverbViewModel.Cutoff = (int)Math.Round(ParameterValueTranslator.TranslateLinear(reverbCutoffRaw, 0, 200, 500, 8000));
+
+            LineoutFilterViewModel.Presence = patch.LineoutFilter.Presence;
+            LineoutFilterViewModel.Treble = patch.LineoutFilter.Treble;
+            LineoutFilterViewModel.Middle = patch.LineoutFilter.Level;
+            LineoutFilterViewModel.Bass = patch.LineoutFilter.Bass;
+        }
+
+        private static int DecodeCombinedValue(int msb, int lsb)
+        {
+            return (Math.Clamp(msb, 0, 127) << 7) + Math.Clamp(lsb, 0, 127);
+        }
+
+        private static int DecodeMsValue(int msb, int lsb)
+        {
+            return DecodeCombinedValue(msb, lsb);
+        }
+
+        private static string GetCutoffName(int rawValue)
+        {
+            if (rawValue >= 200)
+            {
+                return "Thru";
+            }
+
+            var options = new[] { "500 Hz", "1 kHz", "2 kHz", "4 kHz", "8 kHz" };
+            var boundaries = new[] { 20, 60, 100, 140, 180 };
+            for (var i = boundaries.Length - 1; i >= 0; i--)
+            {
+                if (rawValue >= boundaries[i])
+                {
+                    return options[i];
+                }
+            }
+
+            return "500 Hz";
+        }
+
+        private static string GetReverbModeName(int mode)
+        {
+            return mode switch
+            {
+                0 => "Room 1",
+                1 => "Room 2",
+                2 => "Room 3",
+                3 => "Hall 1",
+                4 => "Hall 2",
+                5 => "Plate 1",
+                6 => "Plate 2",
+                7 => "Spring",
+                8 => "Gate",
+                9 => "Reverse",
+                _ => "Room 1"
+            };
+        }
+
+        private static double TranslateReverbDecay(int rawValue)
+        {
+            var clampedValue = Math.Clamp(rawValue, 0, 75);
+            if (clampedValue <= 45)
+            {
+                return 0.5 + (clampedValue * 0.1);
+            }
+
+            return 5.5 + ((clampedValue - 46) * 0.5);
         }
 
         public bool IsCompressorEnabled => BlockAViewModel.Effects.FirstOrDefault(e => e.Name == "Compressor")?.IsEnabled ?? false;

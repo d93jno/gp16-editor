@@ -105,6 +105,50 @@ namespace GP16Editor.Models
 
         private int _outLevel;
         public int OutLevel { get => _outLevel; set => SetProperty(ref _outLevel, value, nameof(OutLevel)); }
+
+        public double GetHiFreqHz() => ParameterValueTranslator.TranslateParametricEqHiFreq(HiFreq);
+
+        public double GetHighMidFreqHz() => ParameterValueTranslator.TranslateParametricEqHighMidFreq(HMFreq);
+
+        public double GetLowMidFreqHz() => ParameterValueTranslator.TranslateParametricEqLowMidFreq(LMFreq);
+
+        public double GetLowFreqHz() => ParameterValueTranslator.TranslateParametricEqLowFreq(LoFreq);
+
+        public double GetHighMidQValue() => ParameterValueTranslator.TranslateParametricEqQ(HMQ);
+
+        public double GetLowMidQValue() => ParameterValueTranslator.TranslateParametricEqQ(LMQ);
+
+        public string GetHiFreqDisplayValue() => ParameterValueTranslator.FormatFrequency(GetHiFreqHz());
+
+        public string GetHighMidFreqDisplayValue() => ParameterValueTranslator.FormatFrequency(GetHighMidFreqHz());
+
+        public string GetLowMidFreqDisplayValue() => ParameterValueTranslator.FormatFrequency(GetLowMidFreqHz());
+
+        public string GetLowFreqDisplayValue() => ParameterValueTranslator.FormatFrequency(GetLowFreqHz());
+
+        public string GetHighMidQDisplayValue() => ParameterValueTranslator.FormatQ(GetHighMidQValue());
+
+        public string GetLowMidQDisplayValue() => ParameterValueTranslator.FormatQ(GetLowMidQValue());
+
+        public double GetHiLevelDb() => ParameterValueTranslator.TranslateParametricEqLevel(HiLevel);
+
+        public double GetHighMidLevelDb() => ParameterValueTranslator.TranslateParametricEqLevel(HMLevel);
+
+        public double GetLowMidLevelDb() => ParameterValueTranslator.TranslateParametricEqLevel(LMLevel);
+
+        public double GetLowLevelDb() => ParameterValueTranslator.TranslateParametricEqLevel(LoLevel);
+
+        public double GetOutLevelDb() => ParameterValueTranslator.TranslateParametricEqLevel(OutLevel);
+
+        public string GetHiLevelDisplayValue() => ParameterValueTranslator.FormatDecibel(GetHiLevelDb());
+
+        public string GetHighMidLevelDisplayValue() => ParameterValueTranslator.FormatDecibel(GetHighMidLevelDb());
+
+        public string GetLowMidLevelDisplayValue() => ParameterValueTranslator.FormatDecibel(GetLowMidLevelDb());
+
+        public string GetLowLevelDisplayValue() => ParameterValueTranslator.FormatDecibel(GetLowLevelDb());
+
+        public string GetOutLevelDisplayValue() => ParameterValueTranslator.FormatDecibel(GetOutLevelDb());
     }
 
     public class NoiseSuppressorParameters : NotifyPropertyChangedBase

@@ -9,6 +9,7 @@
   <ItemGroup>
     <Compile Include="EffectParameters.cs" />
     <Compile Include="NotifyPropertyChangedBase.cs" />
+    <Compile Include="ParameterValueTranslator.cs" />
     <Compile Include="Patch.cs" />
     <Compile Include="SysExMessages.cs" />
   </ItemGroup>

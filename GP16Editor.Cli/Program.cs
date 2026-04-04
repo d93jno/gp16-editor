@@ -322,44 +322,87 @@ void PrintPatchDetails(Patch patch, string patchCode, int absoluteIndex)
     Console.WriteLine($"Block A: {string.Join(", ", patch.BlockA)}");
     Console.WriteLine($"Block B: {string.Join(", ", patch.BlockB)}");
     Console.WriteLine($"Block B2 Mode: {patch.BlockB2ModeName} ({patch.BlockB2Mode})");
-    Console.WriteLine("Effect On/Off:");
-    Console.WriteLine($"  A-1 Compressor: {FormatParameterValue(patch.IsCompressorEnabled)}");
-    Console.WriteLine($"  A-2 Distortion/Overdrive: {FormatParameterValue(patch.IsDistortionOverdriveEnabled)}");
-    Console.WriteLine($"  A-3 Picking Filter: {FormatParameterValue(patch.IsPickingFilterEnabled)}");
-    Console.WriteLine($"  A-4 Step Phaser: {FormatParameterValue(patch.IsStepPhaserEnabled)}");
-    Console.WriteLine($"  A-5 Parametric EQ: {FormatParameterValue(patch.IsParametricEQEnabled)}");
-    Console.WriteLine($"  A-6 Noise Suppressor: {FormatParameterValue(patch.IsNoiseSuppressorEnabled)}");
-    Console.WriteLine($"  B-1 Short Delay: {FormatParameterValue(patch.IsShortDelayEnabled)}");
-    Console.WriteLine($"  B-2 Selected ({patch.BlockB2ModeName}): {FormatParameterValue(patch.IsBlockB2Enabled)}");
-    Console.WriteLine($"    Chorus: {FormatParameterValue(patch.IsChorusEnabled)}");
-    Console.WriteLine($"    Flanger: {FormatParameterValue(patch.IsFlangerEnabled)}");
-    Console.WriteLine($"    Pitch Shifter: {FormatParameterValue(patch.IsPitchShifterEnabled)}");
-    Console.WriteLine($"    Space-D: {FormatParameterValue(patch.IsSpaceDEnabled)}");
-    Console.WriteLine($"  B-3 Auto Panpot: {FormatParameterValue(patch.IsAutoPanpotEnabled)}");
-    Console.WriteLine($"  B-4 Tap Delay: {FormatParameterValue(patch.IsTapDelayEnabled)}");
-    Console.WriteLine($"  B-5 Reverb: {FormatParameterValue(patch.IsReverbEnabled)}");
-    Console.WriteLine($"  B-6 Lineout Filter: {FormatParameterValue(patch.IsLineoutFilterEnabled)}");
+    Console.WriteLine("\nEnabled Effects:");
+    var enabledEffects = new List<string>();
+    if (patch.IsCompressorEnabled) enabledEffects.Add("A-1 Compressor");
+    if (patch.IsDistortionOverdriveEnabled) enabledEffects.Add("A-2 Distortion/Overdrive");
+    if (patch.IsPickingFilterEnabled) enabledEffects.Add("A-3 Picking Filter");
+    if (patch.IsStepPhaserEnabled) enabledEffects.Add("A-4 Step Phaser");
+    if (patch.IsParametricEQEnabled) enabledEffects.Add("A-5 Parametric EQ");
+    if (patch.IsNoiseSuppressorEnabled) enabledEffects.Add("A-6 Noise Suppressor");
+    if (patch.IsShortDelayEnabled) enabledEffects.Add("B-1 Short Delay");
+    if (patch.IsBlockB2Enabled) enabledEffects.Add($"B-2 {patch.BlockB2ModeName}");
+    if (patch.IsAutoPanpotEnabled) enabledEffects.Add("B-3 Auto Panpot");
+    if (patch.IsTapDelayEnabled) enabledEffects.Add("B-4 Tap Delay");
+    if (patch.IsReverbEnabled) enabledEffects.Add("B-5 Reverb");
+    if (patch.IsLineoutFilterEnabled) enabledEffects.Add("B-6 Lineout Filter");
 
-    PrintParameters("Compressor", patch.Compressor);
-    PrintParameters("DistortionOverdrive", patch.DistortionOverdrive);
-    PrintParameters("PickingFilter", patch.PickingFilter);
-    PrintParameters("StepPhaser", patch.StepPhaser);
-    PrintParameters("ParametricEQ", patch.ParametricEQ);
-    PrintParameters("NoiseSuppressor", patch.NoiseSuppressor);
-    PrintParameters("ShortDelay", patch.ShortDelay);
-    PrintParameters("Chorus", patch.Chorus);
-    PrintParameters("Flanger", patch.Flanger);
-    PrintParameters("PitchShifter", patch.PitchShifter);
-    PrintParameters("SpaceD", patch.SpaceD);
-    PrintParameters("AutoPanpot", patch.AutoPanpot);
-    PrintParameters("TapDelay", patch.TapDelay);
-    PrintParameters("Reverb", patch.Reverb);
-    PrintParameters("LineoutFilter", patch.LineoutFilter);
+    if (enabledEffects.Count == 0)
+    {
+        Console.WriteLine("  None");
+        return;
+    }
+
+    foreach (var enabledEffect in enabledEffects)
+    {
+        Console.WriteLine($"  {enabledEffect}");
+    }
+
+    if (patch.IsCompressorEnabled) PrintParameters("Compressor", patch.Compressor);
+    if (patch.IsDistortionOverdriveEnabled) PrintParameters("DistortionOverdrive", patch.DistortionOverdrive);
+    if (patch.IsPickingFilterEnabled) PrintParameters("PickingFilter", patch.PickingFilter);
+    if (patch.IsStepPhaserEnabled) PrintParameters("StepPhaser", patch.StepPhaser);
+    if (patch.IsParametricEQEnabled) PrintParameters("ParametricEQ", patch.ParametricEQ);
+    if (patch.IsNoiseSuppressorEnabled) PrintParameters("NoiseSuppressor", patch.NoiseSuppressor);
+    if (patch.IsShortDelayEnabled) PrintParameters("ShortDelay", patch.ShortDelay);
+    if (patch.IsChorusEnabled) PrintParameters("Chorus", patch.Chorus);
+    if (patch.IsFlangerEnabled) PrintParameters("Flanger", patch.Flanger);
+    if (patch.IsPitchShifterEnabled) PrintParameters("PitchShifter", patch.PitchShifter);
+    if (patch.IsSpaceDEnabled) PrintParameters("SpaceD", patch.SpaceD);
+    if (patch.IsAutoPanpotEnabled) PrintParameters("AutoPanpot", patch.AutoPanpot);
+    if (patch.IsTapDelayEnabled) PrintParameters("TapDelay", patch.TapDelay);
+    if (patch.IsReverbEnabled) PrintParameters("Reverb", patch.Reverb);
+    if (patch.IsLineoutFilterEnabled) PrintParameters("LineoutFilter", patch.LineoutFilter);
 }
 
 void PrintParameters(string sectionName, object parameters)
 {
     Console.WriteLine($"\n{sectionName}:");
+
+    if (parameters is ParametricEQParameters parametricEQ)
+    {
+        Console.WriteLine($"  HiFreq: {parametricEQ.HiFreq} ({parametricEQ.GetHiFreqDisplayValue()})");
+        Console.WriteLine($"  HMFreq: {parametricEQ.HMFreq} ({parametricEQ.GetHighMidFreqDisplayValue()})");
+        Console.WriteLine($"  HMQ: {parametricEQ.HMQ} ({parametricEQ.GetHighMidQDisplayValue()})");
+        Console.WriteLine($"  LMFreq: {parametricEQ.LMFreq} ({parametricEQ.GetLowMidFreqDisplayValue()})");
+        Console.WriteLine($"  LMQ: {parametricEQ.LMQ} ({parametricEQ.GetLowMidQDisplayValue()})");
+        Console.WriteLine($"  LoFreq: {parametricEQ.LoFreq} ({parametricEQ.GetLowFreqDisplayValue()})");
+        Console.WriteLine($"  HiLevel: {parametricEQ.HiLevel} ({parametricEQ.GetHiLevelDisplayValue()})");
+        Console.WriteLine($"  HMLevel: {parametricEQ.HMLevel} ({parametricEQ.GetHighMidLevelDisplayValue()})");
+        Console.WriteLine($"  LMLevel: {parametricEQ.LMLevel} ({parametricEQ.GetLowMidLevelDisplayValue()})");
+        Console.WriteLine($"  LoLevel: {parametricEQ.LoLevel} ({parametricEQ.GetLowLevelDisplayValue()})");
+        Console.WriteLine($"  OutLevel: {parametricEQ.OutLevel} ({parametricEQ.GetOutLevelDisplayValue()})");
+
+        foreach (var property in parameters.GetType().GetProperties().Where(p =>
+                     p.Name != nameof(ParametricEQParameters.HiFreq) &&
+                     p.Name != nameof(ParametricEQParameters.HMFreq) &&
+                     p.Name != nameof(ParametricEQParameters.HMQ) &&
+                     p.Name != nameof(ParametricEQParameters.LMFreq) &&
+                     p.Name != nameof(ParametricEQParameters.LMQ) &&
+                     p.Name != nameof(ParametricEQParameters.LoFreq) &&
+                     p.Name != nameof(ParametricEQParameters.HiLevel) &&
+                     p.Name != nameof(ParametricEQParameters.HMLevel) &&
+                     p.Name != nameof(ParametricEQParameters.LMLevel) &&
+                     p.Name != nameof(ParametricEQParameters.LoLevel) &&
+                     p.Name != nameof(ParametricEQParameters.OutLevel)))
+        {
+            var value = property.GetValue(parameters);
+            Console.WriteLine($"  {property.Name}: {FormatParameterValue(value)}");
+        }
+
+        return;
+    }
+
     foreach (var property in parameters.GetType().GetProperties())
     {
         var value = property.GetValue(parameters);

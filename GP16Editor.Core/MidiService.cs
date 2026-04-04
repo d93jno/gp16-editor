@@ -134,32 +134,36 @@ namespace GP16Editor.Core
             if (_disposed)
                 return;
 
+            _disposed = true;
+
             if (disposing)
             {
-                try
-                {
-                    if (_inputDevice != null)
-                    {
-                        Console.WriteLine("[MIDI] Closing input device...");
-                        _inputDevice.EventReceived -= OnEventReceived;
-                        _inputDevice.Dispose();
-                        _inputDevice = null;
-                    }
-                    
-                    if (_outputDevice != null)
-                    {
-                        Console.WriteLine("[MIDI] Closing output device...");
-                        _outputDevice.Dispose();
-                        _outputDevice = null;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[MIDI] Error during dispose: {ex.Message}");
-                }
-            }
+                var input = _inputDevice;
+                var output = _outputDevice;
+                _inputDevice = null;
+                _outputDevice = null;
 
-            _disposed = true;
+                if (input != null)
+                    input.EventReceived -= OnEventReceived;
+
+                var disposeTask = Task.Run(() =>
+                {
+                    try
+                    {
+                        input?.Dispose();
+                    }
+                    catch { }
+
+                    try
+                    {
+                        output?.Dispose();
+                    }
+                    catch { }
+                });
+
+                if (!disposeTask.Wait(TimeSpan.FromSeconds(2)))
+                    Console.WriteLine("[MIDI] Device cleanup timed out, continuing shutdown.");
+            }
         }
 
         public Task RequestDataDump(byte[] address, byte[] size)

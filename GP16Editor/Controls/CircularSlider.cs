@@ -1,3 +1,5 @@
+using System.Globalization;
+using GP16Editor.Models;
 using Microsoft.Maui.Controls;
 using SkiaSharp;
 using SkiaSharp.Views.Maui;
@@ -8,8 +10,11 @@ namespace GP16Editor.Controls;
 public class CircularSlider : ContentView
 {
     private readonly SKCanvasView _canvasView;
+    private readonly Label _valueLabel;
     private float _angle;
     private bool _isDragging;
+    private float _dragStartAngle;
+    private string _currentDisplayText = string.Empty;
 
     public static readonly BindableProperty MinimumProperty =
         BindableProperty.Create(nameof(Minimum), typeof(double), typeof(CircularSlider), 0.0, propertyChanged: OnValueChanged);
@@ -22,6 +27,24 @@ public class CircularSlider : ContentView
 
     public static readonly BindableProperty LabelTextProperty =
         BindableProperty.Create(nameof(LabelText), typeof(string), typeof(CircularSlider), string.Empty);
+
+    public static readonly BindableProperty DisplayMinimumProperty =
+        BindableProperty.Create(nameof(DisplayMinimum), typeof(double), typeof(CircularSlider), double.NaN, propertyChanged: OnDisplaySettingsChanged);
+
+    public static readonly BindableProperty DisplayMaximumProperty =
+        BindableProperty.Create(nameof(DisplayMaximum), typeof(double), typeof(CircularSlider), double.NaN, propertyChanged: OnDisplaySettingsChanged);
+
+    public static readonly BindableProperty DisplayAsFrequencyProperty =
+        BindableProperty.Create(nameof(DisplayAsFrequency), typeof(bool), typeof(CircularSlider), false, propertyChanged: OnDisplaySettingsChanged);
+
+    public static readonly BindableProperty DisplayUnitProperty =
+        BindableProperty.Create(nameof(DisplayUnit), typeof(string), typeof(CircularSlider), string.Empty, propertyChanged: OnDisplaySettingsChanged);
+
+    public static readonly BindableProperty DisplayFormatProperty =
+        BindableProperty.Create(nameof(DisplayFormat), typeof(string), typeof(CircularSlider), string.Empty, propertyChanged: OnDisplaySettingsChanged);
+
+    public static readonly BindableProperty DisplaySignedProperty =
+        BindableProperty.Create(nameof(DisplaySigned), typeof(bool), typeof(CircularSlider), false, propertyChanged: OnDisplaySettingsChanged);
 
     public double Minimum
     {
@@ -47,6 +70,42 @@ public class CircularSlider : ContentView
         set => SetValue(LabelTextProperty, value);
     }
 
+    public double DisplayMinimum
+    {
+        get => (double)GetValue(DisplayMinimumProperty);
+        set => SetValue(DisplayMinimumProperty, value);
+    }
+
+    public double DisplayMaximum
+    {
+        get => (double)GetValue(DisplayMaximumProperty);
+        set => SetValue(DisplayMaximumProperty, value);
+    }
+
+    public bool DisplayAsFrequency
+    {
+        get => (bool)GetValue(DisplayAsFrequencyProperty);
+        set => SetValue(DisplayAsFrequencyProperty, value);
+    }
+
+    public string DisplayUnit
+    {
+        get => (string)GetValue(DisplayUnitProperty);
+        set => SetValue(DisplayUnitProperty, value);
+    }
+
+    public string DisplayFormat
+    {
+        get => (string)GetValue(DisplayFormatProperty);
+        set => SetValue(DisplayFormatProperty, value);
+    }
+
+    public bool DisplaySigned
+    {
+        get => (bool)GetValue(DisplaySignedProperty);
+        set => SetValue(DisplaySignedProperty, value);
+    }
+
     public CircularSlider()
     {
         _canvasView = new SKCanvasView
@@ -64,13 +123,12 @@ public class CircularSlider : ContentView
         nameLabel.SetBinding(Label.TextProperty, new Binding(nameof(LabelText), source: this));
         nameLabel.SetDynamicResource(Label.TextColorProperty, "TextColor");
 
-        var valueLabel = new Label
+        _valueLabel = new Label
         {
             HorizontalTextAlignment = TextAlignment.Center,
             FontSize = 16,
         };
-        valueLabel.SetBinding(Label.TextProperty, new Binding(nameof(Value), source: this, stringFormat: "{0:F1}"));
-        valueLabel.SetDynamicResource(Label.TextColorProperty, "TextColor");
+        _valueLabel.SetDynamicResource(Label.TextColorProperty, "TextColor");
 
         Content = new VerticalStackLayout
         {
@@ -79,11 +137,12 @@ public class CircularSlider : ContentView
             {
                 nameLabel,
                 _canvasView,
-                valueLabel
+                _valueLabel
             }
         };
 
         UpdateAngleFromValue();
+        UpdateValueLabel();
     }
 
     protected override void OnParentSet()
@@ -101,6 +160,14 @@ public class CircularSlider : ContentView
     {
         var slider = (CircularSlider)bindable;
         slider.UpdateAngleFromValue();
+        slider.UpdateValueLabel();
+        slider._canvasView.InvalidateSurface();
+    }
+
+    private static void OnDisplaySettingsChanged(BindableObject bindable, object oldValue, object newValue)
+    {
+        var slider = (CircularSlider)bindable;
+        slider.UpdateValueLabel();
         slider._canvasView.InvalidateSurface();
     }
 
@@ -108,16 +175,108 @@ public class CircularSlider : ContentView
     {
         if (Maximum > Minimum)
         {
-            var normalizedValue = (Value - Minimum) / (Maximum - Minimum);
-            _angle = (float)(normalizedValue * 270 - 135); // -135 to 135 degrees (270 degree range)
+            var clampedValue = Math.Clamp(Value, Minimum, Maximum);
+            var normalizedValue = (clampedValue - Minimum) / (Maximum - Minimum);
+            _angle = (float)(normalizedValue * 270 - 135);
         }
     }
 
     private void UpdateValueFromAngle()
     {
-        var normalizedAngle = (_angle + 135) / 270; // Convert from -135..135 to 0..1
+        var normalizedAngle = (_angle + 135) / 270;
         var calculatedValue = Minimum + normalizedAngle * (Maximum - Minimum);
-        Value = Math.Round(calculatedValue); // Round to nearest integer
+        Value = UsesIntegerStep()
+            ? Math.Round(calculatedValue)
+            : Math.Round(calculatedValue, 2);
+    }
+
+    private void UpdateValueLabel()
+    {
+        var displayText = FormatDisplayValue(Value);
+        if (_currentDisplayText != displayText)
+        {
+            _currentDisplayText = displayText;
+            _valueLabel.Text = displayText;
+        }
+    }
+
+    private bool UsesIntegerStep()
+    {
+        return IsWholeNumber(Minimum) && IsWholeNumber(Maximum);
+    }
+
+    private static bool IsWholeNumber(double value)
+    {
+        return Math.Abs(value - Math.Round(value)) < 0.000001d;
+    }
+
+    private string FormatDisplayValue(double value)
+    {
+        var translatedDisplayValue = TranslateDisplayValue(value);
+        if (DisplayAsFrequency)
+        {
+            return ParameterValueTranslator.FormatFrequency(translatedDisplayValue);
+        }
+
+        if (!string.IsNullOrWhiteSpace(DisplayFormat))
+        {
+            var formattedValue = translatedDisplayValue.ToString(DisplayFormat, CultureInfo.InvariantCulture);
+            formattedValue = FormatSignedNumber(formattedValue, translatedDisplayValue);
+            return string.IsNullOrEmpty(DisplayUnit) ? formattedValue : $"{formattedValue}{DisplayUnit}";
+        }
+
+        if (HasDisplayRange())
+        {
+            var roundedDisplayValue = Math.Round(translatedDisplayValue, 2);
+            if (IsWholeNumber(roundedDisplayValue))
+            {
+                var integerText = FormatSignedNumber(((int)Math.Round(roundedDisplayValue)).ToString(CultureInfo.InvariantCulture), roundedDisplayValue);
+                return string.IsNullOrEmpty(DisplayUnit) ? integerText : $"{integerText}{DisplayUnit}";
+            }
+
+            var decimalText = FormatSignedNumber(roundedDisplayValue.ToString("0.##", CultureInfo.InvariantCulture), roundedDisplayValue);
+            return string.IsNullOrEmpty(DisplayUnit) ? decimalText : $"{decimalText}{DisplayUnit}";
+        }
+
+        if (UsesIntegerStep())
+        {
+            var integerText = FormatSignedNumber(((int)Math.Round(value)).ToString(CultureInfo.InvariantCulture), value);
+            return string.IsNullOrEmpty(DisplayUnit) ? integerText : $"{integerText}{DisplayUnit}";
+        }
+
+        var roundedValue = Math.Round(value, 2);
+        var rawDecimalText = FormatSignedNumber(roundedValue.ToString("0.##", CultureInfo.InvariantCulture), roundedValue);
+        return string.IsNullOrEmpty(DisplayUnit) ? rawDecimalText : $"{rawDecimalText}{DisplayUnit}";
+    }
+
+    private string FormatSignedNumber(string text, double value)
+    {
+        if (DisplaySigned && value > 0)
+        {
+            return $"+{text}";
+        }
+
+        return text;
+    }
+
+    private bool HasDisplayRange()
+    {
+        return !double.IsNaN(DisplayMinimum) && !double.IsNaN(DisplayMaximum);
+    }
+
+    private double TranslateDisplayValue(double rawValue)
+    {
+        if (!HasDisplayRange())
+        {
+            return rawValue;
+        }
+
+        if (Maximum <= Minimum)
+        {
+            return DisplayMinimum;
+        }
+
+        return ParameterValueTranslator.TranslateLinear(rawValue, Minimum, Maximum, DisplayMinimum, DisplayMaximum);
     }
 
     private void OnPanUpdated(object? sender, PanUpdatedEventArgs e)
@@ -126,24 +285,13 @@ public class CircularSlider : ContentView
         {
             case GestureStatus.Started:
                 _isDragging = true;
+                _dragStartAngle = _angle;
                 break;
             case GestureStatus.Running:
                 if (_isDragging)
                 {
-                    var centerX = _canvasView.Width / 2;
-                    var centerY = _canvasView.Height / 2;
-                    var touchX = e.TotalX;
-                    var touchY = e.TotalY;
-
-                    var deltaX = touchX - centerX;
-                    var deltaY = touchY - centerY;
-                    var newAngle = (float)(Math.Atan2(deltaY, deltaX) * 180 / Math.PI);
-
-                    // Constrain to 270 degree range (-135 to 135)
-                    if (newAngle < -135) newAngle = -135;
-                    if (newAngle > 135) newAngle = 135;
-
-                    _angle = newAngle;
+                    var newAngle = _dragStartAngle + (float)e.TotalX;
+                    _angle = Math.Clamp(newAngle, -135f, 135f);
                     UpdateValueFromAngle();
                 }
                 break;
@@ -165,6 +313,16 @@ public class CircularSlider : ContentView
         var centerX = width / 2f;
         var centerY = height / 2f;
         var radius = Math.Min(width, height) / 2f - 20;
+        var clampedValue = Maximum > Minimum ? Math.Clamp(Value, Minimum, Maximum) : Minimum;
+        var normalizedValue = Maximum > Minimum ? (float)((clampedValue - Minimum) / (Maximum - Minimum)) : 0f;
+        var sweepAngle = normalizedValue * 270f;
+        var indicatorAngleDegrees = -135f + sweepAngle;
+        var displayText = FormatDisplayValue(clampedValue);
+        if (_currentDisplayText != displayText)
+        {
+            _currentDisplayText = displayText;
+            _valueLabel.Text = displayText;
+        }
 
         // Draw outer circle
         using var outerCirclePaint = new SKPaint
@@ -187,7 +345,6 @@ public class CircularSlider : ContentView
         canvas.DrawArc(arcRect, -135, 270, false, arcBackgroundPaint);
 
         // Draw value arc
-        var sweepAngle = (_angle + 135) / 270 * 270; // Convert angle to sweep
         using var arcPaint = new SKPaint
         {
             Style = SKPaintStyle.Stroke,
@@ -198,7 +355,7 @@ public class CircularSlider : ContentView
         canvas.DrawArc(arcRect, -135, sweepAngle, false, arcPaint);
 
         // Draw indicator line
-        var indicatorAngle = _angle * (float)(Math.PI / 180);
+        var indicatorAngle = indicatorAngleDegrees * (float)(Math.PI / 180);
         var indicatorLength = radius - 15;
         var indicatorX = centerX + (float)Math.Cos(indicatorAngle) * indicatorLength;
         var indicatorY = centerY + (float)Math.Sin(indicatorAngle) * indicatorLength;

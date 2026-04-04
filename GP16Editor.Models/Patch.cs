@@ -144,16 +144,16 @@ namespace GP16Editor.Models
             if (data.Length > 0x2D)
             {
                 ParametricEQ.HiFreq = data[0x23];
-                ParametricEQ.HiLevel = data[0x24] - 12;
+                ParametricEQ.HiLevel = data[0x24];
                 ParametricEQ.HMFreq = data[0x25];
                 ParametricEQ.HMQ = data[0x26];
-                ParametricEQ.HMLevel = data[0x27] - 12;
+                ParametricEQ.HMLevel = data[0x27];
                 ParametricEQ.LMFreq = data[0x28];
                 ParametricEQ.LMQ = data[0x29];
-                ParametricEQ.LMLevel = data[0x2A] - 12;
+                ParametricEQ.LMLevel = data[0x2A];
                 ParametricEQ.LoFreq = data[0x2B];
-                ParametricEQ.LoLevel = data[0x2C] - 12;
-                ParametricEQ.OutLevel = data[0x2D] - 12;
+                ParametricEQ.LoLevel = data[0x2C];
+                ParametricEQ.OutLevel = data[0x2D];
             }
 
             // Noise Suppressor (A-6, 0x2E-0x30)

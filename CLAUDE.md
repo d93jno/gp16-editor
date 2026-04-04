@@ -1,6 +1,7 @@
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Always commit code changes to the source tree, NEVER to the work tree
 
 ## Build & Run
 
@@ -26,6 +27,7 @@ There are no automated tests in this project.
 
 - No comments in code (per project convention)
 - Treat all `PropertyChanged` event invocations as nullable (use `?.Invoke`)
+- Make no attribution to claude while doing commit messages
 
 ## Architecture
 

@@ -27,8 +27,7 @@
                                Opacity="{Binding IsEnabled, Converter={StaticResource BoolToOpacityConverter}}" />
                         <Label Text="{Binding Name}"
                                Grid.Column="2"
-                               VerticalOptions="Center"
-                               Opacity="{Binding IsEnabled, Converter={StaticResource BoolToOpacityConverter}}" />
+                               VerticalOptions="Center" />
                         <Switch IsToggled="{Binding IsEnabled}"
                                 Grid.Column="3"
                                 VerticalOptions="Center" />

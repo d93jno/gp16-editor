@@ -59,12 +59,12 @@ namespace GP16Editor.Core
             return sb.ToString();
         }
 
-        public async Task<List<Patch>> GetAllPatchesAsync(IProgress<int>? progress)
+        public async Task<List<Patch>> GetAllPatchesAsync(IProgress<int>? progress, IProgress<int>? byteProgress = null)
         {
-            return await GetPatchesAsync(includeGroupA: true, includeGroupB: true, progress);
+            return await GetPatchesAsync(includeGroupA: true, includeGroupB: true, progress, byteProgress);
         }
 
-        public async Task<List<Patch>> GetPatchesAsync(bool includeGroupA, bool includeGroupB, IProgress<int>? progress = null)
+        public async Task<List<Patch>> GetPatchesAsync(bool includeGroupA, bool includeGroupB, IProgress<int>? progress = null, IProgress<int>? byteProgress = null)
         {
             if (!includeGroupA && !includeGroupB)
             {
@@ -74,6 +74,8 @@ namespace GP16Editor.Core
             var patches = new List<Patch>();
             var tcs = new TaskCompletionSource<bool>();
             var byteBuffer = new List<byte>();
+            var totalByteOffset = 0;
+            var totalExpectedBytes = ((includeGroupA ? 1 : 0) + (includeGroupB ? 1 : 0)) * 8192;
 
             void SysExHandler(object? sender, NormalSysExEvent e)
             {
@@ -82,7 +84,7 @@ namespace GP16Editor.Core
                 if (e.Data[0] != 0xF0) fullMsg.Add(0xF0);
                 fullMsg.AddRange(e.Data);
                 if (fullMsg.Last() != 0xF7) fullMsg.Add(0xF7);
-                
+
                 var f0array = fullMsg.ToArray();
                 var msgType = f0array.Length > 4 ? f0array[4] : (byte)0x00;
 
@@ -94,7 +96,7 @@ namespace GP16Editor.Core
                     {
                         Console.WriteLine($"[MIDI] DT1 received ({f0array.Length} bytes) but failed validation.");
                         Console.WriteLine($"[MIDI] Header: {BitConverter.ToString(f0array.Take(10).ToArray()).Replace("-", " ")}");
-                        
+
                         // Manual check for diagnostics
                         var addr = f0array.Skip(5).Take(3).ToArray();
                         var data = f0array.Skip(8).Take(f0array.Length - 10).ToArray();
@@ -109,6 +111,7 @@ namespace GP16Editor.Core
 
                     byteBuffer.AddRange(dt1Msg.Data);
                     Console.Write($"\r[MIDI] Data received: {byteBuffer.Count} / 8192 bytes...");
+                    byteProgress?.Report(totalByteOffset + byteBuffer.Count);
 
                     // Release once we have accumulated the expected bytes for the group
                     if (byteBuffer.Count >= 8192)
@@ -143,6 +146,7 @@ namespace GP16Editor.Core
                     var groupAPatches = ParsePatchBuffer(groupABytes, progress, progressOffset);
                     patches.AddRange(groupAPatches);
                     progressOffset += groupAPatches.Count;
+                    totalByteOffset += groupABytes.Length;
                 }
 
                 if (includeGroupB)
