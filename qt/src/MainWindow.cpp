@@ -26,7 +26,9 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
+#include <array>
 #include <span>
+#include <utility>
 
 namespace {
 
@@ -54,6 +56,7 @@ MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , midi_(new MidiService(this))
     , dumpTimeout_(new QTimer(this))
+    , editCoalesceTimer_(new QTimer(this))
 {
   setWindowTitle(QStringLiteral("GP-16 Editor"));
   resize(1100, 720);
@@ -61,6 +64,9 @@ MainWindow::MainWindow(QWidget* parent)
   dumpTimeout_->setSingleShot(true);
   dumpTimeout_->setInterval(8000);
   connect(dumpTimeout_, &QTimer::timeout, this, &MainWindow::onDumpTimeout);
+
+  editCoalesceTimer_->setInterval(40);
+  connect(editCoalesceTimer_, &QTimer::timeout, this, &MainWindow::onEditCoalesceTick);
 
   auto* toolbar = addToolBar(QStringLiteral("MIDI"));
   toolbar->setMovable(false);
@@ -159,6 +165,7 @@ MainWindow::MainWindow(QWidget* parent)
   connect(listPanel_, &PatchListPanel::patchSelected, this, &MainWindow::onPatchSelected);
   connect(chainWidget_, &SignalChainWidget::slotSelected, this, &MainWindow::onChainSlotSelected);
   connect(chainWidget_, &SignalChainWidget::effectToggled, this, &MainWindow::onChainEffectToggled);
+  connect(editor_, &EffectEditor::parameterEdited, this, &MainWindow::onParameterEdited);
   connect(deviceIdSpin_, qOverload<int>(&QSpinBox::valueChanged), this, &MainWindow::onDeviceIdChanged);
 
   connect(midi_, &MidiService::portsChanged, this, [this]() {
@@ -470,8 +477,51 @@ void MainWindow::onChainEffectToggled(int identity, bool enabled)
   const auto& patch = currentPatch();
   const auto name = QString::fromStdString(
       Patch::effectName(identity, patch.blockB2Mode(), patch.isDistortion()));
-  appendLog(QStringLiteral("%1 %2 (local model only; live edit arrives in Phase 6)")
+  appendLog(QStringLiteral("%1 %2 (local model only)")
                 .arg(name, enabled ? QStringLiteral("enabled") : QStringLiteral("disabled")));
+}
+
+void MainWindow::onParameterEdited(int offset, int byteWidth, int value)
+{
+  // Local model is already updated by EffectEditor. Live send is offline-only
+  // when the output port is closed — see MidiService::sendBytes.
+  if (!midi_->isOutputOpen())
+    return;
+
+  pendingEdits_[offset] = PendingParamEdit{byteWidth, value};
+  editBurstActive_ = true;
+  if (!editCoalesceTimer_->isActive())
+    editCoalesceTimer_->start();
+}
+
+void MainWindow::onEditCoalesceTick()
+{
+  if (!pendingEdits_.empty()) {
+    const auto edits = std::exchange(pendingEdits_, {});
+    for (const auto& [offset, edit] : edits) {
+      const std::array<std::uint8_t, 3> address{
+          0x00, 0x00, static_cast<std::uint8_t>(offset & 0x7F)};
+      if (edit.byteWidth >= 2) {
+        const std::array<std::uint8_t, 2> data{
+            static_cast<std::uint8_t>((edit.value >> 7) & 0x7F),
+            static_cast<std::uint8_t>(edit.value & 0x7F)};
+        midi_->sendParameterChange(address, data);
+      } else {
+        midi_->sendParameterChange(address, static_cast<std::uint8_t>(edit.value & 0x7F));
+      }
+    }
+    appendLog(QStringLiteral("TX %1 coalesced parameter change(s)").arg(edits.size()));
+    return;
+  }
+
+  // Nothing arrived since the last flush: the burst has settled. Send the
+  // Phase 4 SOUND CHANGE REQUEST exactly once (see docs/GP16_PROTOCOL.md).
+  editCoalesceTimer_->stop();
+  if (editBurstActive_) {
+    editBurstActive_ = false;
+    midi_->sendParameterChange({0x00, 0x00, 0x75}, std::uint8_t{0x00});
+    appendLog(QStringLiteral("TX Sound Change Request (00 00 75)"));
+  }
 }
 
 void MainWindow::refreshLibrarian()

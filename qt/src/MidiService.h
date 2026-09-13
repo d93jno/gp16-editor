@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <memory>
 #include <mutex>
+#include <span>
 #include <vector>
 
 class MidiService : public QObject
@@ -42,6 +43,10 @@ public:
   bool sendParameterChange(
       const std::array<std::uint8_t, 3>& address,
       std::uint8_t value);
+
+  bool sendParameterChange(
+      const std::array<std::uint8_t, 3>& address,
+      std::span<const std::uint8_t> data);
 
 public slots:
   void refreshPorts();

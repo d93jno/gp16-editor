@@ -1,9 +1,11 @@
 #include "EffectEditor.h"
+#include "EffectSpecs.h"
 #include "MainWindow.h"
 #include "SignalChainWidget.h"
 
 #include <QApplication>
 #include <QByteArray>
+#include <QCoreApplication>
 #include <QToolButton>
 
 #include <filesystem>
@@ -68,6 +70,22 @@ int main(int argc, char* argv[])
   chip->click();
   check(editor->identity() == 0, "chip click after a row is selected binds compressor");
   check(editor->paramCount() > 0, "chip click after a row is selected shows parameters");
+
+  // Phase 6: editing must stay functional with no MIDI output connected — the
+  // coalescing send in MainWindow::onParameterEdited is skipped, not fatal.
+  const auto& spec = specFor(editor->currentKind());
+  check(!spec.params.empty(), "compressor page has a parameter to edit");
+  if (!spec.params.empty()) {
+    const auto& param = spec.params[0];
+    const int before = editor->paramRawValue(0);
+    const int changed = before == param.min ? param.max : param.min;
+    editor->setParamRawValue(0, changed);
+    check(editor->paramRawValue(0) == changed,
+          "editing a parameter with no MIDI output open still updates the local model");
+    QCoreApplication::processEvents();
+    check(editor->paramRawValue(0) == changed,
+          "the edit survives a coalescing tick while offline");
+  }
 
   if (failures == 0) {
     std::cout << "All main window tests passed.\n";

@@ -267,9 +267,30 @@ flat `{label, min, max, offset}` shape leaves those controls unreachable.
 are `value − 50`, Pitch Shifter chromatic is `value − 12`, EQ levels are `0–48` shown as
 −12…+12 dB, Q values are `0–40` shown as 1.0–5.0.
 
+Parametric EQ frequency is the non-uniform map. MIDI is always raw `0–100`; the panel is Hz,
+and the four bands are not the same curve (matches `ParameterValueTranslator` and the owner’s
+manual). Sliders stay on the raw byte; spin boxes show Hz.
+
+| Band | Offset | Raw | Display | Curve |
+|---|---|---|---|---|
+| Low | `0x2B` | 0–100 | 60–250 Hz | logarithmic |
+| Low mid | `0x28` | 0–100 | 125–1000 Hz | logarithmic |
+| High mid | `0x25` | 0–100 | 500–4000 Hz | linear |
+| High | `0x23` | 0–100 | 2–8 kHz | linear |
+
+Linear: `hz = min + (max − min) × raw / 100`.  
+Log: `hz = min × (max / min)^(raw / 100)`. Inverse via `log` / `lround` back to the raw byte.
+
+Low band is **60–250 Hz**, not 40–250. Table 1 scans that read “40–250Hz” are a transcription
+error; the owner’s manual and the C# translator use 60. See `midi_parameter_mapping.md`.
+
+EQ levels (`0x24`/`0x27`/`0x2A`/`0x2C`/`0x2D`): raw `0–48` → −12…+12 dB in 0.5 dB steps
+(`display = raw × 0.5 − 12`). Mid-band Q (`0x26`/`0x29`): raw `0–40` → 1.0–5.0
+(`display = 1.0 + raw × 0.1`).
+
 Types: slider + spin box, checkbox, combo. Special grouping for Parametric EQ (four band
-columns) and Tap Delay (C/L/R tap rows). Read-only in this phase — forms display the selected
-patch and update the local model; nothing is sent.
+columns plus Out) and Tap Delay (C/L/R tap rows). Read-only in this phase — forms display the
+selected patch and update the local model; nothing is sent.
 
 **Files:** `qt/src/EffectEditor.{h,cpp}`, `qt/src/EffectSpecs.{h,cpp}`
 **Done when:** all 15 effects render, values from an opened capture match `--decode` output for
@@ -278,6 +299,8 @@ the same patch, and switching patches or slots updates the form with no stale va
 ---
 
 ## Phase 6 — Live edit
+
+Status: Completed
 
 Requires the Phase 4 result (**needs `0x75`** — see above). Do not omit the poke.
 

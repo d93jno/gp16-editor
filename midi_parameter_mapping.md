@@ -73,6 +73,18 @@ The binary notation in the left column of the "Description" indicates the format
 
 LO FREQ (`0x2B`) is **60–250 Hz** in the owner’s manual (and in the C# / Qt editors). Some scans of this table read “40–250Hz”; treat that as a transcription error.
 
+Parametric EQ display map (MIDI is the raw byte; panel units below). Low / Low-mid frequency is **logarithmic**; High-mid / High is **linear**. Levels are `0–48` → −12…+12 dB (`raw × 0.5 − 12`); Q is `0–40` → 1.0–5.0 (`1.0 + raw × 0.1`).
+
+| Band | Freq | Level | Q | Freq raw | Display | Curve |
+|------|------|-------|---|----------|---------|-------|
+| Low | `0x2B` | `0x2C` | — | 0–100 | 60–250 Hz | log |
+| Low mid | `0x28` | `0x2A` | `0x29` | 0–100 | 125–1000 Hz | log |
+| High mid | `0x25` | `0x27` | `0x26` | 0–100 | 500–4000 Hz | linear |
+| High | `0x23` | `0x24` | — | 0–100 | 2–8 kHz | linear |
+| Out | — | `0x2D` | — | — | −12…+12 dB | — |
+
+Linear: `hz = min + (max − min) × raw / 100`. Log: `hz = min × (max / min)^(raw / 100)`.
+
 | Offset address | Description | Range | | 
 |----------------|-------------|-------|-|
 | 00 | 0000 0aaa | JOINT DATA GROUP-A | * 0 - 4 (EFFECT 1-5) |

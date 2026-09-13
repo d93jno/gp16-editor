@@ -314,12 +314,20 @@ bool MidiService::sendParameterChange(
     const std::array<std::uint8_t, 3>& address,
     std::uint8_t value)
 {
+  const std::uint8_t data[1] = {value};
+  return sendParameterChange(address, std::span<const std::uint8_t>(data, 1));
+}
+
+bool MidiService::sendParameterChange(
+    const std::array<std::uint8_t, 3>& address,
+    std::span<const std::uint8_t> data)
+{
   std::uint8_t dev = 0;
   {
     std::scoped_lock lock(mutex_);
     dev = deviceId_;
   }
-  const auto msg = roland::buildParameterChange(dev, address, value);
+  const auto msg = roland::buildDataSet(dev, address, data);
   return sendBytes(msg);
 }
 

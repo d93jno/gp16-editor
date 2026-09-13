@@ -5,6 +5,7 @@
 #include <QMainWindow>
 
 #include <cstdint>
+#include <map>
 #include <vector>
 
 class EffectEditor;
@@ -44,9 +45,12 @@ private slots:
   void onPatchSelected(int index);
   void onChainSlotSelected(int identity);
   void onChainEffectToggled(int identity, bool enabled);
+  void onParameterEdited(int offset, int byteWidth, int value);
+  void onEditCoalesceTick();
 
 private:
   enum class DumpPhase : std::uint8_t { Idle, GroupA, WaitGap, GroupB, Listening };
+  struct PendingParamEdit { int byteWidth; int value; };
 
   void appendLog(const QString& line);
   void sendGroupRequest(DumpPhase phase);
@@ -82,6 +86,9 @@ private:
   QPlainTextEdit* logView_ = nullptr;
   QLabel* portStatus_ = nullptr;
   QTimer* dumpTimeout_ = nullptr;
+  QTimer* editCoalesceTimer_ = nullptr;
+  std::map<int, PendingParamEdit> pendingEdits_;
+  bool editBurstActive_ = false;
 
   DumpPhase dumpPhase_ = DumpPhase::Idle;
   std::vector<std::uint8_t> dumpBuffer_;

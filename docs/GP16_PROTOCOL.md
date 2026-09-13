@@ -90,6 +90,26 @@ Offsets `0x06`/`0x07`/`0x0B`/`0x0C` are **joint data / mode**, not compressor or
 
 Assemble as `(msb << 7) | lsb`. Table 1 bit widths: Tap Delay taps are 4+7 bits (0–1200 ms); Pitch Shifter balance and Reverb/Tap cutoffs are 1+7 bits (0–200).
 
+### Parametric EQ display map
+
+MIDI is always a raw byte; the panel shows Hz / dB / Q. Frequency is the non-uniform map: Low and Low-mid are **logarithmic**, High-mid and High are **linear**. Same curves as `ParameterValueTranslator` and the owner’s manual. Qt: sliders stay on the raw byte, spin boxes show the display unit.
+
+| Band | Freq | Level | Q | Freq raw | Freq display | Freq curve |
+|---|---|---|---|---|---|---|
+| Low | `0x2B` | `0x2C` | — (shelf) | 0–100 | 60–250 Hz | logarithmic |
+| Low mid | `0x28` | `0x2A` | `0x29` | 0–100 | 125–1000 Hz | logarithmic |
+| High mid | `0x25` | `0x27` | `0x26` | 0–100 | 500–4000 Hz | linear |
+| High | `0x23` | `0x24` | — (shelf) | 0–100 | 2–8 kHz | linear |
+| Out | — | `0x2D` | — | — | — | — |
+
+Linear: `hz = min + (max − min) × raw / 100`.  
+Log: `hz = min × (max / min)^(raw / 100)`. Inverse via `log` / `lround` back to the raw byte.
+
+Low band is **60–250 Hz**. Table 1 scans that read “40–250Hz” are a transcription error (`midi_parameter_mapping.md`).
+
+Levels (`0x24` / `0x27` / `0x2A` / `0x2C` / `0x2D`): raw `0–48` → −12…+12 dB in 0.5 dB steps (`display = raw × 0.5 − 12`).  
+Mid-band Q (`0x26` / `0x29`): raw `0–40` → 1.0–5.0 (`display = 1.0 + raw × 0.1`).
+
 ---
 
 ## Bulk dump ingest shapes
@@ -148,7 +168,7 @@ Effects are organized into Block A and Block B. Parameters generally range **0�
 | A-2b | Overdrive | Drive, Turbo, Tone, Level | Turbo on/off |
 | A-3 | Picking Filter | Sens, Cutoff, Q (1.0–5.0), Up/Down | |
 | A-4 | Step Phaser | Rate, Depth, Manual, Resonance, LFO Step | |
-| A-5 | Parametric EQ | 4 bands, levels −12…+12 dB | |
+| A-5 | Parametric EQ | 4 bands + out; levels −12…+12 dB; Q 1.0–5.0 | Freq: see display map above |
 | A-6 | Noise Suppressor | Sens, Release, Level | Fixed last in Block A |
 | B-1 | Short Delay | Delay Time, Effect Level | |
 | B-2a | Chorus | Pre-Delay, Rate, Depth, Level | |
