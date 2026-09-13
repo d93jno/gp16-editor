@@ -47,6 +47,10 @@ endif()
 add_library(gp16_sysex STATIC
   src/RolandSysex.cpp
   src/RolandSysex.h
+  src/Patch.cpp
+  src/Patch.h
+  src/PatchBank.cpp
+  src/PatchBank.h
 )
 target_include_directories(gp16_sysex PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -95,3 +99,18 @@ if(UNIX AND NOT APPLE)
 endif()
 
 install(TARGETS gp16-editor-qt gp16-dump RUNTIME DESTINATION bin)
+
+# ---------------------------------------------------------------------------
+# Unit tests for gp16_sysex (patch parsing), run against the committed captures
+# ---------------------------------------------------------------------------
+enable_testing()
+
+add_executable(gp16_sysex_tests
+  tests/test_patch_parsing.cpp
+)
+target_link_libraries(gp16_sysex_tests PRIVATE gp16_sysex)
+target_compile_definitions(gp16_sysex_tests PRIVATE
+  GP16_TEST_REPO_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/.."
+)
+
+add_test(NAME gp16_sysex_tests COMMAND gp16_sysex_tests)

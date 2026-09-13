@@ -100,3 +100,7 @@ qt/
 - SysEx is **not** ignored (`ignore_sysex = false`).
 - Default device ID is **`0x00`** (matches the panel dump capture).
 - This is a scaffold: patch models and effect UI from the C# app can be ported next.
+
+## Live edit / SOUND CHANGE REQUEST (Phase 4)
+
+Play Mode **needs** a SOUND CHANGE REQUEST at temporary address `00 00 75` after temp-buffer DT1s for the change to be audible. Compressor sustain writes to `00 00 11` alone were silent; the same writes followed 50 ms later by `00 00 75` were heard. Probe: `gp16-dump --poke -o "USB MIDI" -d 00`.

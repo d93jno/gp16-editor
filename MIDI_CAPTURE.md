@@ -2,7 +2,7 @@
 
 How the Windows MAUI editor records a full Group A + Group B SysEx dump, and how to decode the resulting `.bin` files (e.g. on Linux for comparison).
 
-Source of truth: `MidiService`, `PatchService`, `SysExService`, `MainViewModel.RefreshPatches`. Protocol background: `CLAUDE.md`, `GEMINI.md`, `gp16_pages_67_76.md`, `midi_parameter_mapping.md`.
+Source of truth: `MidiService`, `PatchService`, `SysExService`, `MainViewModel.RefreshPatches`. Protocol background: `docs/GP16_PROTOCOL.md`, `midi_parameter_mapping.md`, `gp16_pages_67_76.md`. App/dev guidance: `GEMINI.md`.
 
 ---
 
@@ -128,7 +128,7 @@ patchBytes = buffer[i * 0x80 .. i * 0x80 + 0x7F)   // 127 bytes; byte at +0x7F u
 
 Then `new Patch().ParsePatchData(patchBytes)`.
 
-Group A → patches 0–63; Group B → 64–127 in the combined list. Memory map (`CLAUDE.md`): both groups share area byte `01`; Group A base `01 00 00`, Group B base `01 40 00` (there is no separate `02` area byte — Group B is just the `01` area with a `0x40` patch-number offset). Temporary buffer `00 00 00` is not part of this dump.
+Group A → patches 0–63; Group B → 64–127 in the combined list. Memory map (`docs/GP16_PROTOCOL.md`): both groups share area byte `01`; Group A base `01 00 00`, Group B base `01 40 00` (there is no separate `02` area byte — Group B is just the `01` area with a `0x40` patch-number offset). Temporary buffer `00 00 00` is not part of this dump.
 
 ---
 
@@ -162,7 +162,8 @@ Verify DT1: checksum is the byte immediately before `F7`; body = 3 address bytes
 | DT1 → typed fields | `SysExService.ParseDt1Message` → `Models.ParsedDT1Message` |
 | 127-byte patch → effects | `GP16Editor.Models/Patch.ParsePatchData` |
 | Parameter / address tables | `midi_parameter_mapping.md`, `gp16_pages_67_76.md` |
-| Short protocol summary | `CLAUDE.md`, `GEMINI.md` |
+| Protocol summary | `docs/GP16_PROTOCOL.md` |
+| App / development guide | `GEMINI.md` |
 
 ---
 

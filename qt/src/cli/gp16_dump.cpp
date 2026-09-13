@@ -1,3 +1,5 @@
+#include "Patch.h"
+#include "PatchBank.h"
 #include "RolandSysex.h"
 
 #include <libremidi/libremidi.hpp>
@@ -9,6 +11,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <mutex>
 #include <optional>
@@ -30,6 +33,7 @@ struct Options {
   // Default full-dump path: listen for panel bulk dump (proven on GP-16).
   // Use --request for host-initiated RQ1 per patch.
   bool requestMode = false;
+  bool pokeMode = false;
   bool verbose = false;
   std::uint8_t deviceId = 0x00;
   std::string inPort;
@@ -41,6 +45,10 @@ struct Options {
   int patchFrom = 0;
   int patchTo = 127;
   int listenSeconds = 180;
+  bool decodeMode = false;
+  std::string decodeFile;
+  std::uint8_t pokeLow = 0;
+  std::uint8_t pokeHigh = 100;
 };
 
 libremidi::API resolveApi(const std::string& name)
@@ -78,6 +86,9 @@ void usage(const char* argv0)
       << "      --from <0-127>     First patch index (default: 0)\n"
       << "      --to <0-127>       Last patch index (default: 127)\n"
       << "      --api <name>       alsa_raw (default), alsa_seq, default\n"
+      << "      --decode <file>    Offline: decode a captured .bin (shape auto-detected) and exit\n"
+      << "      --poke             Play Mode probe: compressor sustain @ 00 00 11 with/without\n"
+      << "                        SOUND CHANGE REQUEST @ 00 00 75 (needs -o)\n"
       << "  -v, --verbose          Log each message\n"
       << "  -h, --help             Show this help\n"
       << "\n"
@@ -85,7 +96,9 @@ void usage(const char* argv0)
       << "  " << argv0 << " --list\n"
       << "  " << argv0 << " -i \"USB MIDI\" -f dump.bin\n"
       << "      # then start bulk dump on the GP-16 panel\n"
-      << "  " << argv0 << " --request -i \"USB MIDI\" -o \"USB MIDI\" -d 00 -f dump.bin\n";
+      << "  " << argv0 << " --request -i \"USB MIDI\" -o \"USB MIDI\" -d 00 -f dump.bin\n"
+      << "  " << argv0 << " --decode captures/dump-20260730-153932.bin\n"
+      << "  " << argv0 << " --poke -o \"USB MIDI\" -d 00 -v\n";
 }
 
 std::string portName(const libremidi::port_information& p)
@@ -188,6 +201,11 @@ bool parseArgs(int argc, char** argv, Options& opt)
       opt.patchFrom = std::stoi(need(a.c_str()));
     } else if (a == "--to") {
       opt.patchTo = std::stoi(need(a.c_str()));
+    } else if (a == "--decode") {
+      opt.decodeFile = need(a.c_str());
+      opt.decodeMode = true;
+    } else if (a == "--poke") {
+      opt.pokeMode = true;
     } else {
       std::cerr << "Unknown option: " << a << "\n";
       usage(argv[0]);
@@ -298,6 +316,135 @@ int collectGroupPayload(
   return static_cast<int>(payload.size());
 }
 
+void printDecodeRow(std::ostream& os, int index, const Patch& patch)
+{
+  os << std::setw(3) << index << "  " << Patch::displayIdFor(index) << "  ";
+  if (!patch.isPresent()) {
+    os << "MISSING\n";
+    return;
+  }
+
+  os << std::left << std::setw(18) << patch.name() << std::right;
+
+  os << " A:";
+  for (int id : patch.blockAOrder())
+    os << ' ' << Patch::effectName(id, patch.blockB2Mode(), patch.isDistortion());
+  os << "  B:";
+  for (int id : patch.blockBOrder())
+    os << ' ' << Patch::effectName(id, patch.blockB2Mode(), patch.isDistortion());
+
+  os << "  on:";
+  bool any = false;
+  for (int id = 0; id < Patch::kEffectCount; ++id) {
+    if (patch.isEffectEnabled(id)) {
+      os << (any ? "," : " ") << Patch::effectName(id, patch.blockB2Mode(), patch.isDistortion());
+      any = true;
+    }
+  }
+  if (!any)
+    os << " (none)";
+  os << "\n";
+}
+
+int runDecode(const std::string& file)
+{
+  PatchBank bank;
+  std::string error;
+  if (!bank.loadFile(file, error)) {
+    std::cerr << "Decode failed: " << error << "\n";
+    return 1;
+  }
+
+  std::cout << "Shape: "
+            << (bank.shape() == PatchBank::IngestShape::PanelBulkDump ? "panel bulk dump"
+                : bank.shape() == PatchBank::IngestShape::Rq1BulkDump ? "RQ1 bulk dump"
+                                                                       : "unknown")
+            << "\n";
+  std::cout << "Patches present: " << bank.presentCount() << "/" << PatchBank::kPatchCount << "\n\n";
+
+  for (int i = 0; i < PatchBank::kPatchCount; ++i)
+    printDecodeRow(std::cout, i, bank.patchAt(i));
+
+  if (bank.presentCount() == 0)
+    return 1;
+  if (bank.presentCount() < PatchBank::kPatchCount)
+    return 3;
+  return 0;
+}
+
+bool sendDt1(
+    libremidi::midi_out& out,
+    std::uint8_t deviceId,
+    std::span<const std::uint8_t, 3> address,
+    std::uint8_t value,
+    bool verbose,
+    const char* label)
+{
+  const auto msg = roland::buildParameterChange(deviceId, address, value);
+  if (auto err = out.send_message(msg.data(), msg.size()); err != stdx::error{}) {
+    std::cerr << "Send failed (" << label << "): " << errorText(err) << "\n";
+    return false;
+  }
+  std::cout << "TX " << label << " value=" << static_cast<int>(value);
+  if (verbose)
+    std::cout << "  " << toHex(msg);
+  std::cout << "\n";
+  return true;
+}
+
+int runPoke(const Options& opt, libremidi::midi_out& out)
+{
+  constexpr std::array<std::uint8_t, 3> kSustainAddr{0x00, 0x00, 0x11};
+  constexpr std::array<std::uint8_t, 3> kSoundChangeAddr{0x00, 0x00, 0x75};
+  constexpr auto kListenGap = std::chrono::seconds(4);
+
+  std::cout
+      << "\nSOUND CHANGE REQUEST probe (Play Mode)\n"
+      << "---------------------------------------\n"
+      << "On the GP-16: Play Mode, compressor ON, play a sustained note/chord\n"
+      << "through the unit so sustain changes are obvious.\n"
+      << "Device ID 0x" << std::hex << static_cast<int>(opt.deviceId) << std::dec
+      << "; sustain low=" << static_cast<int>(opt.pokeLow)
+      << " high=" << static_cast<int>(opt.pokeHigh)
+      << "; 50 ms before any 0x75 poke.\n\n";
+
+  std::cout << "=== Trial A: sustain WITHOUT 0x75 ===\n";
+  if (!sendDt1(out, opt.deviceId, kSustainAddr, opt.pokeHigh, opt.verbose, "00 00 11 sustain"))
+    return 1;
+  std::cout << "  Listen " << kListenGap.count() << "s for an audible sustain change…\n";
+  std::this_thread::sleep_for(kListenGap);
+
+  if (!sendDt1(out, opt.deviceId, kSustainAddr, opt.pokeLow, opt.verbose, "00 00 11 sustain"))
+    return 1;
+  std::cout << "  Listen " << kListenGap.count() << "s…\n";
+  std::this_thread::sleep_for(kListenGap);
+
+  std::cout << "\n=== Trial B: sustain WITH 0x75 (50 ms later) ===\n";
+  if (!sendDt1(out, opt.deviceId, kSustainAddr, opt.pokeHigh, opt.verbose, "00 00 11 sustain"))
+    return 1;
+  std::this_thread::sleep_for(kInterRequestDelay);
+  if (!sendDt1(out, opt.deviceId, kSoundChangeAddr, 0x00, opt.verbose, "00 00 75 sound-change"))
+    return 1;
+  std::cout << "  Listen " << kListenGap.count() << "s…\n";
+  std::this_thread::sleep_for(kListenGap);
+
+  if (!sendDt1(out, opt.deviceId, kSustainAddr, opt.pokeLow, opt.verbose, "00 00 11 sustain"))
+    return 1;
+  std::this_thread::sleep_for(kInterRequestDelay);
+  if (!sendDt1(out, opt.deviceId, kSoundChangeAddr, 0x00, opt.verbose, "00 00 75 sound-change"))
+    return 1;
+  std::cout << "  Listen " << kListenGap.count() << "s…\n";
+  std::this_thread::sleep_for(kListenGap);
+
+  std::cout
+      << "\nProbe TX complete.\n"
+      << "Compare Trial A vs Trial B:\n"
+      << "  - Audible only in B  → Play Mode needs 0x75\n"
+      << "  - Audible in A (and B) → Play Mode does not need 0x75\n"
+      << "Record the result in qt/README.md (Phase 4 contract for live edit).\n";
+  return 0;
+}
+
 } // namespace
 
 int main(int argc, char** argv)
@@ -311,9 +458,15 @@ int main(int argc, char** argv)
     return 2;
   }
 
+  if (opt.decodeMode)
+    return runDecode(opt.decodeFile);
+
   const auto api = resolveApi(opt.api);
   std::cout << "API: " << libremidi::get_api_display_name(api) << "\n";
-  std::cout << "Mode: " << (opt.requestMode ? "request (RQ1)" : "listen (panel dump)") << "\n";
+  if (opt.pokeMode)
+    std::cout << "Mode: poke (SOUND CHANGE REQUEST)\n";
+  else
+    std::cout << "Mode: " << (opt.requestMode ? "request (RQ1)" : "listen (panel dump)") << "\n";
 
   libremidi::observer observer{
       {
@@ -334,7 +487,10 @@ int main(int argc, char** argv)
   for (const auto& p : outputs)
     outNames.push_back(portName(p));
 
-  if (opt.listOnly || opt.inPort.empty()) {
+  const bool needIn = !opt.pokeMode;
+  const bool needOut = opt.requestMode || opt.pokeMode;
+
+  if (opt.listOnly || (needIn && opt.inPort.empty())) {
     std::cout << "MIDI inputs (" << inNames.size() << "):\n";
     for (std::size_t i = 0; i < inNames.size(); ++i)
       std::cout << "  [" << i << "] " << inNames[i] << "\n";
@@ -343,7 +499,7 @@ int main(int argc, char** argv)
       std::cout << "  [" << i << "] " << outNames[i] << "\n";
     if (opt.listOnly)
       return 0;
-    if (opt.inPort.empty()) {
+    if (needIn && opt.inPort.empty()) {
       std::cerr << "\nSpecify -i input port (or --list).\n";
       return 2;
     }
@@ -356,19 +512,22 @@ int main(int argc, char** argv)
     return resolvePortIndex(names, "USB MIDI");
   };
 
-  if (opt.inPort.empty())
+  if (needIn && opt.inPort.empty())
     opt.inPort = "USB MIDI";
-  if (opt.requestMode && opt.outPort.empty())
+  if (needOut && opt.outPort.empty())
     opt.outPort = "USB MIDI";
 
-  const auto inIdx = prefer(inNames, opt.inPort);
-  if (!inIdx) {
-    std::cerr << "Input port not found: " << opt.inPort << "\n";
-    return 1;
+  std::optional<std::size_t> inIdx;
+  if (needIn) {
+    inIdx = prefer(inNames, opt.inPort);
+    if (!inIdx) {
+      std::cerr << "Input port not found: " << opt.inPort << "\n";
+      return 1;
+    }
   }
 
   std::optional<std::size_t> outIdx;
-  if (opt.requestMode) {
+  if (needOut) {
     outIdx = prefer(outNames, opt.outPort);
     if (!outIdx) {
       std::cerr << "Output port not found: " << opt.outPort << "\n";
@@ -376,11 +535,25 @@ int main(int argc, char** argv)
     }
   }
 
-  std::cout << "Input:  [" << *inIdx << "] " << inNames[*inIdx] << "\n";
+  if (inIdx)
+    std::cout << "Input:  [" << *inIdx << "] " << inNames[*inIdx] << "\n";
   if (outIdx)
     std::cout << "Output: [" << *outIdx << "] " << outNames[*outIdx] << "\n";
   std::cout << "Device ID: 0x" << std::hex << static_cast<int>(opt.deviceId) << std::dec << "\n";
-  std::cout << "File: " << opt.outFile << "\n";
+  if (!opt.pokeMode)
+    std::cout << "File: " << opt.outFile << "\n";
+
+  if (opt.pokeMode) {
+    libremidi::midi_out midiout{
+        libremidi::output_configuration{},
+        libremidi::midi_out_configuration_for(api),
+    };
+    if (auto err = midiout.open_port(outputs[*outIdx]); err != stdx::error{}) {
+      std::cerr << "Failed to open output: " << errorText(err) << "\n";
+      return 1;
+    }
+    return runPoke(opt, midiout);
+  }
 
   SysexInbox inbox;
   std::vector<std::uint8_t> partial;

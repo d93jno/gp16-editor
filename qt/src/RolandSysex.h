@@ -17,6 +17,7 @@ inline constexpr std::array<std::uint8_t, 3> kInternalGroupSize{0x00, 0x40, 0x00
 inline constexpr int kGroupPayloadBytes = 8192;
 inline constexpr int kPatchStride = 0x80;
 inline constexpr int kPatchSize = 0x7F;
+inline constexpr int kPatchDataBytes = 117;
 inline constexpr int kPatchNameOffset = 0x64;
 inline constexpr int kPatchNameLength = 16;
 inline constexpr int kPatchesPerGroup = 64;
