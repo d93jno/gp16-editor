@@ -34,8 +34,14 @@ public:
 
   [[nodiscard]] std::span<const std::uint8_t> rawData() const { return data_; }
 
+  [[nodiscard]] static char groupLetterFor(int index);
+  [[nodiscard]] static int bankDigitFor(int index);
+  [[nodiscard]] static int numberDigitFor(int index);
   [[nodiscard]] static std::string displayIdFor(int index);
   [[nodiscard]] static std::string effectName(int identity, int blockB2Mode = 0, bool isDistortion = true);
+
+  [[nodiscard]] std::string playModeLcdLine1() const;
+  [[nodiscard]] std::string playModeLcdLine2() const;
 
 private:
   void ensureSize(std::size_t n);

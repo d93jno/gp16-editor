@@ -11,6 +11,7 @@
 class EffectEditor;
 class MidiService;
 class Patch;
+class PatchDisplayWidget;
 class PatchListPanel;
 class SignalChainWidget;
 class QAction;
@@ -19,6 +20,7 @@ class QDockWidget;
 class QLabel;
 class QPlainTextEdit;
 class QSpinBox;
+class QStackedWidget;
 class QTimer;
 
 class MainWindow : public QMainWindow
@@ -80,8 +82,11 @@ private:
   QAction* openAction_ = nullptr;
 
   PatchListPanel* listPanel_ = nullptr;
+  QStackedWidget* headerStack_ = nullptr;
   QLabel* headerId_ = nullptr;
   QLabel* headerName_ = nullptr;
+  PatchDisplayWidget* display_ = nullptr;
+  QAction* frontPanelAction_ = nullptr;
   SignalChainWidget* chainWidget_ = nullptr;
   EffectEditor* editor_ = nullptr;
 

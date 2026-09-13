@@ -41,6 +41,37 @@ void testDisplayId()
   checkEqual(Patch::displayIdFor(63), std::string("A88"), "index 63 -> A88");
   checkEqual(Patch::displayIdFor(64), std::string("B11"), "index 64 -> B11");
   checkEqual(Patch::displayIdFor(127), std::string("B88"), "index 127 -> B88");
+
+  checkEqual(Patch::groupLetterFor(0), 'A', "index 0 group A");
+  checkEqual(Patch::bankDigitFor(0), 1, "index 0 bank 1");
+  checkEqual(Patch::numberDigitFor(0), 1, "index 0 number 1");
+  checkEqual(Patch::groupLetterFor(127), 'B', "index 127 group B");
+  checkEqual(Patch::bankDigitFor(127), 8, "index 127 bank 8");
+  checkEqual(Patch::numberDigitFor(127), 8, "index 127 number 8");
+}
+
+void testPlayModeLcd()
+{
+  std::vector<std::uint8_t> data(0x74, 0);
+  for (int i = 0; i < 6; ++i)
+    data[static_cast<std::size_t>(i)] = static_cast<std::uint8_t>(i);
+  for (int i = 0; i < 6; ++i)
+    data[static_cast<std::size_t>(6 + i)] = static_cast<std::uint8_t>(6 + i);
+  data[0x0D] = 0b0001'0101;
+  data[0x0E] = 0b0100'0001;
+  const char* name = "Sparkling    AMP";
+  for (int i = 0; i < 16; ++i)
+    data[static_cast<std::size_t>(0x64 + i)] = static_cast<std::uint8_t>(name[i]);
+
+  Patch p;
+  p.parse(data, 0);
+  checkEqual(p.playModeLcdLine1(), std::string(name), "LCD line 1 is the 16-char name field");
+  checkEqual(p.playModeLcdLine2(), std::string("A-1*****B-12*4*6"),
+             "LCD line 2 is A-AAAAAAB-BBBBBB (on=digit off=*)");
+
+  Patch empty;
+  checkEqual(empty.playModeLcdLine1(), std::string(16, ' '), "absent patch LCD line 1 is spaces");
+  checkEqual(empty.playModeLcdLine2(), std::string(16, ' '), "absent patch LCD line 2 is spaces");
 }
 
 void testEffectEnableBits()
@@ -105,6 +136,15 @@ void testPanelCapture()
   const auto& first = bank.patchAt(0);
   checkEqual(first.displayId(), std::string("A11"), "patch 0 display id");
   check(!first.name().empty(), "patch 0 has a non-empty name");
+  checkEqual(static_cast<int>(first.playModeLcdLine1().size()), 16, "patch 0 LCD line 1 is 16 chars");
+  checkEqual(static_cast<int>(first.playModeLcdLine2().size()), 16, "patch 0 LCD line 2 is 16 chars");
+  check(first.playModeLcdLine1().find(first.name()) == 0,
+        "trimmed name is the prefix of LCD line 1");
+  for (char ch : first.playModeLcdLine2()) {
+    check((ch >= '1' && ch <= '6') || ch == '*' || ch == ' ' || ch == 'A' || ch == 'B'
+              || ch == '-',
+          "LCD line 2 only uses digits, *, A-/B- and spaces");
+  }
 
   const auto& last = bank.patchAt(127);
   checkEqual(last.displayId(), std::string("B88"), "patch 127 display id");
@@ -170,6 +210,7 @@ void testMalformedInput()
 int main()
 {
   testDisplayId();
+  testPlayModeLcd();
   testEffectEnableBits();
   testWordAt();
   testPanelCapture();

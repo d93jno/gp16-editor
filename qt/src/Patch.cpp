@@ -135,15 +135,68 @@ void Patch::setWordAt(int msbOffset, int value)
       static_cast<std::uint8_t>(value & 0x7F);
 }
 
+char Patch::groupLetterFor(int index)
+{
+  if (index < 0 || index > 127)
+    return '?';
+  return index < 64 ? 'A' : 'B';
+}
+
+int Patch::bankDigitFor(int index)
+{
+  if (index < 0 || index > 127)
+    return 0;
+  return (index % 64) / 8 + 1;
+}
+
+int Patch::numberDigitFor(int index)
+{
+  if (index < 0 || index > 127)
+    return 0;
+  return index % 8 + 1;
+}
+
 std::string Patch::displayIdFor(int index)
 {
   if (index < 0 || index > 127)
     return "??";
-  const char group = index < 64 ? 'A' : 'B';
-  const int local = index % 64;
-  const int bank = local / 8 + 1;
-  const int number = local % 8 + 1;
-  return std::string(1, group) + std::to_string(bank) + std::to_string(number);
+  return std::string(1, groupLetterFor(index)) + std::to_string(bankDigitFor(index))
+         + std::to_string(numberDigitFor(index));
+}
+
+std::string Patch::playModeLcdLine1() const
+{
+  std::string line(16, ' ');
+  if (!present_)
+    return line;
+  for (int i = 0; i < roland::kPatchNameLength; ++i) {
+    const auto b = byteAt(roland::kPatchNameOffset + i);
+    line[static_cast<std::size_t>(i)] = (b >= 32 && b < 127) ? static_cast<char>(b) : ' ';
+  }
+  return line;
+}
+
+std::string Patch::playModeLcdLine2() const
+{
+  std::string line(16, ' ');
+  if (!present_)
+    return line;
+
+  auto emitBlock = [&](const std::array<int, 6>& order, int dest) {
+    for (int i = 0; i < 6; ++i) {
+      const int identity = order[static_cast<std::size_t>(i)];
+      const int local = identity < 6 ? identity : identity - 6;
+      const char ch = isEffectEnabled(identity) ? static_cast<char>('1' + local) : '*';
+      line[static_cast<std::size_t>(dest + i)] = ch;
+    }
+  };
+  line[0] = 'A';
+  line[1] = '-';
+  emitBlock(blockA_, 2);
+  line[8] = 'B';
+  line[9] = '-';
+  emitBlock(blockB_, 10);
+  return line;
 }
 
 std::string Patch::effectName(int identity, int blockB2Mode, bool isDistortion)

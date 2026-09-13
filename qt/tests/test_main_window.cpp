@@ -2,14 +2,18 @@
 #include "EffectSpecs.h"
 #include "MainWindow.h"
 #include "MidiService.h"
+#include "PatchDisplayWidget.h"
 #include "RolandSysex.h"
 #include "SignalChainWidget.h"
 
+#include <QAction>
 #include <QApplication>
 #include <QByteArray>
 #include <QCoreApplication>
 #include <QElapsedTimer>
 #include <QEventLoop>
+#include <QLabel>
+#include <QStackedWidget>
 #include <QToolButton>
 
 #include <cstdint>
@@ -109,6 +113,33 @@ int main(int argc, char* argv[])
   check(window.openDumpFile(QString::fromStdString(
             (repoRoot() / "captures" / "dump-20260730-153932.bin").string())),
         "open dump-20260730-153932.bin");
+
+  auto* display = window.findChild<PatchDisplayWidget*>();
+  auto* stack = window.findChild<QStackedWidget*>(QStringLiteral("headerStack"));
+  auto* nameHeader = window.findChild<QWidget*>(QStringLiteral("nameHeader"));
+  auto* frontPanelAction =
+      window.findChild<QAction*>(QStringLiteral("frontPanelDisplayAction"));
+  check(display != nullptr, "MainWindow hosts a PatchDisplayWidget");
+  check(stack != nullptr, "MainWindow hosts a header stack");
+  check(nameHeader != nullptr, "MainWindow hosts the name header");
+  check(frontPanelAction != nullptr, "View menu has Front panel display");
+  check(stack && display && stack->currentWidget() == display,
+        "front panel is the default view");
+  check(frontPanelAction && frontPanelAction->isChecked(),
+        "Front panel display is checked by default");
+  if (display) {
+    check(display->groupLetter() == 'A', "opened dump selects group A");
+    check(display->bankDigit() == 1, "opened dump selects bank 1");
+    check(display->numberDigit() == 1, "opened dump selects number 1");
+    check(display->lcdLine1().size() == 16, "LCD line 1 is 16 characters");
+    check(display->lcdLine2().size() == 16, "LCD line 2 is 16 characters");
+  }
+  if (frontPanelAction && stack && display && nameHeader) {
+    frontPanelAction->setChecked(false);
+    check(stack->currentWidget() == nameHeader, "unchecking Front panel display restores the name header");
+    frontPanelAction->setChecked(true);
+    check(stack->currentWidget() == display, "checking Front panel display shows the cluster");
+  }
 
   chip->click();
   check(editor->identity() == 0, "chip click after a row is selected binds compressor");

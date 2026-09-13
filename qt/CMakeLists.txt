@@ -71,6 +71,8 @@ add_executable(gp16-editor-qt
   src/SignalChainWidget.cpp
   src/EffectEditor.h
   src/EffectEditor.cpp
+  src/PatchDisplayWidget.h
+  src/PatchDisplayWidget.cpp
   src/MidiService.h
   src/MidiService.cpp
 )
@@ -165,6 +167,20 @@ target_compile_definitions(gp16_effect_editor_tests PRIVATE
 )
 add_test(NAME gp16_effect_editor_tests COMMAND gp16_effect_editor_tests)
 
+add_executable(gp16_patch_display_tests
+  tests/test_patch_display.cpp
+  src/PatchDisplayWidget.h
+  src/PatchDisplayWidget.cpp
+)
+target_link_libraries(gp16_patch_display_tests PRIVATE
+  Qt6::Widgets
+  gp16_sysex
+)
+target_compile_definitions(gp16_patch_display_tests PRIVATE
+  GP16_TEST_REPO_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/.."
+)
+add_test(NAME gp16_patch_display_tests COMMAND gp16_patch_display_tests)
+
 add_executable(gp16_main_window_tests
   tests/test_main_window.cpp
   src/MainWindow.h
@@ -175,6 +191,8 @@ add_executable(gp16_main_window_tests
   src/SignalChainWidget.cpp
   src/EffectEditor.h
   src/EffectEditor.cpp
+  src/PatchDisplayWidget.h
+  src/PatchDisplayWidget.cpp
   src/MidiService.h
   src/MidiService.cpp
 )

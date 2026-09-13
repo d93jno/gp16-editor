@@ -3,6 +3,7 @@
 #include "EffectEditor.h"
 #include "MidiService.h"
 #include "Patch.h"
+#include "PatchDisplayWidget.h"
 #include "PatchListPanel.h"
 #include "RolandSysex.h"
 #include "SignalChainWidget.h"
@@ -20,6 +21,7 @@
 #include <QSignalBlocker>
 #include <QSpinBox>
 #include <QSplitter>
+#include <QStackedWidget>
 #include <QStatusBar>
 #include <QTimer>
 #include <QToolBar>
@@ -114,12 +116,13 @@ MainWindow::MainWindow(QWidget* parent)
   rightLayout->setContentsMargins(12, 12, 12, 12);
   rightLayout->setSpacing(10);
 
-  auto* header = new QWidget(right);
-  auto* headerLayout = new QHBoxLayout(header);
+  auto* nameHeader = new QWidget(right);
+  nameHeader->setObjectName(QStringLiteral("nameHeader"));
+  auto* headerLayout = new QHBoxLayout(nameHeader);
   headerLayout->setContentsMargins(0, 0, 0, 0);
   headerLayout->setSpacing(12);
-  headerId_ = new QLabel(header);
-  headerName_ = new QLabel(header);
+  headerId_ = new QLabel(nameHeader);
+  headerName_ = new QLabel(nameHeader);
   auto idFont = headerId_->font();
   idFont.setBold(true);
   idFont.setPointSizeF(idFont.pointSizeF() + 2);
@@ -131,7 +134,15 @@ MainWindow::MainWindow(QWidget* parent)
   headerName_->setFont(nameFont);
   headerLayout->addWidget(headerId_);
   headerLayout->addWidget(headerName_, 1);
-  rightLayout->addWidget(header);
+
+  display_ = new PatchDisplayWidget(right);
+
+  headerStack_ = new QStackedWidget(right);
+  headerStack_->setObjectName(QStringLiteral("headerStack"));
+  headerStack_->addWidget(nameHeader);
+  headerStack_->addWidget(display_);
+  headerStack_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+  rightLayout->addWidget(headerStack_);
 
   chainWidget_ = new SignalChainWidget(right);
   rightLayout->addWidget(chainWidget_);
@@ -158,6 +169,14 @@ MainWindow::MainWindow(QWidget* parent)
 
   auto* viewMenu = menuBar()->addMenu(QStringLiteral("&View"));
   viewMenu->addAction(logDock_->toggleViewAction());
+  frontPanelAction_ = viewMenu->addAction(QStringLiteral("Front panel display"));
+  frontPanelAction_->setObjectName(QStringLiteral("frontPanelDisplayAction"));
+  frontPanelAction_->setCheckable(true);
+  frontPanelAction_->setToolTip(QStringLiteral("Show the GP-16 Group / Bank·Number / LCD instead of the name header"));
+  connect(frontPanelAction_, &QAction::toggled, this, [this](bool on) {
+    headerStack_->setCurrentWidget(on ? static_cast<QWidget*>(display_) : headerStack_->widget(0));
+  });
+  frontPanelAction_->setChecked(true);
 
   portStatus_ = new QLabel(this);
   statusBar()->addPermanentWidget(portStatus_);
@@ -499,6 +518,7 @@ void MainWindow::onChainEffectToggled(int identity, bool enabled)
 
   onParameterEdited(0x0D, 1, patch.byteAt(0x0D));
   onParameterEdited(0x0E, 1, patch.byteAt(0x0E));
+  display_->refresh();
 }
 
 void MainWindow::onParameterEdited(int offset, int byteWidth, int value)
@@ -561,6 +581,7 @@ void MainWindow::updateHeader(int index)
   if (index < 0 || index >= PatchBank::kPatchCount) {
     headerId_->setText(QString());
     headerName_->setText(QStringLiteral("No patch selected"));
+    display_->setPatch(nullptr);
     chainWidget_->setPatch(nullptr);
     editor_->setPatch(nullptr);
     editor_->setIdentity(-1);
@@ -572,6 +593,7 @@ void MainWindow::updateHeader(int index)
     headerName_->setText(QString::fromStdString(patch.name()));
   else
     headerName_->setText(QStringLiteral("—"));
+  display_->setPatch(&patch);
   chainWidget_->setPatch(&patch);
   editor_->setPatch(&patch);
   editor_->setIdentity(chainWidget_->selectedIdentity());
