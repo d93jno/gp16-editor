@@ -57,6 +57,9 @@ cmake -S . -B build -DCMAKE_PREFIX_PATH=/path/to/Qt/6.x/gcc_64
 
 # Host-initiated dump (two RQ1s: Group A `01 00 00`, Group B `01 40 00`, size `00 40 00`)
 ./build/gp16-dump --request -i "USB MIDI" -o "USB MIDI" -d 00 -f gp16-full-dump.bin -v
+
+# Play Mode SOUND CHANGE REQUEST probe (compressor sustain ± 0x75)
+./build/gp16-dump --poke -o "USB MIDI" -d 00 -v
 ```
 
 `--request` matches the working Windows editor capture (`MIDI_CAPTURE.md`): 3-byte address and size, then DT1 payloads accumulated to 8192 bytes per group.

@@ -273,7 +273,7 @@ the same patch, and switching patches or slots updates the form with no stale va
 
 ## Phase 6 — Live edit
 
-Requires the Phase 4 result. Do not guess at the `0x75` rule.
+Requires the Phase 4 result (**needs `0x75`** — see above). Do not omit the poke.
 
 On control change: update the `Patch` model, then send via the existing
 `MidiService::sendParameterChange` to `00 00 <offset>`.
@@ -285,13 +285,12 @@ load-bearing, not a nicety. Implement it as a per-address coalescing timer, last
 GP-16. Multi-byte parameters send MSB and LSB as one `buildDataSet` call with two data bytes,
 coalesced as a single unit.
 
-If Phase 4 found the poke necessary, send `00 00 75` **once** after a coalesced burst settles —
-not once per parameter message.
+Send `00 00 75` **once** after a coalesced burst settles — not once per parameter message.
 
 Skip the send when the output port is closed; the local edit still applies to the model.
 
 **Files:** `qt/src/EffectEditor.{h,cpp}`, `qt/src/MainWindow.{h,cpp}`, possibly
-`qt/src/MidiService.{h,cpp}` if Phase 4 showed a follow-up message is needed.
+`qt/src/MidiService.{h,cpp}` for the follow-up SOUND CHANGE REQUEST.
 **Done when:** dragging a slider is audible on the device under the Phase 4 rule, the log shows
 coalesced traffic rather than a flood, and closing the output port leaves editing functional
 offline.
