@@ -1,16 +1,23 @@
 #include "EffectEditor.h"
 #include "EffectSpecs.h"
 #include "MainWindow.h"
+#include "MidiService.h"
+#include "RolandSysex.h"
 #include "SignalChainWidget.h"
 
 #include <QApplication>
 #include <QByteArray>
 #include <QCoreApplication>
+#include <QElapsedTimer>
+#include <QEventLoop>
 #include <QToolButton>
 
+#include <cstdint>
 #include <filesystem>
 #include <iostream>
+#include <span>
 #include <string>
+#include <vector>
 
 namespace {
 
@@ -36,6 +43,42 @@ QToolButton* firstChainChip(MainWindow& window)
     return nullptr;
   const auto chips = chain->findChildren<QToolButton*>();
   return chips.isEmpty() ? nullptr : chips.front();
+}
+
+roland::ParsedDt1 parseSent(const QByteArray& bytes)
+{
+  return roland::parseDt1(std::span<const std::uint8_t>(
+      reinterpret_cast<const std::uint8_t*>(bytes.constData()),
+      static_cast<std::size_t>(bytes.size())));
+}
+
+std::vector<roland::ParsedDt1> writesTo(const std::vector<QByteArray>& sent, int offset)
+{
+  std::vector<roland::ParsedDt1> hits;
+  for (const auto& bytes : sent) {
+    auto parsed = parseSent(bytes);
+    if (parsed.valid && parsed.address.size() == 3 && parsed.address[0] == 0x00 &&
+        parsed.address[1] == 0x00 && parsed.address[2] == offset)
+      hits.push_back(std::move(parsed));
+  }
+  return hits;
+}
+
+// Spins the event loop (real wall-clock time, not a blind sleep) until either
+// the predicate is true or timeoutMs elapses, so tests that depend on the
+// live-edit coalescing timer (MainWindow.cpp, ~40 ms) wait on the actual
+// QTimer::timeout rather than assuming a fixed delay is enough.
+template <typename Predicate>
+bool waitUntil(Predicate predicate, int timeoutMs)
+{
+  QElapsedTimer elapsed;
+  elapsed.start();
+  while (!predicate()) {
+    if (elapsed.elapsed() >= timeoutMs)
+      return predicate();
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 5);
+  }
+  return true;
 }
 
 } // namespace
@@ -85,6 +128,58 @@ int main(int argc, char* argv[])
     QCoreApplication::processEvents();
     check(editor->paramRawValue(0) == changed,
           "the edit survives a coalescing tick while offline");
+  }
+
+  // Phase 6: coalescing/gating with a simulated output port. No real MIDI
+  // backend is used (setTestOutputOpen), so this runs without hardware; the
+  // actual wire bytes are captured via MidiService::sysExSent.
+  window.midiService()->setTestOutputOpen(true);
+  std::vector<QByteArray> sent;
+  QObject::connect(window.midiService(), &MidiService::sysExSent,
+                    [&sent](const QByteArray& bytes) { sent.push_back(bytes); });
+
+  // Reverb (identity 10, fixed — not a variant slot) has a byteWidth==2
+  // Cutoff parameter at 0x53/0x54.
+  editor->setIdentity(10);
+  check(editor->currentKind() == EffectKind::Reverb, "setIdentity(10) selects Reverb");
+  const auto& reverbSpec = specFor(editor->currentKind());
+  int cutoffIndex = -1;
+  for (int i = 0; i < editor->paramCount(); ++i) {
+    if (editor->paramOffset(i) == 0x53) {
+      cutoffIndex = i;
+      break;
+    }
+  }
+  check(cutoffIndex >= 0, "Reverb page has a Cutoff parameter at offset 0x53");
+  if (cutoffIndex >= 0) {
+    check(reverbSpec.params[cutoffIndex].byteWidth == 2,
+          "Reverb Cutoff is a two-byte (MSB/LSB) parameter");
+
+    sent.clear();
+    editor->setParamRawValue(cutoffIndex, 40);
+    editor->setParamRawValue(cutoffIndex, 150); // same offset, before the tick — must collapse
+
+    const bool flushed =
+        waitUntil([&] { return !writesTo(sent, 0x53).empty(); }, 500);
+    check(flushed, "the ~40 ms coalescing tick actually fires and sends the queued edit");
+
+    const auto cutoffWrites = writesTo(sent, 0x53);
+    check(cutoffWrites.size() == 1,
+          "two edits to the same offset collapse into a single coalesced DT1");
+    if (cutoffWrites.size() == 1) {
+      check(cutoffWrites.front().data.size() == 2,
+            "a byteWidth==2 send is one two-byte DT1, not two single-byte writes");
+      if (cutoffWrites.front().data.size() == 2) {
+        const int decoded = (cutoffWrites.front().data[0] << 7) | cutoffWrites.front().data[1];
+        check(decoded == 150, "the coalesced write carries the last value, not the first");
+      }
+    }
+
+    sent.clear();
+    const bool scrSent = waitUntil([&] { return !writesTo(sent, 0x75).empty(); }, 500);
+    check(scrSent, "a settled edit burst sends SOUND CHANGE REQUEST (00 00 75)");
+    check(writesTo(sent, 0x75).size() <= 1,
+          "SOUND CHANGE REQUEST is sent at most once per settled burst");
   }
 
   if (failures == 0) {

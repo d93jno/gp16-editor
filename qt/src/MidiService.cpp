@@ -169,6 +169,12 @@ std::uint8_t MidiService::deviceId() const
   return deviceId_;
 }
 
+void MidiService::setTestOutputOpen(bool open)
+{
+  std::scoped_lock lock(mutex_);
+  outputOpen_ = open;
+}
+
 bool MidiService::openPorts(const QString& inputName, const QString& outputName)
 {
   closePorts();
@@ -269,6 +275,9 @@ bool MidiService::openPorts(const QString& inputName, const QString& outputName)
 
 bool MidiService::sendBytes(const std::vector<std::uint8_t>& bytes)
 {
+  emit sysExSent(QByteArray(
+      reinterpret_cast<const char*>(bytes.data()), static_cast<int>(bytes.size())));
+
   QString error;
   {
     std::scoped_lock lock(mutex_);

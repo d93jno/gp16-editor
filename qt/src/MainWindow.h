@@ -31,6 +31,8 @@ public:
 
   bool openDumpFile(const QString& path);
 
+  [[nodiscard]] MidiService* midiService() const { return midi_; }
+
 private slots:
   void onRefreshPorts();
   void onConnect();
@@ -56,6 +58,7 @@ private:
   void sendGroupRequest(DumpPhase phase);
   void finishActivity(const QString& detail, bool success);
   void stopListen(const QString& detail);
+  void cancelPendingEdits();
   void refreshLibrarian();
   void updateHeader(int index);
   void updateActions();

@@ -33,6 +33,12 @@ public:
   void setDeviceId(std::uint8_t id);
   [[nodiscard]] std::uint8_t deviceId() const;
 
+  // Test-only: report the output port as open without a real MIDI backend, so
+  // MainWindow's live-edit gating/coalescing can be exercised offline.
+  // sendBytes() still has no backend to write to and reports an error via
+  // midiError(), but sysExSent() still fires with the bytes that were built.
+  void setTestOutputOpen(bool open);
+
   bool sendBytes(const std::vector<std::uint8_t>& bytes);
   bool sendSysEx(const QByteArray& sysex);
 
@@ -55,6 +61,7 @@ signals:
   void portsChanged();
   void portsOpened(bool inputOk, bool outputOk);
   void sysExReceived(const QByteArray& sysex);
+  void sysExSent(const QByteArray& sysex);
   void midiError(const QString& message);
   void logMessage(const QString& message);
 

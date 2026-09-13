@@ -196,6 +196,7 @@ bool MainWindow::openDumpFile(const QString& path)
 {
   if (dumpPhase_ != DumpPhase::Idle)
     finishActivity(QStringLiteral("Ingest cancelled."), false);
+  cancelPendingEdits();
 
   PatchBank loaded;
   std::string error;
@@ -234,6 +235,7 @@ void MainWindow::onConnect()
 {
   if (dumpPhase_ != DumpPhase::Idle)
     finishActivity(QStringLiteral("Ingest cancelled."), false);
+  cancelPendingEdits();
   sysexCount_ = 0;
   sysexBytes_ = 0;
   midi_->closePorts();
@@ -280,6 +282,16 @@ void MainWindow::stopListen(const QString& detail)
   finishActivity(detail, true);
 }
 
+void MainWindow::cancelPendingEdits()
+{
+  // Drop any live-edit burst still queued behind the 40 ms coalescing timer
+  // so a Dump/Listen/Open/Connect that lands mid-drag cannot flush a stale
+  // parameter DT1 (or a trailing 00 00 75) after the librarian has moved on.
+  editCoalesceTimer_->stop();
+  pendingEdits_.clear();
+  editBurstActive_ = false;
+}
+
 void MainWindow::onRequestAllPatches()
 {
   if (dumpPhase_ != DumpPhase::Idle)
@@ -288,6 +300,7 @@ void MainWindow::onRequestAllPatches()
     onError(QStringLiteral("Connect an output port before Dump."));
     return;
   }
+  cancelPendingEdits();
   bank_ = PatchBank{};
   listPanel_->clearFilter();
   refreshLibrarian();
@@ -315,6 +328,7 @@ void MainWindow::onListenToggled(bool on)
     return;
   }
 
+  cancelPendingEdits();
   bank_ = PatchBank{};
   listPanel_->clearFilter();
   refreshLibrarian();
@@ -474,18 +488,28 @@ void MainWindow::onChainSlotSelected(int identity)
 
 void MainWindow::onChainEffectToggled(int identity, bool enabled)
 {
+  // SignalChainWidget already flipped the bit in the local Patch model before
+  // emitting this signal, so 0x0D/0x0E are current — route them through the
+  // same coalescing/gating path as a slider edit.
   const auto& patch = currentPatch();
   const auto name = QString::fromStdString(
       Patch::effectName(identity, patch.blockB2Mode(), patch.isDistortion()));
-  appendLog(QStringLiteral("%1 %2 (local model only)")
+  appendLog(QStringLiteral("%1 %2")
                 .arg(name, enabled ? QStringLiteral("enabled") : QStringLiteral("disabled")));
+
+  onParameterEdited(0x0D, 1, patch.byteAt(0x0D));
+  onParameterEdited(0x0E, 1, patch.byteAt(0x0E));
 }
 
 void MainWindow::onParameterEdited(int offset, int byteWidth, int value)
 {
-  // Local model is already updated by EffectEditor. Live send is offline-only
-  // when the output port is closed — see MidiService::sendBytes.
+  // Local model is already updated by the caller. Live send is offline-only
+  // when the output port is closed — see MidiService::sendBytes — and is
+  // skipped entirely while an RQ1/panel dump is in flight so parameter DT1s
+  // never interleave with dump traffic.
   if (!midi_->isOutputOpen())
+    return;
+  if (dumpPhase_ != DumpPhase::Idle)
     return;
 
   pendingEdits_[offset] = PendingParamEdit{byteWidth, value};
