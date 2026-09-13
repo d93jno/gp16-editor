@@ -59,6 +59,31 @@ bool Patch::isEffectEnabled(int identity) const
   }
 }
 
+void Patch::setEffectEnabled(int identity, bool enabled)
+{
+  auto setBit = [enabled](std::uint8_t& byteValue, int bit) {
+    if (enabled)
+      byteValue |= static_cast<std::uint8_t>(1u << bit);
+    else
+      byteValue &= static_cast<std::uint8_t>(~(1u << bit));
+  };
+  switch (identity) {
+    case 0: setBit(onOffLow_, 0); break;
+    case 1: setBit(onOffLow_, 1); break;
+    case 2: setBit(onOffLow_, 2); break;
+    case 3: setBit(onOffLow_, 3); break;
+    case 4: setBit(onOffLow_, 4); break;
+    case 5: setBit(onOffLow_, 5); break;
+    case 6: setBit(onOffLow_, 6); break;
+    case 7: setBit(onOffHigh_, 0); break;
+    case 8: setBit(onOffHigh_, 1); break;
+    case 9: setBit(onOffHigh_, 2); break;
+    case 10: setBit(onOffHigh_, 3); break;
+    case 11: setBit(onOffHigh_, 4); break;
+    default: break;
+  }
+}
+
 std::uint8_t Patch::byteAt(int offset) const
 {
   if (offset < 0 || static_cast<std::size_t>(offset) >= data_.size())

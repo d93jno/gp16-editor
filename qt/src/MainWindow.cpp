@@ -4,13 +4,13 @@
 #include "Patch.h"
 #include "PatchListPanel.h"
 #include "RolandSysex.h"
+#include "SignalChainWidget.h"
 
 #include <QAction>
 #include <QComboBox>
 #include <QDockWidget>
 #include <QFileDialog>
 #include <QFileInfo>
-#include <QFrame>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMenu>
@@ -127,18 +127,17 @@ MainWindow::MainWindow(QWidget* parent)
   headerLayout->addWidget(headerName_, 1);
   rightLayout->addWidget(header);
 
-  auto* chainPlaceholder = new QLabel(QStringLiteral("Signal chain"), right);
-  chainPlaceholder->setAlignment(Qt::AlignCenter);
-  chainPlaceholder->setMinimumHeight(56);
-  chainPlaceholder->setEnabled(false);
-  chainPlaceholder->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
-  rightLayout->addWidget(chainPlaceholder);
+  chainWidget_ = new SignalChainWidget(right);
+  rightLayout->addWidget(chainWidget_);
 
   editorStack_ = new QStackedWidget(right);
-  auto* editorPlaceholder = new QLabel(QStringLiteral("Effect editor"));
+  auto* editorPlaceholder = new QLabel(QStringLiteral("Select a chip in the signal chain"));
   editorPlaceholder->setAlignment(Qt::AlignCenter);
   editorPlaceholder->setEnabled(false);
   editorStack_->addWidget(editorPlaceholder);
+  slotPlaceholder_ = new QLabel(editorStack_);
+  slotPlaceholder_->setAlignment(Qt::AlignCenter);
+  editorStack_->addWidget(slotPlaceholder_);
   rightLayout->addWidget(editorStack_, 1);
 
   splitter->addWidget(right);
@@ -165,6 +164,8 @@ MainWindow::MainWindow(QWidget* parent)
   statusBar()->addPermanentWidget(portStatus_);
 
   connect(listPanel_, &PatchListPanel::patchSelected, this, &MainWindow::onPatchSelected);
+  connect(chainWidget_, &SignalChainWidget::slotSelected, this, &MainWindow::onChainSlotSelected);
+  connect(chainWidget_, &SignalChainWidget::effectToggled, this, &MainWindow::onChainEffectToggled);
   connect(deviceIdSpin_, qOverload<int>(&QSpinBox::valueChanged), this, &MainWindow::onDeviceIdChanged);
 
   connect(midi_, &MidiService::portsChanged, this, [this]() {
@@ -460,6 +461,25 @@ void MainWindow::onPatchSelected(int index)
   updateHeader(index);
 }
 
+void MainWindow::onChainSlotSelected(int identity)
+{
+  const auto& patch = currentPatch();
+  const auto name = QString::fromStdString(
+      Patch::effectName(identity, patch.blockB2Mode(), patch.isDistortion()));
+  slotPlaceholder_->setText(
+      QStringLiteral("%1\n\nEditor arrives in Phase 5.").arg(name));
+  editorStack_->setCurrentIndex(1);
+}
+
+void MainWindow::onChainEffectToggled(int identity, bool enabled)
+{
+  const auto& patch = currentPatch();
+  const auto name = QString::fromStdString(
+      Patch::effectName(identity, patch.blockB2Mode(), patch.isDistortion()));
+  appendLog(QStringLiteral("%1 %2 (local model only; live edit arrives in Phase 6)")
+                .arg(name, enabled ? QStringLiteral("enabled") : QStringLiteral("disabled")));
+}
+
 void MainWindow::refreshLibrarian()
 {
   listPanel_->rebuild(bank_);
@@ -470,17 +490,25 @@ void MainWindow::refreshLibrarian()
 
 void MainWindow::updateHeader(int index)
 {
+  editorStack_->setCurrentIndex(0);
   if (index < 0 || index >= PatchBank::kPatchCount) {
     headerId_->setText(QString());
     headerName_->setText(QStringLiteral("No patch selected"));
+    chainWidget_->setPatch(nullptr);
     return;
   }
-  const auto& patch = bank_.patchAt(index);
+  auto& patch = bank_.patchAt(index);
   headerId_->setText(QString::fromStdString(Patch::displayIdFor(index)));
   if (patch.isPresent() && !patch.name().empty())
     headerName_->setText(QString::fromStdString(patch.name()));
   else
     headerName_->setText(QStringLiteral("—"));
+  chainWidget_->setPatch(&patch);
+}
+
+const Patch& MainWindow::currentPatch() const
+{
+  return bank_.patchAt(selectedIndex_);
 }
 
 void MainWindow::updateActions()

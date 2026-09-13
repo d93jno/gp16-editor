@@ -30,6 +30,14 @@ const Patch& PatchBank::patchAt(int index) const
   return patches_[static_cast<std::size_t>(index)];
 }
 
+Patch& PatchBank::patchAt(int index)
+{
+  static Patch empty;
+  if (index < 0 || index >= kPatchCount)
+    return empty;
+  return patches_[static_cast<std::size_t>(index)];
+}
+
 std::vector<std::vector<std::uint8_t>> PatchBank::splitSysexMessages(std::span<const std::uint8_t> bytes)
 {
   std::vector<std::vector<std::uint8_t>> messages;

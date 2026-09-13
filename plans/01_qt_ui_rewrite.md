@@ -191,6 +191,8 @@ dock hides and restores; on hardware, Dump and Listen produce the same list as t
 
 ## Phase 3 — Signal chain widget
 
+Status: Completed
+
 Two `QHBoxLayout` rows of checkable `QToolButton` chips. Click selects the slot; the checkbox
 toggles the effect's on/off bit in the local model.
 

@@ -25,6 +25,7 @@ public:
   [[nodiscard]] bool isDistortion() const { return isDistortion_; }
 
   [[nodiscard]] bool isEffectEnabled(int identity) const;
+  void setEffectEnabled(int identity, bool enabled);
 
   [[nodiscard]] std::uint8_t byteAt(int offset) const;
   [[nodiscard]] int wordAt(int msbOffset) const;

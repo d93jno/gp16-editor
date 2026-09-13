@@ -65,6 +65,8 @@ add_executable(gp16-editor-qt
   src/MainWindow.cpp
   src/PatchListPanel.h
   src/PatchListPanel.cpp
+  src/SignalChainWidget.h
+  src/SignalChainWidget.cpp
   src/MidiService.h
   src/MidiService.cpp
 )
@@ -130,3 +132,17 @@ target_compile_definitions(gp16_librarian_tests PRIVATE
   GP16_TEST_REPO_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/.."
 )
 add_test(NAME gp16_librarian_tests COMMAND gp16_librarian_tests)
+
+add_executable(gp16_signal_chain_tests
+  tests/test_signal_chain.cpp
+  src/SignalChainWidget.h
+  src/SignalChainWidget.cpp
+)
+target_link_libraries(gp16_signal_chain_tests PRIVATE
+  Qt6::Widgets
+  gp16_sysex
+)
+target_compile_definitions(gp16_signal_chain_tests PRIVATE
+  GP16_TEST_REPO_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/.."
+)
+add_test(NAME gp16_signal_chain_tests COMMAND gp16_signal_chain_tests)

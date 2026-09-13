@@ -20,6 +20,7 @@ public:
   [[nodiscard]] int presentCount() const;
   [[nodiscard]] bool hasPatch(int index) const;
   [[nodiscard]] const Patch& patchAt(int index) const;
+  [[nodiscard]] Patch& patchAt(int index);
 
   // Reads a captured .bin (concatenated raw SysEx messages), auto-detects
   // whether it is a panel bulk dump or an RQ1 bulk dump, and ingests it.

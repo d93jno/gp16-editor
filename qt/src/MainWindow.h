@@ -8,7 +8,9 @@
 #include <vector>
 
 class MidiService;
+class Patch;
 class PatchListPanel;
+class SignalChainWidget;
 class QAction;
 class QComboBox;
 class QDockWidget;
@@ -40,6 +42,8 @@ private slots:
   void onDeviceIdChanged(int value);
   void onDumpTimeout();
   void onPatchSelected(int index);
+  void onChainSlotSelected(int identity);
+  void onChainEffectToggled(int identity, bool enabled);
 
 private:
   enum class DumpPhase : std::uint8_t { Idle, GroupA, WaitGap, GroupB, Listening };
@@ -53,6 +57,7 @@ private:
   void updateActions();
   void updatePortStatus();
   void preferUsbMidi();
+  [[nodiscard]] const Patch& currentPatch() const;
   static QString toHex(const QByteArray& data, int maxBytes = 48);
 
   MidiService* midi_ = nullptr;
@@ -70,7 +75,9 @@ private:
   PatchListPanel* listPanel_ = nullptr;
   QLabel* headerId_ = nullptr;
   QLabel* headerName_ = nullptr;
+  SignalChainWidget* chainWidget_ = nullptr;
   QStackedWidget* editorStack_ = nullptr;
+  QLabel* slotPlaceholder_ = nullptr;
 
   QDockWidget* logDock_ = nullptr;
   QPlainTextEdit* logView_ = nullptr;
