@@ -51,6 +51,8 @@ add_library(gp16_sysex STATIC
   src/Patch.h
   src/PatchBank.cpp
   src/PatchBank.h
+  src/EffectSpecs.cpp
+  src/EffectSpecs.h
 )
 target_include_directories(gp16_sysex PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -67,6 +69,8 @@ add_executable(gp16-editor-qt
   src/PatchListPanel.cpp
   src/SignalChainWidget.h
   src/SignalChainWidget.cpp
+  src/EffectEditor.h
+  src/EffectEditor.cpp
   src/MidiService.h
   src/MidiService.cpp
 )
@@ -146,3 +150,43 @@ target_compile_definitions(gp16_signal_chain_tests PRIVATE
   GP16_TEST_REPO_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/.."
 )
 add_test(NAME gp16_signal_chain_tests COMMAND gp16_signal_chain_tests)
+
+add_executable(gp16_effect_editor_tests
+  tests/test_effect_editor.cpp
+  src/EffectEditor.h
+  src/EffectEditor.cpp
+)
+target_link_libraries(gp16_effect_editor_tests PRIVATE
+  Qt6::Widgets
+  gp16_sysex
+)
+target_compile_definitions(gp16_effect_editor_tests PRIVATE
+  GP16_TEST_REPO_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/.."
+)
+add_test(NAME gp16_effect_editor_tests COMMAND gp16_effect_editor_tests)
+
+add_executable(gp16_main_window_tests
+  tests/test_main_window.cpp
+  src/MainWindow.h
+  src/MainWindow.cpp
+  src/PatchListPanel.h
+  src/PatchListPanel.cpp
+  src/SignalChainWidget.h
+  src/SignalChainWidget.cpp
+  src/EffectEditor.h
+  src/EffectEditor.cpp
+  src/MidiService.h
+  src/MidiService.cpp
+)
+target_link_libraries(gp16_main_window_tests PRIVATE
+  Qt6::Widgets
+  libremidi
+  gp16_sysex
+)
+target_compile_definitions(gp16_main_window_tests PRIVATE
+  GP16_TEST_REPO_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/.."
+)
+if(UNIX AND NOT APPLE AND ALSA_FOUND)
+  target_link_libraries(gp16_main_window_tests PRIVATE ALSA::ALSA)
+endif()
+add_test(NAME gp16_main_window_tests COMMAND gp16_main_window_tests)

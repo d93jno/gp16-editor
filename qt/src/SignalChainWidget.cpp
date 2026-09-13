@@ -4,6 +4,7 @@
 
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QSignalBlocker>
 #include <QStyle>
 #include <QToolButton>
 #include <QVBoxLayout>
@@ -86,7 +87,6 @@ void SignalChainWidget::rebuildRow(std::array<QToolButton*, 6>& chips, bool bloc
 void SignalChainWidget::setPatch(Patch* patch)
 {
   patch_ = patch;
-  selectedIdentity_ = -1;
   rebuildRow(blockAChips_, false);
   rebuildRow(blockBChips_, true);
 }
@@ -94,9 +94,7 @@ void SignalChainWidget::setPatch(Patch* patch)
 void SignalChainWidget::onChipClicked(QToolButton* chip)
 {
   const int identity = chip->property("identity").toInt();
-  const bool enabled = chip->isChecked();
-  if (patch_)
-    patch_->setEffectEnabled(identity, enabled);
+  const bool wasSelected = identity == selectedIdentity_;
 
   selectedIdentity_ = identity;
   for (auto* c : blockAChips_)
@@ -104,6 +102,17 @@ void SignalChainWidget::onChipClicked(QToolButton* chip)
   for (auto* c : blockBChips_)
     applySelectionStyle(c, c == chip);
 
+  if (!wasSelected) {
+    const bool enabled = patch_ && patch_->isEffectEnabled(identity);
+    QSignalBlocker blocker(chip);
+    chip->setChecked(enabled);
+    emit slotSelected(identity);
+    return;
+  }
+
+  const bool enabled = chip->isChecked();
+  if (patch_)
+    patch_->setEffectEnabled(identity, enabled);
   emit effectToggled(identity, enabled);
   emit slotSelected(identity);
 }

@@ -71,6 +71,8 @@ This is the data area for individual patch parameter settings in the internal me
 The binary notation in the left column of the "Description" indicates the formation of each parameter, while the decimal notation at the rigth displays the range of the parameter the settings available. All data sent to the GP-16 effect must be within this range, or the desired effect will not be obtained.
 \* When data exceeding this range is included in the internal memory area, such parameters are automatically set to the value of this range when the GP-16 is turned on.
 
+LO FREQ (`0x2B`) is **60–250 Hz** in the owner’s manual (and in the C# / Qt editors). Some scans of this table read “40–250Hz”; treat that as a transcription error.
+
 | Offset address | Description | Range | | 
 |----------------|-------------|-------|-|
 | 00 | 0000 0aaa | JOINT DATA GROUP-A | * 0 - 4 (EFFECT 1-5) |
@@ -138,7 +140,7 @@ The binary notation in the left column of the "Description" indicates the format
 | 28 | 0aaa aaaa | L.M FHEQ           | 0 - 100(125 - 1kH2) |
 | 29 | 0aaa aaaa | L.MID D            | 0 - 40 (1.0 - 5.0) |
 | 2A | 00aa aaaa | L.M LEV            | 0 - 48 (-12 - +12dB) |
-| 2B | 0aaa aaaa | LO FREQ            | 0 - 100 (40 - 250Hz) |
+| 2B | 0aaa aaaa | LO FREQ            | 0 - 100 (60 - 250Hz) |
 | 2C | 00aa aaaa | LO LEVEL           | 0 - 48 (-12 - +12dB) |
 | 2D | 00aa aaaa | OUT LEV            | 0 - 48(-12 - +12dB) |
 | | | |

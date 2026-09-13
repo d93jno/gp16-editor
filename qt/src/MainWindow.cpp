@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 
+#include "EffectEditor.h"
 #include "MidiService.h"
 #include "Patch.h"
 #include "PatchListPanel.h"
@@ -19,7 +20,6 @@
 #include <QSignalBlocker>
 #include <QSpinBox>
 #include <QSplitter>
-#include <QStackedWidget>
 #include <QStatusBar>
 #include <QTimer>
 #include <QToolBar>
@@ -130,15 +130,8 @@ MainWindow::MainWindow(QWidget* parent)
   chainWidget_ = new SignalChainWidget(right);
   rightLayout->addWidget(chainWidget_);
 
-  editorStack_ = new QStackedWidget(right);
-  auto* editorPlaceholder = new QLabel(QStringLiteral("Select a chip in the signal chain"));
-  editorPlaceholder->setAlignment(Qt::AlignCenter);
-  editorPlaceholder->setEnabled(false);
-  editorStack_->addWidget(editorPlaceholder);
-  slotPlaceholder_ = new QLabel(editorStack_);
-  slotPlaceholder_->setAlignment(Qt::AlignCenter);
-  editorStack_->addWidget(slotPlaceholder_);
-  rightLayout->addWidget(editorStack_, 1);
+  editor_ = new EffectEditor(right);
+  rightLayout->addWidget(editor_, 1);
 
   splitter->addWidget(right);
   splitter->setStretchFactor(0, 0);
@@ -463,12 +456,13 @@ void MainWindow::onPatchSelected(int index)
 
 void MainWindow::onChainSlotSelected(int identity)
 {
-  const auto& patch = currentPatch();
-  const auto name = QString::fromStdString(
-      Patch::effectName(identity, patch.blockB2Mode(), patch.isDistortion()));
-  slotPlaceholder_->setText(
-      QStringLiteral("%1\n\nEditor arrives in Phase 5.").arg(name));
-  editorStack_->setCurrentIndex(1);
+  if (selectedIndex_ < 0 || selectedIndex_ >= PatchBank::kPatchCount) {
+    editor_->setPatch(nullptr);
+    editor_->setIdentity(-1);
+    return;
+  }
+  editor_->setPatch(&bank_.patchAt(selectedIndex_));
+  editor_->setIdentity(identity);
 }
 
 void MainWindow::onChainEffectToggled(int identity, bool enabled)
@@ -490,11 +484,12 @@ void MainWindow::refreshLibrarian()
 
 void MainWindow::updateHeader(int index)
 {
-  editorStack_->setCurrentIndex(0);
   if (index < 0 || index >= PatchBank::kPatchCount) {
     headerId_->setText(QString());
     headerName_->setText(QStringLiteral("No patch selected"));
     chainWidget_->setPatch(nullptr);
+    editor_->setPatch(nullptr);
+    editor_->setIdentity(-1);
     return;
   }
   auto& patch = bank_.patchAt(index);
@@ -504,6 +499,8 @@ void MainWindow::updateHeader(int index)
   else
     headerName_->setText(QStringLiteral("—"));
   chainWidget_->setPatch(&patch);
+  editor_->setPatch(&patch);
+  editor_->setIdentity(chainWidget_->selectedIdentity());
 }
 
 const Patch& MainWindow::currentPatch() const

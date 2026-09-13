@@ -27,17 +27,30 @@ void Patch::parse(std::span<const std::uint8_t> data, int index)
     blockB_[static_cast<std::size_t>(i)] = data_[static_cast<std::size_t>(6 + i)];
   blockB_[5] = 11;
 
+  name_ = roland::extractPatchName(data_);
+  refreshDerived();
+}
+
+void Patch::ensureSize(std::size_t n)
+{
+  if (data_.size() < n)
+    data_.resize(n, 0);
+}
+
+void Patch::refreshDerived()
+{
+  blockB2Mode_ = 0;
+  isDistortion_ = true;
+  onOffHigh_ = 0;
+  onOffLow_ = 0;
   if (data_.size() > 0x0C)
     blockB2Mode_ = data_[0x0C] & 0x03;
-
   if (data_.size() > 0x0D) {
     onOffHigh_ = data_[0x0D];
     isDistortion_ = (onOffHigh_ & 0x40) == 0;
   }
   if (data_.size() > 0x0E)
     onOffLow_ = data_[0x0E];
-
-  name_ = roland::extractPatchName(data_);
 }
 
 bool Patch::isEffectEnabled(int identity) const
@@ -82,6 +95,9 @@ void Patch::setEffectEnabled(int identity, bool enabled)
     case 11: setBit(onOffHigh_, 4); break;
     default: break;
   }
+  ensureSize(0x0F);
+  data_[0x0D] = onOffHigh_;
+  data_[0x0E] = onOffLow_;
 }
 
 std::uint8_t Patch::byteAt(int offset) const
@@ -94,6 +110,29 @@ std::uint8_t Patch::byteAt(int offset) const
 int Patch::wordAt(int msbOffset) const
 {
   return (static_cast<int>(byteAt(msbOffset)) << 7) | static_cast<int>(byteAt(msbOffset + 1));
+}
+
+void Patch::setByteAt(int offset, std::uint8_t value)
+{
+  if (offset < 0)
+    return;
+  ensureSize(static_cast<std::size_t>(offset) + 1);
+  data_[static_cast<std::size_t>(offset)] = static_cast<std::uint8_t>(value & 0x7F);
+  if (offset == 0x0C || offset == 0x0D || offset == 0x0E)
+    refreshDerived();
+}
+
+void Patch::setWordAt(int msbOffset, int value)
+{
+  if (msbOffset < 0)
+    return;
+  ensureSize(static_cast<std::size_t>(msbOffset) + 2);
+  if (value < 0)
+    value = 0;
+  data_[static_cast<std::size_t>(msbOffset)] =
+      static_cast<std::uint8_t>((value >> 7) & 0x7F);
+  data_[static_cast<std::size_t>(msbOffset) + 1] =
+      static_cast<std::uint8_t>(value & 0x7F);
 }
 
 std::string Patch::displayIdFor(int index)

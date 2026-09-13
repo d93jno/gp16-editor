@@ -247,6 +247,8 @@ lives in `qt/README.md`.
 
 ## Phase 5 — Effect editor forms
 
+Status: Completed
+
 One `EffectEditor` over a `QStackedWidget`, data-driven from a spec table. Do not clone the 15
 XAML views. Each slot is a list of parameter descriptors sourced from `midi_parameter_mapping.md`
 Table 1.

@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <vector>
 
+class EffectEditor;
 class MidiService;
 class Patch;
 class PatchListPanel;
@@ -17,7 +18,6 @@ class QDockWidget;
 class QLabel;
 class QPlainTextEdit;
 class QSpinBox;
-class QStackedWidget;
 class QTimer;
 
 class MainWindow : public QMainWindow
@@ -76,8 +76,7 @@ private:
   QLabel* headerId_ = nullptr;
   QLabel* headerName_ = nullptr;
   SignalChainWidget* chainWidget_ = nullptr;
-  QStackedWidget* editorStack_ = nullptr;
-  QLabel* slotPlaceholder_ = nullptr;
+  EffectEditor* editor_ = nullptr;
 
   QDockWidget* logDock_ = nullptr;
   QPlainTextEdit* logView_ = nullptr;

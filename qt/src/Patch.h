@@ -29,6 +29,8 @@ public:
 
   [[nodiscard]] std::uint8_t byteAt(int offset) const;
   [[nodiscard]] int wordAt(int msbOffset) const;
+  void setByteAt(int offset, std::uint8_t value);
+  void setWordAt(int msbOffset, int value);
 
   [[nodiscard]] std::span<const std::uint8_t> rawData() const { return data_; }
 
@@ -36,6 +38,9 @@ public:
   [[nodiscard]] static std::string effectName(int identity, int blockB2Mode = 0, bool isDistortion = true);
 
 private:
+  void ensureSize(std::size_t n);
+  void refreshDerived();
+
   int index_ = 0;
   bool present_ = false;
   std::string name_;

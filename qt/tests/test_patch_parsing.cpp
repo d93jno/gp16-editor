@@ -66,6 +66,10 @@ void testEffectEnableBits()
   check(p.isEffectEnabled(9), "Tap Delay (B-4) enabled via 0x0D bit2");
   check(!p.isEffectEnabled(10), "Reverb (B-5) disabled");
   check(p.isEffectEnabled(11), "Lineout Filter (B-6) enabled via 0x0D bit4");
+
+  p.setEffectEnabled(10, true);
+  check(p.isEffectEnabled(10), "setEffectEnabled turns Reverb on");
+  check((p.byteAt(0x0D) & 0x08) != 0, "setEffectEnabled writes the on/off bit back into data_");
 }
 
 void testWordAt()
@@ -77,6 +81,14 @@ void testWordAt()
   Patch p;
   p.parse(data, 0);
   checkEqual(p.wordAt(0x0F), (3 << 7) | 0x7F, "wordAt assembles (msb << 7) | lsb");
+
+  p.setWordAt(0x0F, 1200);
+  checkEqual(p.wordAt(0x0F), 1200, "setWordAt/wordAt round-trip 1200");
+  checkEqual(static_cast<int>(p.byteAt(0x0F)), 1200 >> 7, "setWordAt MSB is value >> 7");
+  checkEqual(static_cast<int>(p.byteAt(0x10)), 1200 & 0x7F, "setWordAt LSB is value & 0x7F");
+
+  p.setByteAt(0x11, 77);
+  checkEqual(static_cast<int>(p.byteAt(0x11)), 77, "setByteAt stores a 7-bit value");
 }
 
 void testPanelCapture()
