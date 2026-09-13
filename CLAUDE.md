@@ -70,14 +70,16 @@ F0 41 [DeviceID] 2A 12 [Addr0] [Addr1] [Addr2] [Data...] [Checksum] F7
 
 **Memory map:**
 
-| Area | Base Address |
+Addr0 is not a "which bank" selector — it's a bit-packed mode byte: `0000 abbc` where `a` = non-verifiable(0)/verifiable(1), `bb` = bulk dump type (`0`=Number, `1`=Bank, `2`=Group, `3`=All), `c` = temporary(0)/internal(1). Addr1 is the actual patch number `0–127` (`0–63` = Group A patches 1–64, `64–127` = Group B patches 65–128); Addr2 is the parameter offset within that patch.
+
+| Area | Address (Addr0) |
 |---|---|
 | Temporary Buffer (active patch) | `00 00 00` |
-| Internal Group A (patches 1–64) | `01 00 00` |
-| Internal Group B (patches 65–128) | `02 00 00` |
-| System settings | `04 00 00` |
+| Internal, non-verifiable, "Number" type (used for bulk patch dumps) | `01` |
+| Internal, non-verifiable, "All" type | `07` |
+| Internal, verifiable, "All" type | `0F` |
 
-Address bytes are 7-bit (`0x00–0x7F`); carry over to the next byte when exceeding 127.
+There is no separate area byte for "Group B" — both groups live under the same area byte (`01` for bulk dumps), distinguished only by the Addr1 patch-number offset (Group A starts at `00`, Group B starts at `40`). Address bytes are 7-bit (`0x00–0x7F`); carry over to the next byte when exceeding 127.
 
 **Key offsets (Temporary Buffer):**
 - `00 00 00–0F` — Patch name (16 ASCII chars)

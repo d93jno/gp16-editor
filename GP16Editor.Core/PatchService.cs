@@ -154,7 +154,7 @@ namespace GP16Editor.Core
                     tcs = new TaskCompletionSource<bool>();
                     byteBuffer.Clear();
                     Console.WriteLine("[MIDI] Requesting Group B (64 patches)...");
-                    byte[] addressB = [0x02, 0x00, 0x00];
+                    byte[] addressB = [0x01, 0x40, 0x00];
                     byte[] sizeB = [0x00, 0x40, 0x00];
                     await _midiService.RequestDataDump(addressB, sizeB);
 

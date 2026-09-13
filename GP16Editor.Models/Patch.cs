@@ -65,7 +65,7 @@ namespace GP16Editor.Models
 
             // Patch Name (0x64-0x73, but also often at 0x00-0x0F in temp buffer)
             if (data.Length >= 0x64 + 16)
-                PatchName = Encoding.ASCII.GetString(data, 0x63, 16).TrimEnd('\0', ' ');
+                PatchName = Encoding.ASCII.GetString(data, 0x64, 16).TrimEnd('\0', ' ');
 
             // BlockA and BlockB (effect order, 0x00-0x0A)
             BlockA.Clear();

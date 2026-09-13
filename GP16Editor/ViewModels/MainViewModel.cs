@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -245,6 +246,16 @@ namespace GP16Editor.ViewModels
 
             mainPage?.ShowPopupAsync(progressPopup);
 
+            var captureMidi = Environment.GetEnvironmentVariable("GP16EDITOR_CAPTURE_MIDI") == "1";
+            var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+            var outputDirectory = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+            if (string.IsNullOrWhiteSpace(outputDirectory))
+                outputDirectory = FileSystem.Current.AppDataDirectory;
+            var outPath = Path.Combine(outputDirectory, $"midi-out-{timestamp}.bin");
+            var inPath = Path.Combine(outputDirectory, $"midi-in.{timestamp}.bin");
+
+            if (captureMidi)
+                _midiService.StartRecording();
             try
             {
                 var patches = await _patchService.GetAllPatchesAsync(progress, byteProgress);
@@ -257,8 +268,23 @@ namespace GP16Editor.ViewModels
             }
             finally
             {
-                progressPopup.Close();
+                try
+                {
+                    if (captureMidi)
+                    {
+                        var (outgoing, incoming) = _midiService.StopRecording();
+                        await File.WriteAllBytesAsync(outPath, outgoing);
+                        await File.WriteAllBytesAsync(inPath, incoming);
+                    }
+                }
+                finally
+                {
+                    progressPopup.Close();
+                }
             }
+
+            if (captureMidi && mainPage != null)
+                await mainPage.DisplayAlert("MIDI Capture", $"Wrote:\n{outPath}\n{inPath}", "OK");
         }
 
         private void OnMidiErrorOccurred(object? sender, string error)

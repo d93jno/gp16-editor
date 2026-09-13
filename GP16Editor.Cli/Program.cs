@@ -4,6 +4,15 @@ using GP16Editor.Core;
 Console.WriteLine("GP-16 Editor CLI");
 Console.WriteLine("----------------");
 
+var listenMode = args.Any(arg =>
+    string.Equals(arg, "-listen", StringComparison.OrdinalIgnoreCase) ||
+    string.Equals(arg, "--listen", StringComparison.OrdinalIgnoreCase));
+if (listenMode)
+{
+    await GP16Editor.Cli.DeviceDumpListener.RunAsync(args);
+    return;
+}
+
 var interactiveMode = args.Any(arg =>
     string.Equals(arg, "-i", StringComparison.OrdinalIgnoreCase) ||
     string.Equals(arg, "-interactive", StringComparison.OrdinalIgnoreCase) ||
