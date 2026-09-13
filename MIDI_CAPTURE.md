@@ -69,7 +69,7 @@ Incoming: DryWetMidi’s `NormalSysExEvent.Data` often omits `F0`/`F7`; `MidiSer
 | Order | Group | Address | Size |
 |-------|--------|---------|------|
 | 1 | Internal Group A (patches 1–64) | `01 00 00` | `00 40 00` |
-| 2 | Internal Group B (patches 65–128) | `02 00 00` | `00 40 00` |
+| 2 | Internal Group B (patches 65–128) | `01 40 00` | `00 40 00` |
 
 RQ1 frame (`COMMAND_ID_RQ1 = 0x11`):
 
@@ -128,7 +128,7 @@ patchBytes = buffer[i * 0x80 .. i * 0x80 + 0x7F)   // 127 bytes; byte at +0x7F u
 
 Then `new Patch().ParsePatchData(patchBytes)`.
 
-Group A → patches 0–63; Group B → 64–127 in the combined list. Memory map (`CLAUDE.md`): Internal A base `01 00 00`, Internal B base `02 00 00`. Temporary buffer `00 00 00` is not part of this dump.
+Group A → patches 0–63; Group B → 64–127 in the combined list. Memory map (`CLAUDE.md`): both groups share area byte `01`; Group A base `01 00 00`, Group B base `01 40 00` (there is no separate `02` area byte — Group B is just the `01` area with a `0x40` patch-number offset). Temporary buffer `00 00 00` is not part of this dump.
 
 ---
 
