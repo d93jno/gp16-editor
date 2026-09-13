@@ -56,6 +56,7 @@ void PatchBank::ingestGroupPayload(std::span<const std::uint8_t> payload, int ba
 {
   if (payload.empty())
     return;
+  shape_ = IngestShape::Rq1BulkDump;
   const int n = std::min(
       static_cast<int>(payload.size() / static_cast<std::size_t>(roland::kPatchStride)),
       roland::kPatchesPerGroup);

@@ -63,6 +63,8 @@ add_executable(gp16-editor-qt
   src/main.cpp
   src/MainWindow.h
   src/MainWindow.cpp
+  src/PatchListPanel.h
+  src/PatchListPanel.cpp
   src/MidiService.h
   src/MidiService.cpp
 )
@@ -114,3 +116,17 @@ target_compile_definitions(gp16_sysex_tests PRIVATE
 )
 
 add_test(NAME gp16_sysex_tests COMMAND gp16_sysex_tests)
+
+add_executable(gp16_librarian_tests
+  tests/test_librarian.cpp
+  src/PatchListPanel.h
+  src/PatchListPanel.cpp
+)
+target_link_libraries(gp16_librarian_tests PRIVATE
+  Qt6::Widgets
+  gp16_sysex
+)
+target_compile_definitions(gp16_librarian_tests PRIVATE
+  GP16_TEST_REPO_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/.."
+)
+add_test(NAME gp16_librarian_tests COMMAND gp16_librarian_tests)

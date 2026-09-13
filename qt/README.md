@@ -39,11 +39,27 @@ cmake -S . -B build -DCMAKE_PREFIX_PATH=/path/to/Qt/6.x/gcc_64
 
 ```bash
 ./build/gp16-editor-qt
+# or open a capture immediately (no hardware required)
+./build/gp16-editor-qt ../captures/dump-20260730-153932.bin
 ```
 
-1. Select **USB MIDI Interface** (or your interface) for input and output.
-2. Set **Device ID** to match the GP-16 unit number (`0x00` for channel 1 on the unit we tested).
-3. **Open ports**, then optionally **Request all patches** or start a panel bulk dump and watch the log.
+The window is a librarian, not a debug console: toolbar, 128-patch list, patch header, a MIDI log dock, and a status bar.
+
+1. Select **Input** / **Output** (typically the same USB MIDI interface) and **Device ID** (`0x00` for unit/channel 1).
+2. **Refresh** ports if the interface was plugged in after launch, then **Connect**.
+3. Load patches with any of the three ingest paths below. Click a row to show its Roland ID and name in the header. Search filters the list live.
+
+### Ingest paths (all fill the same 128-slot bank)
+
+| Action | What it does |
+|--------|----------------|
+| **Dump** | Host RQ1 for Group A then Group B (50 ms gap). Needs both ports open. |
+| **Listen** | Collects panel DT1s (`0F <idx> 00`) until you uncheck Listen, or until 128 patches arrive. Needs input open. |
+| **Open file** | Reads a captured `.bin` (panel or RQ1 shape, auto-detected). Works with the unit unplugged. |
+
+The **MIDI log** dock can be hidden and restored from **View → MIDI log**. Dump progress and the last error land in the status bar.
+
+Patch names are local-only in this pass — they are never written back to the device.
 
 ## CLI full dump
 
@@ -92,9 +108,16 @@ qt/
   README.md
   src/
     main.cpp
-    MainWindow.{h,cpp}     # simple port UI + log
-    MidiService.{h,cpp}    # libremidi wrapper, Qt signals
-    RolandSysex.{h,cpp}    # checksum, RQ1/DT1 helpers
+    MainWindow.{h,cpp}        # librarian window: toolbar, splitter, log dock
+    PatchListPanel.{h,cpp}    # search + 128-row patch list (A11 … B88)
+    MidiService.{h,cpp}       # libremidi wrapper, Qt signals
+    Patch.{h,cpp}             # one patch (name, chain, on/off, parameters)
+    PatchBank.{h,cpp}         # 128 slots; panel + RQ1 ingest
+    RolandSysex.{h,cpp}       # checksum, RQ1/DT1 helpers
+    cli/gp16_dump.cpp         # CLI dump / --decode / --poke
+  tests/
+    test_patch_parsing.cpp
+    test_librarian.cpp
 ```
 
 ## Notes
@@ -102,7 +125,7 @@ qt/
 - MIDI callbacks are marshalled to the Qt main thread with `QMetaObject::invokeMethod`.
 - SysEx is **not** ignored (`ignore_sysex = false`).
 - Default device ID is **`0x00`** (matches the panel dump capture).
-- This is a scaffold: patch models and effect UI from the C# app can be ported next.
+- Offline check: `gp16-dump --decode captures/dump-20260730-153932.bin` and the librarian **Open file** action both use `PatchBank`.
 
 ## Live edit / SOUND CHANGE REQUEST (Phase 4)
 

@@ -159,6 +159,8 @@ live dump modes still work unchanged.
 
 ## Phase 2 — Librarian window
 
+Status: Completed
+
 Chrome and list land together: a chrome-only step delivers nothing you can look at, and with
 *Open file* in the toolbar this phase is fully verifiable with the unit unplugged.
 
