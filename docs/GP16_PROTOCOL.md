@@ -81,6 +81,8 @@ Full table: `midi_parameter_mapping.md` Table 1. Highlights:
 | Picking Filter Cutoff / Up-Down | `0x1B` / `0x1D` |
 | Chorus Pre-Delay / Rate / Depth | `0x33` / `0x34` / `0x35` |
 | Reverb Decay / Mode | `0x51` / `0x52` |
+| Master Volume | `0x5B` (0–100) |
+| Output Channel | `0x63` (0 = ch 1, 1 = ch 2, 2 = ch 1&2) |
 | Patch name (16 ASCII) | `0x64`–`0x73`; `0x74` = end-of-name (fixed 0) |
 | SOUND CHANGE REQUEST | `0x75` (required after temp edits in Play Mode for an audible change) |
 

@@ -53,6 +53,8 @@ add_library(gp16_sysex STATIC
   src/PatchBank.h
   src/EffectSpecs.cpp
   src/EffectSpecs.h
+  src/PatchChartParser.cpp
+  src/PatchChartParser.h
 )
 target_include_directories(gp16_sysex PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -124,6 +126,15 @@ target_compile_definitions(gp16_sysex_tests PRIVATE
 )
 
 add_test(NAME gp16_sysex_tests COMMAND gp16_sysex_tests)
+
+add_executable(gp16_patch_chart_tests
+  tests/test_patch_chart_parser.cpp
+)
+target_link_libraries(gp16_patch_chart_tests PRIVATE gp16_sysex)
+target_compile_definitions(gp16_patch_chart_tests PRIVATE
+  GP16_TEST_REPO_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/.."
+)
+add_test(NAME gp16_patch_chart_tests COMMAND gp16_patch_chart_tests)
 
 add_executable(gp16_librarian_tests
   tests/test_librarian.cpp

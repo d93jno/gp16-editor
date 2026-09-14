@@ -186,6 +186,56 @@ void testSpecsTable()
   }
 }
 
+void testGlobalParams()
+{
+  const auto globals = allGlobalParams();
+  checkEqual(static_cast<int>(globals.size()), 2, "two global params (Master Volume, Channel)");
+
+  const auto& volume = globals[0];
+  checkEqual(std::string(volume.label), std::string("Master Volume"), "master volume label");
+  checkEqual(volume.offset, 0x5B, "master volume offset 0x5B");
+  checkEqual(volume.min, 0, "master volume min");
+  checkEqual(volume.max, 100, "master volume max");
+  check(volume.transform == DisplayTransform::Raw, "master volume is raw 0-100");
+  checkEqual(displayToRaw(volume, 55.0), 55, "MASTER VOLUME 55 -> raw 55");
+  checkEqual(static_cast<int>(rawToDisplay(volume, 55)), 55, "raw 55 -> display 55");
+  checkEqual(displayToRaw(volume, 100.0), 100, "MASTER VOLUME 100 -> raw 100");
+  checkEqual(displayToRaw(volume, 0.0), 0, "MASTER VOLUME 0 -> raw 0");
+  checkEqual(displayToRaw(volume, rawToDisplay(volume, 71)), 71, "MASTER VOLUME 71 round-trip");
+
+  const auto& channel = globals[1];
+  checkEqual(std::string(channel.label), std::string("Channel"), "channel label");
+  checkEqual(channel.offset, 0x63, "output channel offset 0x63");
+  checkEqual(channel.min, 0, "output channel min");
+  checkEqual(channel.max, 2, "output channel max (Table 1: 0-2)");
+  check(channel.type == ParamType::Combo, "output channel is a combo");
+  checkEqual(channel.comboCount, 3, "three output channel items");
+  checkEqual(std::string(channel.comboItems[0]), std::string("1"), "combo 0 is CHANNEL 1");
+  checkEqual(std::string(channel.comboItems[1]), std::string("2"), "combo 1 is CHANNEL 2");
+  checkEqual(std::string(channel.comboItems[2]), std::string("1 & 2"),
+             "combo 2 is CHANNEL 1 & 2");
+  checkEqual(displayToRaw(channel, 0.0), 0, "CHANNEL 1 -> raw 0");
+  checkEqual(static_cast<int>(rawToDisplay(channel, 0)), 0, "raw 0 -> CHANNEL 1");
+  checkEqual(displayToRaw(channel, 1.0), 1, "CHANNEL 2 -> raw 1");
+  checkEqual(displayToRaw(channel, 2.0), 2, "CHANNEL 1 & 2 -> raw 2");
+  for (int raw = 0; raw <= 2; ++raw) {
+    checkEqual(displayToRaw(channel, rawToDisplay(channel, raw)), raw,
+               "channel round-trip raw " + std::to_string(raw));
+  }
+
+  Patch patch;
+  std::vector<std::uint8_t> data(0x74, 0);
+  patch.parse(data, 0);
+  writeParam(patch, volume, displayToRaw(volume, 55.0));
+  writeParam(patch, channel, displayToRaw(channel, 0.0));
+  checkEqual(static_cast<int>(patch.byteAt(0x5B)), 55, "wrote MASTER VOLUME 55");
+  checkEqual(static_cast<int>(patch.byteAt(0x63)), 0, "wrote CHANNEL 1");
+  checkEqual(static_cast<int>(rawToDisplay(volume, readParam(patch, volume))), 55,
+             "read MASTER VOLUME 55");
+  checkEqual(std::string(channel.comboItems[readParam(patch, channel)]), std::string("1"),
+             "read CHANNEL 1");
+}
+
 void testAllPagesRender(EffectEditor& editor)
 {
   std::vector<std::uint8_t> data(0x60, 0);
@@ -282,6 +332,7 @@ int main(int argc, char* argv[])
   QApplication app(argc, argv);
 
   testSpecsTable();
+  testGlobalParams();
 
   EffectEditor editor;
   editor.show();

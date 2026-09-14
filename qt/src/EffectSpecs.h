@@ -65,6 +65,7 @@ struct EffectSpec {
 [[nodiscard]] EffectKind kindForSlot(int identity, int blockB2Mode, bool isDistortion);
 [[nodiscard]] const EffectSpec& specFor(EffectKind kind);
 [[nodiscard]] std::span<const EffectSpec> allEffectSpecs();
+[[nodiscard]] std::span<const ParamSpec> allGlobalParams();
 
 [[nodiscard]] int readParam(const Patch& patch, const ParamSpec& spec);
 void writeParam(Patch& patch, const ParamSpec& spec, int raw);

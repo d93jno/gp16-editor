@@ -236,6 +236,18 @@ constexpr ParamSpec kLineoutFilter[] = {
     {.label = "Bass", .offset = 0x5A},
 };
 
+constexpr const char* kOutputChannel[] = {"1", "2", "1 & 2"};
+
+constexpr ParamSpec kGlobalParams[] = {
+    {.label = "Master Volume", .offset = 0x5B},
+    {.label = "Channel",
+     .offset = 0x63,
+     .max = 2,
+     .type = ParamType::Combo,
+     .comboItems = kOutputChannel,
+     .comboCount = 3},
+};
+
 constexpr EffectSpec kEffects[] = {
     {EffectKind::Compressor, "Compressor", LayoutKind::Form, kCompressor},
     {EffectKind::Distortion, "Distortion", LayoutKind::Form, kDistortion},
@@ -334,6 +346,11 @@ const EffectSpec& specFor(EffectKind kind)
 std::span<const EffectSpec> allEffectSpecs()
 {
   return kEffects;
+}
+
+std::span<const ParamSpec> allGlobalParams()
+{
+  return kGlobalParams;
 }
 
 int readParam(const Patch& patch, const ParamSpec& spec)

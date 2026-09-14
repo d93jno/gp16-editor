@@ -132,7 +132,8 @@ qt/
     PatchListPanel.{h,cpp}    # search + 128-row patch list (A11 … B88)
     SignalChainWidget.{h,cpp} # two rows of on/off chips, joint-data order
     EffectEditor.{h,cpp}      # QStackedWidget parameter form for the selected slot
-    EffectSpecs.{h,cpp}       # per-effect parameter descriptor tables (Table 1)
+    EffectSpecs.{h,cpp}       # per-effect + global (Master Volume, Output Channel) ParamSpec tables
+    PatchChartParser.{h,cpp}  # lenient .PCH chart parser (Phase 1)
     MidiService.{h,cpp}       # libremidi wrapper, Qt signals
     Patch.{h,cpp}             # one patch (name, chain, on/off, parameters)
     PatchBank.{h,cpp}         # 128 slots; panel + RQ1 ingest
