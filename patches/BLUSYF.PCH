@@ -1,0 +1,95 @@
+ **********************************************
+ ********* Roland GP-16 Patch Chart ***********
+ **********************************************
+ 
+ Patch Name: Bluesy Feel
+     Author: Jonas Nordin
+   Comments: Dirty blues backing
+ 
+ PROGRAM CHANGE NO. B: 26
+ 
+ SEQUENCE BLOCK A	123456
+ SEQUENCE BLOCK B	123456
+ 
+ BLOCK A - ON/OFF       12**56
+ BLOCK B - ON/OFF       ***45*
+ 
+ ----------------------------------
+ A-1 COMPRESSOR
+ 
+    TONE 0
+  ATTACK 12
+ SUSTAIN 66
+   LEVEL 50
+ 
+ ----------------------------------
+ A-2
+ 	b. OVERDRIVE
+ 
+   TONE -8
+  DRIVE 65
+ TURBO: OFF
+  LEVEL 46
+ 
+ ----------------------------------
+ A-5 PARAMETRIC EQ
+ 
+    HI FREQ 3.20 kHz
+   HI LEVEL -6.5 dB
+ 
+   H.M.FREQ 2.23 kHz
+     H.M. Q 5.0
+ H.M. LEVEL +1.5 dB
+ 
+  L.M. FREQ 125 Hz
+     L.M. Q 1.9
+ L.M. LEVEL +5.0 dB
+ 
+    LO FREQ 60 Hz
+   LO LEVEL +3.0 dB
+ 
+  OUT LEVEL 0.0 dB
+ 
+ ----------------------------------
+ A-6 NOISE SUPPRESSOR
+ 
+    SENS 35
+ RELEASE 0
+   LEVEL 100
+ 
+  ----------------------------------
+ B-4 TAP DELAY
+ 
+   C. TAP 650 msec
+   L. TAP 650 msec
+   R. TAP 650 msec
+ C. LEVEL 4
+ L. LEVEL 4
+ R. LEVEL 4
+ FEEDBACK 0
+   CUTOFF THRU
+ 
+ ----------------------------------
+ B-5 REVERB
+ 
+ DECAY 1.7 sec
+ 
+ MODE: PLATE 2
+ 
+    CUTOFF 1.00 kHz
+ PRE DELAY 20 msec
+  E. LEVEL 40
+ 
+ ----------------------------------
+ MASTER VOLUME 70
+
+ ----------------------------------
+ EXPRESSION PEDAL
+ 
+ ASSIGN OFF
+ 
+ ----------------------------------
+ OUTPUT SELECT
+ 
+ CHANNEL  1
+

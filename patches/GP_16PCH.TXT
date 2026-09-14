@@ -1,0 +1,179 @@
+ **********************************************
+ ********* Roland GP-16 Patch Chart ***********
+ **********************************************
+ 
+ Patch Name:
+     Author:
+   Comments:
+ 
+ PROGRAM CHANGE NO.     A:   B:
+ 
+ SEQUENCE BLOCK A	123456
+ SEQUENCE BLOCK B	123456
+ 
+ BLOCK A - ON/OFF	******
+ BLOCK B - ON/OFF	******
+ 
+ ----------------------------------
+ A-1 COMPRESSOR
+ 
+    TONE
+  ATTACK
+ SUSTAIN
+   LEVEL
+ 
+ ----------------------------------
+ A-2  	a. DISTORTION
+ 
+       TONE
+ DISTORTION
+      LEVEL
+ 
+ 	b. OVERDRIVE
+ 
+   TONE
+  DRIVE
+ TURBO: ON   OFF
+  LEVEL
+ 
+ ----------------------------------
+ A-3 PICKING FILTER
+ 
+        SENS
+ CUTOFF FREQ
+           Q
+     UP/DOWN    UP     DOWN
+ 
+ ----------------------------------
+ A-4 STEP PHASER
+ 
+      RATE
+     DEPTH
+    MANUAL
+ RESONANCE
+  LFO STEP
+ 
+ ----------------------------------
+ A-5 PARAMETRIC EQ
+ 
+    HI FREQ         Hz
+   HI LEVEL        dB
+ 
+   H.M.FREQ       Hz
+     H.M. Q
+ H.M. LEVEL  	dB
+ 
+  L.M. FREQ       Hz
+     L.M. Q
+ L.M. LEVEL	 dB
+ 
+    LO FREQ        Hz
+   LO LEVEL       dB
+ 
+  OUT LEVEL      dB
+ 
+ ----------------------------------
+ A-6 NOISE SUPPRESSOR
+ 
+    SENS
+ RELEASE
+   LEVEL
+ 
+ 
+ ----------------------------------
+ B-1 SHORT DELAY
+ 
+  D. TIME        msec
+ E. LEVEL
+ 
+ ----------------------------------
+ B-2 
+ 	a. CHORUS
+ 
+ P. DELAY	 msec
+     RATE
+    DEPTH
+ E. LEVEL
+ 
+         b. FLANGER
+ 
+      RATE
+     DEPTH
+    MANUAL
+ RESONANCE
+ 
+         c. PITCH SHIFTER
+ 
+   BAL. E.
+   BAL. D.
+ CHROMATIC
+      FINE
+    F.BACK
+   P.DELAY                 msec
+ 
+        d. SPACE-D
+ MODE 	1   2    3    4
+ 
+ ----------------------------------
+ B-3 AUTO PANPOT
+ 
+  RATE
+ DEPTH
+  MODE   pan     trem
+ 
+ ----------------------------------
+ B-4 TAP DELAY
+ 
+   C. TAP          msec
+   L. TAP                 msec
+   R. TAP          msec
+ C. LEVEL
+ L. LEVEL
+ R. LEVEL
+ FEEDBACK
+   CUTOFF                 Hz
+ 
+ ----------------------------------
+ B-5 REVERB
+ 
+ DECAY 		sec
+ 
+ MODE: ROOM 	1       2        3
+ MODE: HALL 	1       2        3
+ MODE: PLATE 	1       2     
+ MODE: SPRING 	1       2   
+ 
+    CUTOFF          Hz
+ PRE DELAY	 msec
+  E. LEVEL
+ 
+ ----------------------------------
+ B-6 LINEOUT FILTER
+ 
+ PRESENCE
+   TREBLE
+   MIDDLE
+     BASS
+ 
+ ----------------------------------
+ MASTER VOLUME
+ 
+ 
+ ----------------------------------
+ EXPRESSION PEDAL
+ 
+ ASSIGN
+ 
+ DEVICE
+ 
+ LFO RATE
+ 
+ MAX:
+ 
+ MIN:
+ 
+ ----------------------------------
+ OUTPUT SELECT
+ 
+ CHANNEL  1      2       1 & 2
+

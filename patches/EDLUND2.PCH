@@ -1,0 +1,74 @@
+ **********************************************
+ ********* Roland GP-16 Patch Chart ***********
+ **********************************************
+ 
+ Patch Name: Clean crisp
+     Author: Thomas Edlund
+   Comments: Nice really clean crisp sound.
+ 
+ PROGRAM CHANGE NO.  B: 14
+ 
+ SEQUENCE BLOCK A	123456
+ SEQUENCE BLOCK B       142536
+ 
+ BLOCK A - ON/OFF       1***56
+ BLOCK B - ON/OFF       *2****
+ 
+ ----------------------------------
+ A-1 COMPRESSOR
+ 
+    TONE 0
+  ATTACK 100
+ SUSTAIN 80
+   LEVEL 75
+ 
+ ----------------------------------
+ A-5 PARAMETRIC EQ
+ 
+    HI FREQ 8.00 kHz
+   HI LEVEL +12.0 dB
+ 
+   H.M.FREQ 4.00 kHz
+     H.M. Q 1.0
+ H.M. LEVEL +1.0 dB
+ 
+  L.M. FREQ 1.00 kHz
+     L.M. Q 1.0
+ L.M. LEVEL 0.0 dB
+ 
+    LO FREQ 250 Hz
+   LO LEVEL 0.0 dB
+ 
+  OUT LEVEL 0.0 dB
+ 
+ ----------------------------------
+ A-6 NOISE SUPPRESSOR
+ 
+    SENS 22
+ RELEASE 5
+   LEVEL 100
+ 
+ 
+ ----------------------------------
+ B-2 
+ 	a. CHORUS
+ 
+ P. DELAY 20 msec
+     RATE 10
+    DEPTH 75
+ E. LEVEL 90
+ 
+ ----------------------------------
+ MASTER VOLUME 100
+ 
+ 
+ ----------------------------------
+ EXPRESSION PEDAL
+ 
+ ASSIGN OFF
+
+ ----------------------------------
+ OUTPUT SELECT
+ 
+ CHANNEL  1
+

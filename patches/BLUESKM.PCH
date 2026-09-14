@@ -1,0 +1,93 @@
+ **********************************************
+ ********* Roland GP-16 Patch Chart ***********
+ **********************************************
+ 
+ Patch Name: Clean blues
+     Author: Jonas Nordin
+   Comments: For clean blues backing (live sound)
+ 
+ PROGRAM CHANGE NO. B: 83
+ 
+ SEQUENCE BLOCK A	123456
+ SEQUENCE BLOCK B	123456
+ 
+ BLOCK A - ON/OFF       ****56
+ BLOCK B - ON/OFF       123*56
+ 
+ ----------------------------------
+ A-5 PARAMETRIC EQ
+ 
+    HI FREQ 8.00 kHz
+   HI LEVEL 0.0 dB
+ 
+   H.M.FREQ 4.00 kHz
+     H.M. Q 1.0
+ H.M. LEVEL +12.0 dB
+ 
+  L.M. FREQ 594 Hz
+     L.M. Q 1.0
+ L.M. LEVEL +7.0 dB
+ 
+    LO FREQ 250 Hz
+   LO LEVEL +2.5 dB
+ 
+  OUT LEVEL +2.5 dB
+ 
+ ----------------------------------
+ A-6 NOISE SUPPRESSOR
+ 
+    SENS 100
+ RELEASE 100
+   LEVEL 100
+ 
+ 
+ ----------------------------------
+ B-1 SHORT DELAY
+ 
+  D. TIME 80 msec
+ E. LEVEL 66
+ 
+ ----------------------------------
+ B-2 
+        d. SPACE-D
+ MODE   1
+
+ ----------------------------------
+ B-3 AUTO PANPOT
+ 
+  RATE 60
+ DEPTH 40
+  MODE trem
+ 
+ ----------------------------------
+ B-5 REVERB
+ 
+ DECAY 1.2 sec
+ 
+ MODE: ROOM 2
+ 
+    CUTOFF THRU
+ PRE DELAY 0 msec
+  E. LEVEL 38
+ 
+ ----------------------------------
+ B-6 LINEOUT FILTER
+ 
+ PRESENCE 35
+   TREBLE 68
+   MIDDLE 100
+     BASS 80
+ 
+ ----------------------------------
+ MASTER VOLUME 100
+
+ ----------------------------------
+ EXPRESSION PEDAL
+ 
+ ASSIGN OFF
+ 
+ ----------------------------------
+ OUTPUT SELECT
+ 
+ CHANNEL  1
+

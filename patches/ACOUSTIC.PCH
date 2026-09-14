@@ -1,0 +1,86 @@
+ **********************************************
+ ********* Roland GP-16 Patch Chart ***********
+ **********************************************
+ 
+ Patch Name: Acoustic
+     Author: Jonas Nordin
+   Comments: Made for steel-stringed acoustic guitars
+ 
+ PROGRAM CHANGE NO. B: 28
+ 
+ SEQUENCE BLOCK A	123456
+ SEQUENCE BLOCK B	123456
+ 
+ BLOCK A - ON/OFF       1***56
+ BLOCK B - ON/OFF       *2**56
+ 
+ ----------------------------------
+ A-1 COMPRESSOR
+ 
+    TONE 0
+  ATTACK 20
+ SUSTAIN 80
+   LEVEL 40
+ 
+ ----------------------------------
+ A-5 PARAMETRIC EQ
+ 
+    HI FREQ 8.00 kHz
+   HI LEVEL +11.0 dB
+ 
+   H.M.FREQ 2.98 kHz
+     H.M. Q 1.0
+ H.M. LEVEL +0.5 dB
+ 
+  L.M. FREQ 535 Hz
+     L.M. Q 1.0
+ L.M. LEVEL +3.5 dB
+ 
+    LO FREQ 250 Hz
+   LO LEVEL +1.5 dB
+ 
+  OUT LEVEL +5.5 dB
+ 
+ ----------------------------------
+ A-6 NOISE SUPPRESSOR
+ 
+    SENS 32
+ RELEASE 0
+   LEVEL 100
+ 
+ ----------------------------------
+ B-2 
+        d. SPACE-D
+ MODE 1
+ 
+ ----------------------------------
+ B-5 REVERB
+ 
+ DECAY 1.0 sec
+ 
+ MODE: ROOM 1
+ 
+    CUTOFF THRU
+ PRE DELAY 49 msec
+  E. LEVEL 38
+ 
+ ----------------------------------
+ B-6 LINEOUT FILTER
+ 
+ PRESENCE 10
+   TREBLE 50
+   MIDDLE 82
+     BASS 78
+ 
+ ----------------------------------
+ MASTER VOLUME 75
+ 
+ ----------------------------------
+ EXPRESSION PEDAL
+ 
+ ASSIGN OFF
+ 
+ ----------------------------------
+ OUTPUT SELECT
+ 
+ CHANNEL  1

@@ -1,0 +1,83 @@
+ **********************************************
+ ********* Roland GP-16 Patch Chart ***********
+ **********************************************
+ 
+ Patch Name: Funky - Distorted
+     Author: Thomas Edlund
+   Comments: Sounds Crispy!
+ 
+ PROGRAM CHANGE NO.  B: 13
+ 
+ SEQUENCE BLOCK A	123456
+ SEQUENCE BLOCK B	123456
+ 
+ BLOCK A - ON/OFF       12**56
+ BLOCK B - ON/OFF       ****5*
+ 
+ ----------------------------------
+ A-1 COMPRESSOR
+ 
+    TONE 0
+  ATTACK 70
+ SUSTAIN 100
+   LEVEL 70
+ 
+ ----------------------------------
+ A-2
+ 	b. OVERDRIVE
+ 
+   TONE 0
+  DRIVE 100
+ TURBO: OFF
+  LEVEL 70
+ 
+ ----------------------------------
+ A-5 PARAMETRIC EQ
+ 
+    HI FREQ 2.00 kHz
+   HI LEVEL 0.0 dB
+ 
+   H.M.FREQ 1.70 kHz
+     H.M. Q 1.0
+ H.M. LEVEL +3.5 dB
+ 
+  L.M. FREQ 1.00 kHz
+     L.M. Q 1.0
+ L.M. LEVEL 0.0 dB
+ 
+    LO FREQ 250 Hz
+   LO LEVEL 0.0 dB
+ 
+  OUT LEVEL +3.5 dB
+ 
+ ----------------------------------
+ A-6 NOISE SUPPRESSOR
+ 
+    SENS 25
+ RELEASE 3
+   LEVEL 100
+
+ ----------------------------------
+ B-5 REVERB
+ 
+ DECAY 1.5 sec
+ 
+ MODE: SPRING 1
+ 
+    CUTOFF THRU
+ PRE DELAY 0 msec
+  E. LEVEL 50
+ 
+ ----------------------------------
+ MASTER VOLUME 90
+ 
+ ----------------------------------
+ EXPRESSION PEDAL
+ 
+ ASSIGN OFF
+ 
+ ----------------------------------
+ OUTPUT SELECT
+ 
+ CHANNEL 1
+

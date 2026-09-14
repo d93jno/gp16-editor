@@ -1,0 +1,68 @@
+ **********************************************
+ ********* Roland GP-16 Patch Chart ***********
+ **********************************************
+ 
+ Patch Name: Pickin' Luxery
+     Author: Jonas Nordin
+   Comments: Made for slow picking, like cavatina.
+ 
+ PROGRAM CHANGE NO. B: 22
+ 
+ SEQUENCE BLOCK A	123456
+ SEQUENCE BLOCK B	123456
+ 
+ BLOCK A - ON/OFF       ****5*
+ BLOCK B - ON/OFF       *2**5*
+ 
+ ----------------------------------
+ A-5 PARAMETRIC EQ
+ 
+    HI FREQ 8.0 kHz
+   HI LEVEL +12.0 dB
+ 
+   H.M.FREQ 4.0 kHz
+     H.M. Q 4.1
+ H.M. LEVEL +2.0 dB
+ 
+  L.M. FREQ 392 Hz
+     L.M. Q 1.6
+ L.M. LEVEL +1.5 dB
+ 
+    LO FREQ 60 Hz
+   LO LEVEL +4.5 dB
+ 
+  OUT LEVEL -3.0 dB
+ 
+ ----------------------------------
+ B-2 
+ 	a. CHORUS
+ 
+ P. DELAY 0 msec
+     RATE 6
+    DEPTH 75
+ E. LEVEL 90
+ 
+ ----------------------------------
+ B-5 REVERB
+ 
+ DECAY 4.0 sec
+ 
+      MODE: HALL 1
+
+    CUTOFF 4.46 kHz
+ PRE DELAY 72 msec
+  E. LEVEL 40
+ 
+ ----------------------------------
+ MASTER VOLUME 100
+ 
+ ----------------------------------
+ EXPRESSION PEDAL
+ 
+ ASSIGN OFF
+
+ ----------------------------------
+ OUTPUT SELECT
+ 
+ CHANNEL  1
+

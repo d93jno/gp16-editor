@@ -1,0 +1,99 @@
+ **********************************************
+ ********* Roland GP-16 Patch Chart ***********
+ **********************************************
+ 
+ Patch Name: The Edge echo
+     Author: Jonas Nordin
+   Comments: Well, it sounds like the edge. Could need a better dist.
+ 
+ PROGRAM CHANGE NO. B: 24
+ 
+ SEQUENCE BLOCK A	123456
+ SEQUENCE BLOCK B	123456
+ 
+ BLOCK A - ON/OFF       12**56
+ BLOCK B - ON/OFF       *2*45*
+ 
+ ----------------------------------
+ A-1 COMPRESSOR
+ 
+    TONE 0
+  ATTACK 17
+ SUSTAIN 50
+   LEVEL 50
+ 
+ ----------------------------------
+ A-2  b. OVERDRIVE
+ 
+   TONE -15
+  DRIVE 90
+ TURBO: ON
+  LEVEL 50
+ 
+ ----------------------------------
+ A-5 PARAMETRIC EQ
+ 
+    HI FREQ 2.00 kHz
+   HI LEVEL -2.5 dB
+ 
+   H.M.FREQ 4.00 kHz
+     H.M. Q 5.0
+ H.M. LEVEL -5.0 dB
+ 
+  L.M. FREQ 514 Hz
+     L.M. Q 3.0
+ L.M. LEVEL +2.0 dB
+ 
+    LO FREQ 250 Hz
+   LO LEVEL -2.5 dB
+ 
+  OUT LEVEL 0.0 dB
+ 
+ ----------------------------------
+ A-6 NOISE SUPPRESSOR
+ 
+    SENS 35
+ RELEASE 0
+   LEVEL 100
+ 
+ ----------------------------------
+ B-2 
+        d. SPACE-D
+ MODE 3
+ 
+ ----------------------------------
+ B-4 TAP DELAY
+ 
+   C. TAP 400 msec
+   L. TAP 400 msec
+   R. TAP 400 msec
+ C. LEVEL 40
+ L. LEVEL 40
+ R. LEVEL 40
+ FEEDBACK 25
+   CUTOFF 7.26 kHz
+ 
+ ----------------------------------
+ B-5 REVERB
+ 
+ DECAY 0.8 sec
+ 
+ MODE: ROOM 1
+ 
+    CUTOFF 1.99 kHz
+ PRE DELAY 20 msec
+  E. LEVEL 40
+ 
+ ----------------------------------
+ MASTER VOLUME 85
+ 
+ ----------------------------------
+ EXPRESSION PEDAL
+ 
+ ASSIGN OFF
+ 
+ ----------------------------------
+ OUTPUT SELECT
+ 
+ CHANNEL  1
+

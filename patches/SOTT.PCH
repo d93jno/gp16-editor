@@ -1,0 +1,99 @@
+ **********************************************
+ ********* Roland GP-16 Patch Chart ***********
+ **********************************************
+ 
+ Patch Name: Sign of the time
+     Author: Jonas Nordin
+   Comments: Typical Europe solo sound (hard rock type).
+ 
+ PROGRAM CHANGE NO. B: 25
+ 
+ SEQUENCE BLOCK A	123456
+ SEQUENCE BLOCK B	123456
+ 
+ BLOCK A - ON/OFF       12**56
+ BLOCK B - ON/OFF       *2*45*
+ 
+ ----------------------------------
+ A-1 COMPRESSOR
+ 
+    TONE 0
+  ATTACK 17
+ SUSTAIN 50
+   LEVEL 50
+ 
+ ----------------------------------
+ A-2  	a. DISTORTION
+ 
+       TONE -15
+ DISTORTION 40
+      LEVEL 50
+ 
+ ----------------------------------
+ A-5 PARAMETRIC EQ
+ 
+    HI FREQ 2.00 kHz
+   HI LEVEL -2.5 dB
+ 
+   H.M.FREQ 4.00 kHz
+     H.M. Q 5.0
+ H.M. LEVEL -5.0 dB
+ 
+  L.M. FREQ 514 Hz
+     L.M. Q 3.0
+ L.M. LEVEL +2.0 dB
+ 
+    LO FREQ 250 Hz
+   LO LEVEL -2.5 dB
+ 
+  OUT LEVEL 0.0 dB
+ 
+ ----------------------------------
+ A-6 NOISE SUPPRESSOR
+ 
+    SENS 35
+ RELEASE 0
+   LEVEL 100
+ 
+ 
+ ----------------------------------
+ B-2 
+        d. SPACE-D
+ MODE 3
+ 
+ ----------------------------------
+ B-4 TAP DELAY
+ 
+   C. TAP 500 msec
+   L. TAP 500 msec
+   R. TAP 500 msec
+ C. LEVEL 15
+ L. LEVEL 13
+ R. LEVEL 13
+ FEEDBACK 2
+   CUTOFF 7.26 kHz
+ 
+ ----------------------------------
+ B-5 REVERB
+ 
+ DECAY 0.8 sec
+ 
+ MODE: ROOM 1
+ 
+    CUTOFF 1.99 kHz
+ PRE DELAY 20 msec
+  E. LEVEL 40
+ 
+ ----------------------------------
+ MASTER VOLUME 100
+ 
+ 
+ ----------------------------------
+ EXPRESSION PEDAL
+ 
+ ASSIGN OFF
+ ----------------------------------
+ OUTPUT SELECT
+ 
+ CHANNEL  1
+

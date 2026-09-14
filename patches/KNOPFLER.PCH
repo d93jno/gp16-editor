@@ -1,0 +1,78 @@
+ **********************************************
+ ********* Roland GP-16 Patch Chart ***********
+ **********************************************
+ 
+ Patch Name: Knopfler sound
+     Author: Jonas Nordin
+   Comments: Sounds like Knopflers "Money for Nothing" sound
+ 
+ PROGRAM CHANGE NO. B: 51
+ 
+ SEQUENCE BLOCK A	123456
+ SEQUENCE BLOCK B	123456
+ 
+ BLOCK A - ON/OFF       12**56
+ BLOCK B - ON/OFF       *****6
+ 
+ ----------------------------------
+ A-1 COMPRESSOR
+ 
+    TONE 0
+  ATTACK 0
+ SUSTAIN 53
+   LEVEL 50
+ 
+ ----------------------------------
+ A-2  	a. DISTORTION
+ 
+       TONE 0
+ DISTORTION 31
+      LEVEL 100
+
+ ----------------------------------
+ A-5 PARAMETRIC EQ
+ 
+    HI FREQ 8.00 kHz
+   HI LEVEL 0.0 dB
+ 
+   H.M.FREQ 1.70 kHz
+     H.M. Q 1.0
+ H.M. LEVEL 7.5 dB
+ 
+  L.M. FREQ 1.00 kHz
+     L.M. Q 1.0
+ L.M. LEVEL 0.0 dB
+ 
+    LO FREQ 60 Hz
+   LO LEVEL 2.0 dB
+ 
+  OUT LEVEL +5.5 dB
+ 
+ ----------------------------------
+ A-6 NOISE SUPPRESSOR
+ 
+    SENS 28
+ RELEASE 0
+   LEVEL 52
+ 
+ ----------------------------------
+ B-6 LINEOUT FILTER
+ 
+ PRESENCE 25
+   TREBLE 60
+   MIDDLE 100
+     BASS 93
+ 
+ ----------------------------------
+ MASTER VOLUME 71
+ 
+ ----------------------------------
+ EXPRESSION PEDAL
+ 
+ ASSIGN OFF
+ 
+ ----------------------------------
+ OUTPUT SELECT
+ 
+ CHANNEL  1
+

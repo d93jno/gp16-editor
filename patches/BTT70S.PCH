@@ -1,0 +1,99 @@
+ **********************************************
+ ********* Roland GP-16 Patch Chart ***********
+ **********************************************
+ 
+ Patch Name: Back to the 70's
+     Author: Jonas Nordin
+   Comments: You need the foot-pedal and a expression pedal.
+ 
+ PROGRAM CHANGE NO. B: 21
+ 
+ SEQUENCE BLOCK A       132546
+ SEQUENCE BLOCK B	123456
+ 
+ BLOCK A - ON/OFF       1325*6
+ BLOCK B - ON/OFF       ****5*
+ 
+ ----------------------------------
+ A-1 COMPRESSOR
+ 
+    TONE 0
+  ATTACK 0
+ SUSTAIN 80
+   LEVEL 50
+ 
+ ----------------------------------
+ A-2  	a. DISTORTION
+ 
+       TONE 0
+ DISTORTION 41
+      LEVEL 60
+ 
+ ----------------------------------
+ A-3 PICKING FILTER
+ 
+        SENS 22
+ CUTOFF FREQ 25
+           Q 4.5
+     UP/DOWN UP
+
+ ----------------------------------
+ A-4 STEP PHASER
+ 
+ RATE
+ DEPTH
+ MANUAL
+ RESONANCE
+ LFO STEP
+ 
+ ----------------------------------
+ A-5 PARAMETRIC EQ
+ 
+    HI FREQ 6.06 kHz
+   HI LEVEL 0.0 dB
+ 
+   H.M.FREQ 4.00 kHz
+     H.M. Q 1.0
+ H.M. LEVEL 0.0 dB
+ 
+  L.M. FREQ 1.00 kHz
+     L.M. Q 1.9
+ L.M. LEVEL 0.0 dB
+ 
+    LO FREQ 60 Hz
+   LO LEVEL +7.0 dB
+ 
+  OUT LEVEL +6.0 dB
+
+----------------------------------
+ B-5 REVERB
+ 
+ DECAY 2.4 sec
+ 
+ MODE: SPRING 2
+ 
+    CUTOFF THRU
+ PRE DELAY 25 msec
+  E. LEVEL 18
+ 
+ ----------------------------------
+ MASTER VOLUME 55
+ 
+ ----------------------------------
+ EXPRESSION PEDAL
+ 
+   ASSIGN P.FILTER--C.FREQ
+ 
+   DEVICE PEDAL
+ 
+ LFO RATE
+ 
+     MAX: CUTOFF FREQ=100
+ 
+     MIN: CUTOFF FREQ=15
+ 
+ ----------------------------------
+ OUTPUT SELECT
+ 
+ CHANNEL  1
+
