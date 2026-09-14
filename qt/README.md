@@ -98,7 +98,7 @@ Chain on/off writes both `0x0D` and `0x0E` (the full effect on/off bitmap) throu
 
 `--decode` prints all 128 rows (index, Roland ID, name, chain order, effect on/off flags) from a captured `.bin` and is the offline acceptance check for the shared parsing layer — the same `PatchBank` code path the GUI's **Open file** action uses.
 
-`--request` matches the working Windows editor capture (`MIDI_CAPTURE.md`): 3-byte address and size, then DT1 payloads accumulated to 8192 bytes per group.
+`--request` matches the working Windows editor capture (`captures/MIDI_CAPTURE.md`): 3-byte address and size, then DT1 payloads accumulated to 8192 bytes per group.
 
 Writes a concatenated SysEx `.bin` plus a `.txt` name summary.
 

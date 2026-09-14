@@ -79,9 +79,9 @@ int main(int argc, char* argv[])
   check(panel.visibleCount() == 128, "all 128 placeholder rows visible");
 
   testCapture(panel, repoRoot() / "captures" / "dump-20260730-153932.bin");
-  testCapture(panel, repoRoot() / "device-dump.bin");
-  testCapture(panel, repoRoot() / "midi-in.20260913-082751.bin");
-  testCapture(panel, repoRoot() / "midi-in.20260913-091336.bin");
+  testCapture(panel, repoRoot() / "captures" / "device-dump.bin");
+  testCapture(panel, repoRoot() / "captures" / "midi-in.20260913-082751.bin");
+  testCapture(panel, repoRoot() / "captures" / "midi-in.20260913-091336.bin");
 
   if (failures == 0) {
     std::cout << "All librarian tests passed.\n";

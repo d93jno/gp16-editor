@@ -5,7 +5,7 @@ Application build/run and coding guidance live in [`GEMINI.md`](../GEMINI.md).
 
 **Authoritative parameter address table:** [`midi_parameter_mapping.md`](../midi_parameter_mapping.md) (Table 1). Prefer it over any summary below when they disagree.
 
-Sample bulk dumps: `captures/`.
+Sample bulk dumps: `captures/`. Owner’s manual: [`GP-16_OM.pdf`](GP-16_OM.pdf) ([OCR](GP-16_OM.md)).
 
 ---
 
@@ -118,8 +118,8 @@ Verified against committed captures:
 
 | Path | Shape |
 |---|---|
-| RQ1 (`midi-in.*.bin`) | Contiguous payload per group (e.g. 34 DT1s → 8192 bytes); slice by patch stride. Group A answers at `01 00 00`; Group B often at `02 00 00`. |
-| Panel (`device-dump.bin`, `captures/dump-*.bin`) | 128 messages × ~127 bytes, address `0F <idx> 00`, **117** data bytes (`0x00`–`0x74`) per patch |
+| RQ1 (`captures/midi-in.*.bin`) | Contiguous payload per group (e.g. 34 DT1s → 8192 bytes); slice by patch stride. Group A answers at `01 00 00`; Group B often at `02 00 00`. |
+| Panel (`captures/device-dump.bin`, `captures/dump-*.bin`) | 128 messages × ~127 bytes, address `0F <idx> 00`, **117** data bytes (`0x00`–`0x74`) per patch |
 
 Panel payload ends at END OF PATCH NAME — nothing past `0x74` on that path. RQ1 slices may use a larger stride (`0x7F`). Every field read must be length-guarded.
 

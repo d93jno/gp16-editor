@@ -163,7 +163,7 @@ void testRq1CaptureAgreesWithPanelForGroupA()
       panelBank.loadFile(repoRoot() / "captures" / "dump-20260730-153932.bin", error),
       "panel capture loads (cross-check): " + error);
   check(
-      rq1Bank.loadFile(repoRoot() / "midi-in.20260913-082751.bin", error),
+      rq1Bank.loadFile(repoRoot() / "captures" / "midi-in.20260913-082751.bin", error),
       "RQ1 capture loads: " + error);
 
   checkEqual(

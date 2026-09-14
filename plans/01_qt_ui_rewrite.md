@@ -56,7 +56,7 @@ theming, cloning `CircularSlider`.
 **Every GUI phase must be verifiable without the GP-16.** The toolbar carries an *Open file*
 action that feeds a saved `.bin` through the same `PatchBank` ingest as a live dump, so the
 librarian, chain and forms can all be exercised against `captures/` and the committed
-`midi-in.*.bin` / `device-dump.bin`. Only Phases 4 and 6 need hardware.
+`captures/midi-in.*.bin` / `captures/device-dump.bin`. Only Phases 4 and 6 need hardware.
 
 ---
 
@@ -106,8 +106,8 @@ Verified by parsing the committed captures:
 
 | Path | Shape |
 |---|---|
-| RQ1 (`midi-in.20260913-*.bin`) | 34 DT1s per group: 33 × 245 data bytes + 1 × 107 = exactly 8192, contiguous, 7-bit carried addresses |
-| Panel (`device-dump.bin`, `captures/dump-*.bin`) | 128 messages × 127 bytes, address `0F <idx> 00`, 117 data bytes, one patch per message |
+| RQ1 (`captures/midi-in.20260913-*.bin`) | 34 DT1s per group: 33 × 245 data bytes + 1 × 107 = exactly 8192, contiguous, 7-bit carried addresses |
+| Panel (`captures/device-dump.bin`, `captures/dump-*.bin`) | 128 messages × 127 bytes, address `0F <idx> 00`, 117 data bytes, one patch per message |
 
 Two consequences that the implementation must respect:
 
@@ -152,7 +152,7 @@ acceptance test for the phase and needs no hardware.
 `qt/src/cli/gp16_dump.cpp`, `qt/CMakeLists.txt` (new sources into the `gp16_sysex` target, not
 the GUI target).
 **Done when:** `gp16-dump --decode captures/dump-20260730-153932.bin` and
-`--decode midi-in.20260913-082751.bin` both print 128 plausible patch names, and the existing
+`--decode captures/midi-in.20260913-082751.bin` both print 128 plausible patch names, and the existing
 live dump modes still work unchanged.
 
 ---

@@ -6,7 +6,8 @@ Guidance for humans and coding agents working in this repository.
 
 **Protocol / SysEx / parameter maps:** [`docs/GP16_PROTOCOL.md`](docs/GP16_PROTOCOL.md)  
 **Full address table:** [`midi_parameter_mapping.md`](midi_parameter_mapping.md) (Table 1)  
-**Sample dumps:** `captures/`
+**Owner’s manual:** [`docs/GP-16_OM.pdf`](docs/GP-16_OM.pdf) ([OCR](docs/GP-16_OM.md))  
+**Sample dumps:** [`captures/`](captures/) ([`MIDI_CAPTURE.md`](captures/MIDI_CAPTURE.md) + `.bin` dumps)
 
 Always commit code changes to the source tree, never to the work tree. Only create git commits when asked. Make no attribution to Claude (or other agents) in commit messages.
 
