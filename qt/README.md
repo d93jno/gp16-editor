@@ -47,7 +47,7 @@ The window is a librarian and one-effect-at-a-time editor, not a debug console: 
 
 1. Select **Input** / **Output** (typically the same USB MIDI interface) and **Device ID** (`0x00` for unit/channel 1).
 2. **Refresh** ports if the interface was plugged in after launch, then **Connect**.
-3. Load patches with any of the three ingest paths below. Click a row to show its Roland ID and name in the header. Search filters the list live.
+3. Load patches with any of the ingest paths below. Click a row to show its Roland ID and name in the header. Search filters the list live.
 4. Click a chip in the **signal chain** row to open that effect's parameter form below it. The checkbox on each chip toggles the effect on/off. Disabled slots stay visible, dimmed, so the layout never jumps.
 5. Drag a slider or spin box in the form to edit the selected patch live (see **Live edit** below).
 
@@ -58,8 +58,9 @@ The window is a librarian and one-effect-at-a-time editor, not a debug console: 
 | **Dump** | Host RQ1 for Group A then Group B (50 ms gap). Needs both ports open. |
 | **Listen** | Collects panel DT1s (`0F <idx> 00`) until you uncheck Listen, or until 128 patches arrive. Needs input open. |
 | **Open file** | Reads a captured `.bin` (panel or RQ1 shape, auto-detected). Works with the unit unplugged. |
+| **Import Patch…** | Offline: pick a legacy `.PCH` chart, preview it, and write it into a librarian slot (`A11`…`B88`). No MIDI. |
 
-Starting any of the three (or Connect) drops any live-edit burst still queued behind the coalescing timer, so a stale parameter write or a trailing SOUND CHANGE REQUEST can never land after the librarian has moved on.
+Starting Dump, Listen, Open file, or Connect drops any live-edit burst still queued behind the coalescing timer, so a stale parameter write or a trailing SOUND CHANGE REQUEST can never land after the librarian has moved on. Import Patch also cancels a pending edit burst before replacing the destination slot.
 
 The **MIDI log** dock can be hidden and restored from **View → MIDI log**. Dump/edit progress and the last error land in the status bar and log.
 
@@ -139,6 +140,7 @@ qt/
     EffectEditor.{h,cpp}      # QStackedWidget parameter form for the selected slot
     EffectSpecs.{h,cpp}       # per-effect + global (Master Volume, Output Channel) ParamSpec tables
     PatchChartParser.{h,cpp}  # lenient .PCH chart parser (Phase 1)
+    PatchImportDialog.{h,cpp} # Import Patch preview + destination picker
     MidiService.{h,cpp}       # libremidi wrapper, Qt signals
     Patch.{h,cpp}             # one patch (name, chain, on/off, parameters)
     PatchBank.{h,cpp}         # 128 slots; panel + RQ1 ingest
@@ -147,6 +149,7 @@ qt/
   tests/
     test_patch_parsing.cpp
     test_patch_chart_parser.cpp
+    test_patch_import.cpp
     test_librarian.cpp
     test_signal_chain.cpp
     test_effect_editor.cpp

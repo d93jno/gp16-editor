@@ -69,6 +69,8 @@ add_executable(gp16-editor-qt
   src/MainWindow.cpp
   src/PatchListPanel.h
   src/PatchListPanel.cpp
+  src/PatchImportDialog.h
+  src/PatchImportDialog.cpp
   src/SignalChainWidget.h
   src/SignalChainWidget.cpp
   src/EffectEditor.h
@@ -198,6 +200,8 @@ add_executable(gp16_main_window_tests
   src/MainWindow.cpp
   src/PatchListPanel.h
   src/PatchListPanel.cpp
+  src/PatchImportDialog.h
+  src/PatchImportDialog.cpp
   src/SignalChainWidget.h
   src/SignalChainWidget.cpp
   src/EffectEditor.h
@@ -219,3 +223,33 @@ if(UNIX AND NOT APPLE AND ALSA_FOUND)
   target_link_libraries(gp16_main_window_tests PRIVATE ALSA::ALSA)
 endif()
 add_test(NAME gp16_main_window_tests COMMAND gp16_main_window_tests)
+
+add_executable(gp16_patch_import_tests
+  tests/test_patch_import.cpp
+  src/PatchImportDialog.h
+  src/PatchImportDialog.cpp
+  src/PatchListPanel.h
+  src/PatchListPanel.cpp
+  src/MainWindow.h
+  src/MainWindow.cpp
+  src/SignalChainWidget.h
+  src/SignalChainWidget.cpp
+  src/EffectEditor.h
+  src/EffectEditor.cpp
+  src/PatchDisplayWidget.h
+  src/PatchDisplayWidget.cpp
+  src/MidiService.h
+  src/MidiService.cpp
+)
+target_link_libraries(gp16_patch_import_tests PRIVATE
+  Qt6::Widgets
+  libremidi
+  gp16_sysex
+)
+target_compile_definitions(gp16_patch_import_tests PRIVATE
+  GP16_TEST_REPO_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/.."
+)
+if(UNIX AND NOT APPLE AND ALSA_FOUND)
+  target_link_libraries(gp16_patch_import_tests PRIVATE ALSA::ALSA)
+endif()
+add_test(NAME gp16_patch_import_tests COMMAND gp16_patch_import_tests)

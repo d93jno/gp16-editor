@@ -42,7 +42,7 @@ struct ParsedChart {
   std::optional<bool> isDistortion;
   std::optional<int> blockB2Mode;
 
-  std::array<ParsedSlot, 12> slots{};
+  std::array<ParsedSlot, 12> effectSlots{};
 
   std::optional<int> masterVolume;
   std::optional<int> outputChannel;

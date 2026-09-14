@@ -457,7 +457,7 @@ int convertToRaw(const ParamSpec& spec, const ExtractedValue& v, std::vector<std
 
 void applyVariant(ParsedChart& chart, int identity, int variant)
 {
-  auto& slot = chart.slots[static_cast<std::size_t>(identity)];
+  auto& slot = chart.effectSlots[static_cast<std::size_t>(identity)];
   if (identity == 1) {
     const bool dist = variant == 0;
     slot.kind = dist ? EffectKind::Distortion : EffectKind::Overdrive;
@@ -567,8 +567,8 @@ ParsedChart parsePatchChart(std::string_view text)
 {
   ParsedChart chart;
   for (int i = 0; i < 12; ++i) {
-    chart.slots[static_cast<std::size_t>(i)].identity = i;
-    chart.slots[static_cast<std::size_t>(i)].kind = kindForSlot(i, 0, true);
+    chart.effectSlots[static_cast<std::size_t>(i)].identity = i;
+    chart.effectSlots[static_cast<std::size_t>(i)].kind = kindForSlot(i, 0, true);
   }
 
   int currentIdentity = -1;
@@ -674,7 +674,7 @@ ParsedChart parsePatchChart(std::string_view text)
       currentIdentity = headerIdentity;
       inExpression = false;
       inComments = false;
-      auto& slot = chart.slots[static_cast<std::size_t>(headerIdentity)];
+      auto& slot = chart.effectSlots[static_cast<std::size_t>(headerIdentity)];
       slot.sawHeader = true;
       for (std::size_t i = 1; i < tok.size(); ++i) {
         const int variant = variantFromToken(tok[i]);
@@ -689,7 +689,7 @@ ParsedChart parsePatchChart(std::string_view text)
       const int variant = variantFromToken(tok[0]);
       if (variant >= 0 && (tok.size() == 1 || looksLikeEffectName(tok, 1))) {
         applyVariant(chart, currentIdentity, variant);
-        currentLabels = labelsFor(chart.slots[static_cast<std::size_t>(currentIdentity)].kind);
+        currentLabels = labelsFor(chart.effectSlots[static_cast<std::size_t>(currentIdentity)].kind);
         continue;
       }
     }
@@ -734,7 +734,7 @@ ParsedChart parsePatchChart(std::string_view text)
     }
 
     if (currentIdentity >= 0) {
-      auto& slot = chart.slots[static_cast<std::size_t>(currentIdentity)];
+      auto& slot = chart.effectSlots[static_cast<std::size_t>(currentIdentity)];
       if (currentLabels.empty())
         currentLabels = labelsFor(slot.kind);
 
@@ -769,7 +769,7 @@ ParsedChart parsePatchChart(std::string_view text)
     warn("expression pedal parameters are not imported");
 
   for (int i = 0; i < 12; ++i) {
-    const auto& slot = chart.slots[static_cast<std::size_t>(i)];
+    const auto& slot = chart.effectSlots[static_cast<std::size_t>(i)];
     const bool summaryOn = chart.summaryEnabled[static_cast<std::size_t>(i)];
     const bool summaryKnown = (i < 6) ? chart.sawBlockAOnOff : chart.sawBlockBOnOff;
     const std::string who = std::string(slotName(i)) + " (" + specFor(slot.kind).name + ")";
@@ -838,7 +838,7 @@ Patch chartToPatch(const ParsedChart& chart, int index)
   patch.setByteAt(0x0C, static_cast<std::uint8_t>(chart.blockB2Mode.value_or(0) & 0x03));
 
   for (int id = 0; id < Patch::kEffectCount; ++id)
-    patch.setEffectEnabled(id, chart.slots[static_cast<std::size_t>(id)].present);
+    patch.setEffectEnabled(id, chart.effectSlots[static_cast<std::size_t>(id)].present);
 
   std::uint8_t high = patch.byteAt(0x0D);
   if (chart.isDistortion.value_or(true))
@@ -847,7 +847,7 @@ Patch chartToPatch(const ParsedChart& chart, int index)
     high = static_cast<std::uint8_t>(high | 0x40u);
   patch.setByteAt(0x0D, high);
 
-  for (const auto& slot : chart.slots) {
+  for (const auto& slot : chart.effectSlots) {
     if (!slot.present)
       continue;
     for (const auto& field : slot.fields) {

@@ -32,6 +32,7 @@ public:
   ~MainWindow() override;
 
   bool openDumpFile(const QString& path);
+  bool importPatchFile(const QString& path, int destinationIndex);
 
   [[nodiscard]] MidiService* midiService() const { return midi_; }
 
@@ -41,6 +42,7 @@ private slots:
   void onRequestAllPatches();
   void onListenToggled(bool on);
   void onOpenFile();
+  void onImportPatch();
   void onSysEx(const QByteArray& sysex);
   void onLog(const QString& message);
   void onError(const QString& message);
@@ -66,6 +68,8 @@ private:
   void updateActions();
   void updatePortStatus();
   void preferUsbMidi();
+  [[nodiscard]] QString defaultImportDir() const;
+  void applyImportedPatch(Patch patch, int destinationIndex);
   [[nodiscard]] const Patch& currentPatch() const;
   static QString toHex(const QByteArray& data, int maxBytes = 48);
 
@@ -80,6 +84,7 @@ private:
   QAction* dumpAction_ = nullptr;
   QAction* listenAction_ = nullptr;
   QAction* openAction_ = nullptr;
+  QAction* importAction_ = nullptr;
 
   PatchListPanel* listPanel_ = nullptr;
   QStackedWidget* headerStack_ = nullptr;

@@ -3,17 +3,22 @@
 #include "EffectEditor.h"
 #include "MidiService.h"
 #include "Patch.h"
+#include "PatchChartParser.h"
 #include "PatchDisplayWidget.h"
+#include "PatchImportDialog.h"
 #include "PatchListPanel.h"
 #include "RolandSysex.h"
 #include "SignalChainWidget.h"
 
 #include <QAction>
 #include <QComboBox>
+#include <QCoreApplication>
+#include <QDir>
 #include <QDockWidget>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QHBoxLayout>
+#include <QKeySequence>
 #include <QLabel>
 #include <QMenu>
 #include <QMenuBar>
@@ -103,6 +108,11 @@ MainWindow::MainWindow(QWidget* parent)
   connect(listenAction_, &QAction::toggled, this, &MainWindow::onListenToggled);
   openAction_ = toolbar->addAction(QStringLiteral("Open file"), this, &MainWindow::onOpenFile);
   openAction_->setToolTip(QStringLiteral("Open a captured SysEx .bin"));
+  openAction_->setShortcut(QKeySequence::Open);
+  importAction_ = toolbar->addAction(QStringLiteral("Import Patch…"), this, &MainWindow::onImportPatch);
+  importAction_->setObjectName(QStringLiteral("importPatchAction"));
+  importAction_->setToolTip(QStringLiteral("Import a legacy .PCH patch chart into a librarian slot"));
+  importAction_->setShortcut(QKeySequence(QStringLiteral("Ctrl+I")));
 
   auto* splitter = new QSplitter(Qt::Horizontal, this);
   splitter->setChildrenCollapsible(false);
@@ -166,6 +176,10 @@ MainWindow::MainWindow(QWidget* parent)
   logDock_->setWidget(logView_);
   addDockWidget(Qt::BottomDockWidgetArea, logDock_);
   resizeDocks({logDock_}, {160}, Qt::Vertical);
+
+  auto* fileMenu = menuBar()->addMenu(QStringLiteral("&File"));
+  fileMenu->addAction(openAction_);
+  fileMenu->addAction(importAction_);
 
   auto* viewMenu = menuBar()->addMenu(QStringLiteral("&View"));
   viewMenu->addAction(logDock_->toggleViewAction());
@@ -369,6 +383,108 @@ void MainWindow::onOpenFile()
     return;
   lastOpenDir_ = QFileInfo(path).absolutePath();
   openDumpFile(path);
+}
+
+QString MainWindow::defaultImportDir() const
+{
+  const QStringList bases = {
+      QDir::currentPath(),
+      QDir(QDir::currentPath()).absoluteFilePath(QStringLiteral("..")),
+      QDir(QDir::currentPath()).absoluteFilePath(QStringLiteral("../..")),
+      QCoreApplication::applicationDirPath(),
+      QDir(QCoreApplication::applicationDirPath()).absoluteFilePath(QStringLiteral("..")),
+      QDir(QCoreApplication::applicationDirPath()).absoluteFilePath(QStringLiteral("../..")),
+  };
+  for (const auto& base : bases) {
+    const QDir patches(QDir(base).absoluteFilePath(QStringLiteral("patches")));
+    if (patches.exists())
+      return patches.absolutePath();
+  }
+  if (!lastOpenDir_.isEmpty())
+    return lastOpenDir_;
+  return QDir::currentPath();
+}
+
+void MainWindow::applyImportedPatch(Patch patch, int destinationIndex)
+{
+  cancelPendingEdits();
+  bank_.patchAt(destinationIndex) = std::move(patch);
+  listPanel_->clearFilter();
+  refreshLibrarian();
+  listPanel_->selectPatch(destinationIndex);
+}
+
+bool MainWindow::importPatchFile(const QString& path, int destinationIndex)
+{
+  if (destinationIndex < 0 || destinationIndex >= PatchBank::kPatchCount)
+    return false;
+
+  std::string error;
+  const auto chart = parsePatchChartFile(path.toStdString(), error);
+  if (!error.empty()) {
+    const auto msg = QStringLiteral("Failed to import %1: %2")
+                         .arg(path, QString::fromStdString(error));
+    appendLog(msg);
+    statusBar()->showMessage(msg, 8000);
+    return false;
+  }
+
+  applyImportedPatch(chartToPatch(chart, destinationIndex), destinationIndex);
+
+  const auto dest = QString::fromStdString(Patch::displayIdFor(destinationIndex));
+  const auto name = QString::fromStdString(chart.name.empty() ? "(unnamed)" : chart.name);
+  const auto msg = chart.warnings.empty()
+                       ? QStringLiteral("Imported %1 → %2").arg(name, dest)
+                       : QStringLiteral("Imported %1 → %2 (%3 warning(s))")
+                             .arg(name, dest)
+                             .arg(static_cast<int>(chart.warnings.size()));
+  appendLog(msg);
+  for (const auto& w : chart.warnings)
+    appendLog(QStringLiteral("  warning: %1").arg(QString::fromStdString(w)));
+  statusBar()->showMessage(msg, 8000);
+  return true;
+}
+
+void MainWindow::onImportPatch()
+{
+  const auto path = QFileDialog::getOpenFileName(
+      this,
+      QStringLiteral("Import GP-16 patch chart"),
+      defaultImportDir(),
+      QStringLiteral("Patch charts (*.PCH *.pch);;All files (*)"));
+  if (path.isEmpty())
+    return;
+  lastOpenDir_ = QFileInfo(path).absolutePath();
+
+  std::string error;
+  const auto chart = parsePatchChartFile(path.toStdString(), error);
+  if (!error.empty()) {
+    const auto msg = QStringLiteral("Failed to import %1: %2")
+                         .arg(path, QString::fromStdString(error));
+    appendLog(msg);
+    statusBar()->showMessage(msg, 8000);
+    return;
+  }
+
+  const int initial = selectedIndex_ >= 0 ? selectedIndex_ : 0;
+  PatchImportDialog dialog(chart, bank_, initial, this);
+  if (dialog.exec() != QDialog::Accepted)
+    return;
+
+  const int dest = dialog.destinationIndex();
+  applyImportedPatch(chartToPatch(chart, dest), dest);
+
+  const auto destId = QString::fromStdString(Patch::displayIdFor(dest));
+  const auto name = QString::fromStdString(chart.name.empty() ? "(unnamed)" : chart.name);
+  const auto msg = chart.warnings.empty()
+                       ? QStringLiteral("Imported %1 → %2").arg(name, destId)
+                       : QStringLiteral("Imported %1 → %2 (%3 warning(s))")
+                             .arg(name, destId)
+                             .arg(static_cast<int>(chart.warnings.size()));
+  appendLog(msg);
+  for (const auto& w : chart.warnings)
+    appendLog(QStringLiteral("  warning: %1").arg(QString::fromStdString(w)));
+  statusBar()->showMessage(msg, 8000);
 }
 
 void MainWindow::onDumpTimeout()
@@ -611,6 +727,7 @@ void MainWindow::updateActions()
   dumpAction_->setEnabled(idle && midi_->isOutputOpen() && midi_->isInputOpen());
   listenAction_->setEnabled((idle || listening) && midi_->isInputOpen());
   openAction_->setEnabled(idle);
+  importAction_->setEnabled(idle);
   connectAction_->setEnabled(true);
   refreshAction_->setEnabled(idle);
 }

@@ -1,6 +1,6 @@
 # 03 — Import legacy `.PCH` patch charts into the GP-16
 
-Status: in progress (phases 0–2 done)
+Status: in progress (phases 0–3 done)
 Scope: `qt/` tree only. The C# MAUI app is not touched.
 Depends on: plan 01 (`Patch`, `PatchBank`, `EffectSpecs`, `MidiService`, `MainWindow` chain/editor —
 all already implemented and reused here, nothing rebuilt from scratch).
@@ -140,7 +140,7 @@ for all 13 sample files.
 
 ## Phase 3 — Qt "Import Patch…" flow (UI, offline)
 
-Status: not started
+Status: done
 
 Toolbar/menu action → `QFileDialog` (default directory `patches/` if present, otherwise the
 existing `lastOpenDir_`-style remembered directory) → parse → preview dialog (effect list with

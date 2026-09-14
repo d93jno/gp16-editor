@@ -127,6 +127,9 @@ int main(int argc, char* argv[])
         "front panel is the default view");
   check(frontPanelAction && frontPanelAction->isChecked(),
         "Front panel display is checked by default");
+  auto* importAction = window.findChild<QAction*>(QStringLiteral("importPatchAction"));
+  check(importAction != nullptr, "toolbar has Import Patch");
+  check(importAction && importAction->isEnabled(), "Import Patch is enabled with no device");
   if (display) {
     check(display->groupLetter() == 'A', "opened dump selects group A");
     check(display->bankDigit() == 1, "opened dump selects bank 1");
