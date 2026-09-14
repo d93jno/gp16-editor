@@ -1,6 +1,6 @@
 # 03 — Import legacy `.PCH` patch charts into the GP-16
 
-Status: in progress (phases 0–1 done)
+Status: in progress (phases 0–2 done)
 Scope: `qt/` tree only. The C# MAUI app is not touched.
 Depends on: plan 01 (`Patch`, `PatchBank`, `EffectSpecs`, `MidiService`, `MainWindow` chain/editor —
 all already implemented and reused here, nothing rebuilt from scratch).
@@ -122,7 +122,7 @@ silently "corrected" data.
 
 ## Phase 2 — Chart → `Patch` conversion + CLI verification
 
-Status: not started
+Status: done
 
 Convert a `ParsedChart` into a real `Patch` byte buffer: `EffectSpecs::writeParam`/
 `displayToRaw` for per-effect fields, `Patch::setEffectEnabled` for the on/off bitmask, direct

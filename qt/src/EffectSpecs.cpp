@@ -141,7 +141,7 @@ constexpr ParamSpec kNoiseSuppressor[] = {
 };
 
 constexpr ParamSpec kShortDelay[] = {
-    {.label = "Time", .offset = 0x31},
+    {.label = "Time", .offset = 0x31, .suffix = " ms"},
     {.label = "E.Level", .offset = 0x32},
 };
 

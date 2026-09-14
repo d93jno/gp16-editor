@@ -55,3 +55,5 @@ struct ParsedChart {
 [[nodiscard]] ParsedChart parsePatchChart(std::string_view text);
 [[nodiscard]] ParsedChart parsePatchChartFile(const std::filesystem::path& path,
                                               std::string& error);
+
+[[nodiscard]] Patch chartToPatch(const ParsedChart& chart, int index = 0);

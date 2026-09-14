@@ -1,5 +1,7 @@
 #include "PatchChartParser.h"
 
+#include "RolandSysex.h"
+
 #include <algorithm>
 #include <cctype>
 #include <cmath>
@@ -795,4 +797,78 @@ ParsedChart parsePatchChartFile(const std::filesystem::path& path, std::string& 
   std::ostringstream ss;
   ss << in.rdbuf();
   return parsePatchChart(ss.str());
+}
+
+namespace {
+
+const ParamSpec* specAtOffset(EffectKind kind, int offset)
+{
+  for (const auto& p : specFor(kind).params) {
+    if (p.offset == offset)
+      return &p;
+  }
+  return nullptr;
+}
+
+void writeName(Patch& patch, std::string_view name)
+{
+  for (int i = 0; i < roland::kPatchNameLength; ++i) {
+    const char ch = i < static_cast<int>(name.size()) ? name[static_cast<std::size_t>(i)] : ' ';
+    const auto b = static_cast<unsigned char>(ch);
+    patch.setByteAt(roland::kPatchNameOffset + i, b >= 32 && b < 127 ? b : ' ');
+  }
+  patch.setByteAt(roland::kPatchNameOffset + roland::kPatchNameLength, 0);
+}
+
+} // namespace
+
+Patch chartToPatch(const ParsedChart& chart, int index)
+{
+  std::vector<std::uint8_t> data(static_cast<std::size_t>(roland::kPatchDataBytes), 0);
+  Patch patch;
+  patch.parse(data, index);
+
+  for (int i = 0; i < 5; ++i)
+    patch.setByteAt(i, static_cast<std::uint8_t>(chart.blockAOrder[static_cast<std::size_t>(i)]));
+  patch.setByteAt(0x05, 5);
+  for (int i = 0; i < 5; ++i)
+    patch.setByteAt(6 + i, static_cast<std::uint8_t>(chart.blockBOrder[static_cast<std::size_t>(i)]));
+  patch.setByteAt(0x0B, 11);
+
+  patch.setByteAt(0x0C, static_cast<std::uint8_t>(chart.blockB2Mode.value_or(0) & 0x03));
+
+  for (int id = 0; id < Patch::kEffectCount; ++id)
+    patch.setEffectEnabled(id, chart.slots[static_cast<std::size_t>(id)].present);
+
+  std::uint8_t high = patch.byteAt(0x0D);
+  if (chart.isDistortion.value_or(true))
+    high = static_cast<std::uint8_t>(high & ~0x40u);
+  else
+    high = static_cast<std::uint8_t>(high | 0x40u);
+  patch.setByteAt(0x0D, high);
+
+  for (const auto& slot : chart.slots) {
+    if (!slot.present)
+      continue;
+    for (const auto& field : slot.fields) {
+      if (const ParamSpec* spec = specAtOffset(slot.kind, field.offset))
+        writeParam(patch, *spec, field.raw);
+      else if (field.byteWidth >= 2)
+        patch.setWordAt(field.offset, field.raw);
+      else
+        patch.setByteAt(field.offset, static_cast<std::uint8_t>(field.raw));
+    }
+  }
+
+  const auto globals = allGlobalParams();
+  if (chart.masterVolume && !globals.empty())
+    writeParam(patch, globals[0], *chart.masterVolume);
+  if (chart.outputChannel && globals.size() >= 2)
+    writeParam(patch, globals[1], *chart.outputChannel);
+
+  writeName(patch, chart.name);
+
+  std::vector<std::uint8_t> copy(patch.rawData().begin(), patch.rawData().end());
+  patch.parse(copy, index);
+  return patch;
 }

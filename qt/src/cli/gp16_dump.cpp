@@ -1,11 +1,15 @@
+#include "EffectSpecs.h"
 #include "Patch.h"
 #include "PatchBank.h"
+#include "PatchChartParser.h"
 #include "RolandSysex.h"
 
 #include <libremidi/libremidi.hpp>
 
 #include <algorithm>
+#include <cctype>
 #include <chrono>
+#include <cmath>
 #include <cstddef>
 #include <condition_variable>
 #include <cstdint>
@@ -47,6 +51,7 @@ struct Options {
   int listenSeconds = 180;
   bool decodeMode = false;
   std::string decodeFile;
+  std::string importFile;
   std::uint8_t pokeLow = 0;
   std::uint8_t pokeHigh = 100;
 };
@@ -87,6 +92,7 @@ void usage(const char* argv0)
       << "      --to <0-127>       Last patch index (default: 127)\n"
       << "      --api <name>       alsa_raw (default), alsa_seq, default\n"
       << "      --decode <file>    Offline: decode a captured .bin (shape auto-detected) and exit\n"
+      << "      --import <file.pch> Offline: parse a legacy .PCH chart into a Patch and decode it\n"
       << "      --poke             Play Mode probe: compressor sustain @ 00 00 11 with/without\n"
       << "                        SOUND CHANGE REQUEST @ 00 00 75 (needs -o)\n"
       << "  -v, --verbose          Log each message\n"
@@ -98,6 +104,7 @@ void usage(const char* argv0)
       << "      # then start bulk dump on the GP-16 panel\n"
       << "  " << argv0 << " --request -i \"USB MIDI\" -o \"USB MIDI\" -d 00 -f dump.bin\n"
       << "  " << argv0 << " --decode captures/dump-20260730-153932.bin\n"
+      << "  " << argv0 << " --import patches/ACOUSTIC.PCH --decode\n"
       << "  " << argv0 << " --poke -o \"USB MIDI\" -d 00 -v\n";
 }
 
@@ -202,8 +209,11 @@ bool parseArgs(int argc, char** argv, Options& opt)
     } else if (a == "--to") {
       opt.patchTo = std::stoi(need(a.c_str()));
     } else if (a == "--decode") {
-      opt.decodeFile = need(a.c_str());
       opt.decodeMode = true;
+      if (i + 1 < argc && argv[i + 1][0] != '-')
+        opt.decodeFile = need(a.c_str());
+    } else if (a == "--import") {
+      opt.importFile = need(a.c_str());
     } else if (a == "--poke") {
       opt.pokeMode = true;
     } else {
@@ -372,6 +382,165 @@ int runDecode(const std::string& file)
   return 0;
 }
 
+const char* slotTag(int identity)
+{
+  static constexpr const char* kTags[] = {"A-1", "A-2", "A-3", "A-4", "A-5", "A-6",
+                                          "B-1", "B-2", "B-3", "B-4", "B-5", "B-6"};
+  if (identity < 0 || identity >= Patch::kEffectCount)
+    return "?";
+  return kTags[identity];
+}
+
+std::string formatHz(double hz)
+{
+  std::ostringstream os;
+  os << std::fixed;
+  if (hz >= 1000.0)
+    os << std::setprecision(2) << (hz / 1000.0) << " kHz";
+  else
+    os << std::setprecision(0) << hz << " Hz";
+  return os.str();
+}
+
+std::string sequenceDigits(const std::array<int, 6>& order)
+{
+  std::string s;
+  s.resize(6);
+  for (int i = 0; i < 6; ++i) {
+    const int id = order[static_cast<std::size_t>(i)];
+    const int local = id < 6 ? id : id - 6;
+    s[static_cast<std::size_t>(i)] = static_cast<char>('1' + local);
+  }
+  return s;
+}
+
+std::string formatParamValue(const ParamSpec& spec, int raw)
+{
+  if (spec.type == ParamType::Combo && spec.comboItems && spec.comboCount > 0) {
+    const int i = std::clamp(raw, spec.min, spec.max);
+    if (i >= 0 && i < spec.comboCount)
+      return spec.comboItems[i];
+  }
+  if (spec.type == ParamType::Checkbox)
+    return raw ? "ON" : "OFF";
+  if ((spec.offset == 0x4F || spec.offset == 0x53) && raw >= spec.max)
+    return "THRU";
+  if (spec.offset == 0x51) {
+    const double sec = raw <= 45 ? 0.5 + static_cast<double>(raw) * 0.1
+                                 : 5.5 + static_cast<double>(raw - 46) * 0.5;
+    std::ostringstream os;
+    os << std::fixed << std::setprecision(1) << sec << " sec";
+    return os.str();
+  }
+  if (spec.offset == 0x4F || spec.offset == 0x53) {
+    ParamSpec freq = spec;
+    freq.min = 0;
+    freq.max = 199;
+    freq.transform = DisplayTransform::FreqLog;
+    freq.displayMin = 500;
+    freq.displayMax = 8000;
+    return formatHz(rawToDisplay(freq, raw));
+  }
+  if (spec.offset == 0x3B && spec.byteWidth >= 2) {
+    const int e = raw / 2;
+    std::ostringstream os;
+    os << "E " << e << " / D " << (100 - e);
+    return os.str();
+  }
+
+  const double display = rawToDisplay(spec, raw);
+  std::ostringstream os;
+  os << std::fixed;
+  switch (spec.transform) {
+    case DisplayTransform::LevelDb:
+      os << std::setprecision(1);
+      if (display == 0.0)
+        os << "0.0 dB";
+      else
+        os << std::showpos << display << " dB";
+      break;
+    case DisplayTransform::QValue:
+      os << std::setprecision(1) << display;
+      break;
+    case DisplayTransform::FreqLinear:
+    case DisplayTransform::FreqLog:
+      return formatHz(display);
+    default: {
+      const int n = static_cast<int>(std::lround(display));
+      os << n;
+      if (spec.suffix && std::string_view(spec.suffix).find("ms") != std::string_view::npos)
+        os << " msec";
+      break;
+    }
+  }
+  return os.str();
+}
+
+void printImportedPatch(std::ostream& os, const ParsedChart& chart, const Patch& patch)
+{
+  printDecodeRow(os, patch.index(), patch);
+  os << "\n";
+  os << "Name: " << patch.name() << "\n";
+  if (!chart.author.empty())
+    os << "Author: " << chart.author << "\n";
+  if (!chart.comments.empty())
+    os << "Comments: " << chart.comments << "\n";
+  os << "LCD: " << patch.playModeLcdLine1() << " / " << patch.playModeLcdLine2() << "\n";
+  os << "SEQUENCE BLOCK A  " << sequenceDigits(patch.blockAOrder()) << "\n";
+  os << "SEQUENCE BLOCK B  " << sequenceDigits(patch.blockBOrder()) << "\n";
+  os << "\n";
+
+  for (int id = 0; id < Patch::kEffectCount; ++id) {
+    if (!patch.isEffectEnabled(id))
+      continue;
+    const EffectKind kind = kindForSlot(id, patch.blockB2Mode(), patch.isDistortion());
+    const auto& spec = specFor(kind);
+    os << slotTag(id) << " " << spec.name << "\n";
+    for (const auto& param : spec.params) {
+      os << "  ";
+      if (param.group)
+        os << param.group << " ";
+      os << param.label << " " << formatParamValue(param, readParam(patch, param)) << "\n";
+    }
+    os << "\n";
+  }
+
+  const auto globals = allGlobalParams();
+  for (const auto& param : globals)
+    os << param.label << " " << formatParamValue(param, readParam(patch, param)) << "\n";
+}
+
+bool isPatchChartPath(const std::string& path)
+{
+  auto ext = std::filesystem::path(path).extension().string();
+  for (char& c : ext)
+    c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+  return ext == ".pch";
+}
+
+int runImport(const std::string& file)
+{
+  std::string error;
+  const auto chart = parsePatchChartFile(file, error);
+  if (!error.empty()) {
+    std::cerr << "Import failed: " << error << "\n";
+    return 1;
+  }
+
+  const Patch patch = chartToPatch(chart);
+  std::cout << "Imported: " << file << "\n";
+  if (chart.warnings.empty()) {
+    std::cout << "Warnings: (none)\n\n";
+  } else {
+    std::cout << "Warnings (" << chart.warnings.size() << "):\n";
+    for (const auto& w : chart.warnings)
+      std::cout << "  " << w << "\n";
+    std::cout << "\n";
+  }
+  printImportedPatch(std::cout, chart, patch);
+  return 0;
+}
+
 bool sendDt1(
     libremidi::midi_out& out,
     std::uint8_t deviceId,
@@ -458,8 +627,17 @@ int main(int argc, char** argv)
     return 2;
   }
 
-  if (opt.decodeMode)
+  if (!opt.importFile.empty())
+    return runImport(opt.importFile);
+  if (opt.decodeMode) {
+    if (opt.decodeFile.empty()) {
+      std::cerr << "--decode requires a file (or use --import <file.pch> --decode)\n";
+      return 2;
+    }
+    if (isPatchChartPath(opt.decodeFile))
+      return runImport(opt.decodeFile);
     return runDecode(opt.decodeFile);
+  }
 
   const auto api = resolveApi(opt.api);
   std::cout << "API: " << libremidi::get_api_display_name(api) << "\n";

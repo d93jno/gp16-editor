@@ -358,6 +358,94 @@ void testQuirkSamples()
              "MRCS wrapped comments");
 }
 
+void testChartToPatchRoundTrip()
+{
+  int count = 0;
+  for (const auto& entry : std::filesystem::directory_iterator(repoRoot() / "patches")) {
+    if (entry.path().extension() != ".PCH")
+      continue;
+    ++count;
+    const auto name = entry.path().filename().string();
+    std::string error;
+    const auto chart = parsePatchChartFile(entry.path(), error);
+    check(error.empty(), name + " convert opened: " + error);
+    const Patch patch = chartToPatch(chart);
+    check(patch.isPresent(), name + " patch present");
+
+    std::string expectedName = chart.name;
+    if (expectedName.size() > 16)
+      expectedName.resize(16);
+    while (!expectedName.empty() && expectedName.back() == ' ')
+      expectedName.pop_back();
+    checkEqual(patch.name(), expectedName, name + " name field");
+
+    checkEqual(patch.blockAOrder(), chart.blockAOrder, name + " block A order");
+    checkEqual(patch.blockBOrder(), chart.blockBOrder, name + " block B order");
+    checkEqual(patch.blockB2Mode(), chart.blockB2Mode.value_or(0), name + " B-2 mode");
+    checkEqual(patch.isDistortion(), chart.isDistortion.value_or(true), name + " distortion bit");
+
+    for (int id = 0; id < Patch::kEffectCount; ++id) {
+      const auto& slot = chart.slots[static_cast<std::size_t>(id)];
+      checkEqual(patch.isEffectEnabled(id), slot.present,
+                 name + " enable " + std::to_string(id));
+      if (!slot.present)
+        continue;
+      for (const auto& field : slot.fields) {
+        if (field.byteWidth >= 2)
+          checkEqual(patch.wordAt(field.offset), field.raw,
+                     name + " word @" + std::to_string(field.offset));
+        else
+          checkEqual(static_cast<int>(patch.byteAt(field.offset)), field.raw,
+                     name + " byte @" + std::to_string(field.offset));
+      }
+    }
+
+    if (chart.masterVolume)
+      checkEqual(static_cast<int>(patch.byteAt(0x5B)), *chart.masterVolume, name + " master volume");
+    if (chart.outputChannel)
+      checkEqual(static_cast<int>(patch.byteAt(0x63)), *chart.outputChannel, name + " channel");
+  }
+  checkEqual(count, 13, "converted all 13 .PCH files");
+}
+
+void testChartToPatchAcoustic()
+{
+  const Patch patch = chartToPatch(loadChart("ACOUSTIC.PCH"));
+  checkEqual(patch.name(), std::string("Acoustic"), "ACOUSTIC patch name");
+  checkEqual(patch.playModeLcdLine2(), std::string("A-1***56B-*2**56"), "ACOUSTIC LCD line 2");
+  check(patch.isEffectEnabled(0) && patch.isEffectEnabled(4) && patch.isEffectEnabled(5),
+        "ACOUSTIC A-1/A-5/A-6 on");
+  check(!patch.isEffectEnabled(1) && !patch.isEffectEnabled(2) && !patch.isEffectEnabled(3),
+        "ACOUSTIC A-2/A-3/A-4 off");
+  check(patch.blockB2Mode() == 3, "ACOUSTIC Space-D");
+  checkEqual(static_cast<int>(patch.byteAt(0x11)), 80, "ACOUSTIC sustain 80");
+  checkEqual(static_cast<int>(patch.byteAt(0x5B)), 75, "ACOUSTIC MASTER VOLUME 75");
+  checkEqual(static_cast<int>(patch.byteAt(0x63)), 0, "ACOUSTIC CHANNEL 1");
+  checkEqual(patch.wordAt(0x53), 200, "ACOUSTIC reverb CUTOFF THRU");
+}
+
+void testChartToPatchBtt70s()
+{
+  const Patch patch = chartToPatch(loadChart("BTT70S.PCH"));
+  checkEqual(patch.blockAOrder(), (std::array<int, 6>{0, 2, 1, 4, 3, 5}), "BTT70S joint A");
+  checkEqual(static_cast<int>(patch.byteAt(0x00)), 0, "BTT70S joint A0");
+  checkEqual(static_cast<int>(patch.byteAt(0x01)), 2, "BTT70S joint A1");
+  checkEqual(static_cast<int>(patch.byteAt(0x05)), 5, "BTT70S NS joint fixed");
+  check(patch.isEffectEnabled(1) && patch.isEffectEnabled(2) && patch.isEffectEnabled(4),
+        "BTT70S dist/filter/EQ on");
+  check(!patch.isEffectEnabled(3), "BTT70S empty phaser stays off");
+  check(!patch.isEffectEnabled(5), "BTT70S NS off — trust values, not ON/OFF row");
+  checkEqual(static_cast<int>(patch.byteAt(0x5B)), 55, "BTT70S MASTER VOLUME 55");
+}
+
+void testChartToPatchEdlund2()
+{
+  const Patch patch = chartToPatch(loadChart("EDLUND2.PCH"));
+  check(patch.isEffectEnabled(7), "EDLUND2 chorus on from printed values");
+  check(!patch.isEffectEnabled(9), "EDLUND2 tap delay off — no section");
+  checkEqual(patch.blockBOrder(), (std::array<int, 6>{6, 9, 7, 10, 8, 11}), "EDLUND2 seq B 142536");
+}
+
 } // namespace
 
 int main()
@@ -368,6 +456,10 @@ int main()
   testBtt70s();
   testShadows();
   testQuirkSamples();
+  testChartToPatchRoundTrip();
+  testChartToPatchAcoustic();
+  testChartToPatchBtt70s();
+  testChartToPatchEdlund2();
 
   if (failures == 0) {
     std::cout << "All patch chart parser tests passed.\n";

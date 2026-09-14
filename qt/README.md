@@ -92,11 +92,16 @@ Chain on/off writes both `0x0D` and `0x0E` (the full effect on/off bitmap) throu
 # Offline: decode a captured .bin (shape auto-detected), no hardware needed
 ./build/gp16-dump --decode captures/dump-20260730-153932.bin
 
+# Offline: import a legacy .PCH chart and decode the resulting Patch
+./build/gp16-dump --import patches/ACOUSTIC.PCH --decode
+
 # Play Mode SOUND CHANGE REQUEST probe (compressor sustain ± 0x75)
 ./build/gp16-dump --poke -o "USB MIDI" -d 00 -v
 ```
 
 `--decode` prints all 128 rows (index, Roland ID, name, chain order, effect on/off flags) from a captured `.bin` and is the offline acceptance check for the shared parsing layer — the same `PatchBank` code path the GUI's **Open file** action uses.
+
+`--import <file.pch> --decode` parses a legacy patch chart into a `Patch` byte buffer and prints that one patch through the same decode row plus a parameter overview (on/off from populated sections, not the chart's summary row). No hardware needed.
 
 `--request` matches the working Windows editor capture (`captures/MIDI_CAPTURE.md`): 3-byte address and size, then DT1 payloads accumulated to 8192 bytes per group.
 
@@ -138,9 +143,10 @@ qt/
     Patch.{h,cpp}             # one patch (name, chain, on/off, parameters)
     PatchBank.{h,cpp}         # 128 slots; panel + RQ1 ingest
     RolandSysex.{h,cpp}       # checksum, RQ1/DT1 helpers
-    cli/gp16_dump.cpp         # CLI dump / --decode / --poke
+    cli/gp16_dump.cpp         # CLI dump / --decode / --import / --poke
   tests/
     test_patch_parsing.cpp
+    test_patch_chart_parser.cpp
     test_librarian.cpp
     test_signal_chain.cpp
     test_effect_editor.cpp
