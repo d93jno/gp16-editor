@@ -63,6 +63,10 @@ There is no separate area byte for Group B under Number-type dumps — both grou
 
 Real-time edits target the Temporary Buffer. In Play Mode they are **not** heard until a SOUND CHANGE REQUEST is written to `00 00 75` after the parameter DT1(s) (verified 2026-09-13; see `qt/README.md`). They are not saved to internal memory until a write command is sent or the user saves on the device front panel.
 
+**Import Patch (Phase 4a):** with a MIDI output open, importing a `.PCH` chart queues a DT1 to `00 00 <offset>` for every patch byte (`0x00`–`0x74`, MSB/LSB pairs as one two-byte DT1) through the same coalescing timer as live edits, then one SOUND CHANGE REQUEST at `00 00 75`. That auditions the patch in the temporary buffer. It does **not** write the librarian destination slot on the unit — **WRITE** on the GP-16 front panel stores the temp buffer to whichever patch is currently selected on the device.
+
+**Direct internal-memory write (Phase 4b):** Table 1 addressing allows a DT1 to `01 <patch index> 00` with the 117-byte patch payload (Number-type internal, Addr0 `01`, Addr1 = 0–127). Probe `gp16-dump --probe-internal-write` on 2026-09-15 got **no SysEx replies** to RQ1 of `01 00 63` on Linux + generic USB MIDI, so a direct patch write is **unverified**. Import does **not** use this path. See `qt/README.md`.
+
 ---
 
 ## Key Temporary Buffer offsets

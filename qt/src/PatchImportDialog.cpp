@@ -188,6 +188,16 @@ PatchImportDialog::PatchImportDialog(const ParsedChart& chart, const PatchBank& 
   splitter->setSizes({520, 320});
   root->addWidget(splitter, 1);
 
+  auto* midiNote = new QLabel(
+      QStringLiteral("If a GP-16 is connected, Import also loads the patch into the "
+                     "temporary buffer (audible in Play Mode). Press WRITE on the device "
+                     "to save — that stores the temp buffer to the patch currently selected "
+                     "on the unit, not automatically to the librarian slot."),
+      this);
+  midiNote->setObjectName(QStringLiteral("importMidiNote"));
+  midiNote->setWordWrap(true);
+  root->addWidget(midiNote);
+
   auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
   auto* importBtn = buttons->button(QDialogButtonBox::Ok);
   importBtn->setText(QStringLiteral("Import"));

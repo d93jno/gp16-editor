@@ -38,6 +38,7 @@ struct Options {
   // Use --request for host-initiated RQ1 per patch.
   bool requestMode = false;
   bool pokeMode = false;
+  bool probeInternalWrite = false;
   bool verbose = false;
   std::uint8_t deviceId = 0x00;
   std::string inPort;
@@ -95,6 +96,8 @@ void usage(const char* argv0)
       << "      --import <file.pch> Offline: parse a legacy .PCH chart into a Patch and decode it\n"
       << "      --poke             Play Mode probe: compressor sustain @ 00 00 11 with/without\n"
       << "                        SOUND CHANGE REQUEST @ 00 00 75 (needs -o)\n"
+      << "      --probe-internal-write  Hardware spike: RQ1 then identity DT1 to\n"
+      << "                        01 00 63 (A11 OUTPUT CHANNEL). Does not change the value.\n"
       << "  -v, --verbose          Log each message\n"
       << "  -h, --help             Show this help\n"
       << "\n"
@@ -105,7 +108,8 @@ void usage(const char* argv0)
       << "  " << argv0 << " --request -i \"USB MIDI\" -o \"USB MIDI\" -d 00 -f dump.bin\n"
       << "  " << argv0 << " --decode captures/dump-20260730-153932.bin\n"
       << "  " << argv0 << " --import patches/ACOUSTIC.PCH --decode\n"
-      << "  " << argv0 << " --poke -o \"USB MIDI\" -d 00 -v\n";
+      << "  " << argv0 << " --poke -o \"USB MIDI\" -d 00 -v\n"
+      << "  " << argv0 << " --probe-internal-write -i \"USB MIDI\" -o \"USB MIDI\" -d 00 -v\n";
 }
 
 std::string portName(const libremidi::port_information& p)
@@ -216,6 +220,8 @@ bool parseArgs(int argc, char** argv, Options& opt)
       opt.importFile = need(a.c_str());
     } else if (a == "--poke") {
       opt.pokeMode = true;
+    } else if (a == "--probe-internal-write") {
+      opt.probeInternalWrite = true;
     } else {
       std::cerr << "Unknown option: " << a << "\n";
       usage(argv[0]);
@@ -561,6 +567,136 @@ bool sendDt1(
   return true;
 }
 
+bool sendSysEx(
+    libremidi::midi_out& out,
+    const std::vector<std::uint8_t>& msg,
+    bool verbose,
+    const char* label)
+{
+  if (auto err = out.send_message(msg.data(), msg.size()); err != stdx::error{}) {
+    std::cerr << "Send failed (" << label << "): " << errorText(err) << "\n";
+    return false;
+  }
+  std::cout << "TX " << label;
+  if (verbose)
+    std::cout << "  " << toHex(msg);
+  std::cout << "\n";
+  return true;
+}
+
+std::vector<roland::ParsedDt1> collectDt1(SysexInbox& inbox, std::chrono::milliseconds timeout)
+{
+  std::vector<roland::ParsedDt1> out;
+  auto msgs = inbox.drainFor(timeout);
+  for (auto& msg : msgs) {
+    auto parsed = roland::parseDt1(msg);
+    if (parsed.valid)
+      out.push_back(std::move(parsed));
+  }
+  return out;
+}
+
+int runProbeInternalWrite(const Options& opt, libremidi::midi_out& out, SysexInbox& inbox)
+{
+  constexpr std::array<std::uint8_t, 3> kTempChannel{0x00, 0x00, 0x63};
+  constexpr std::array<std::uint8_t, 3> kInternalA11Channel{0x01, 0x00, 0x63};
+  constexpr std::array<std::uint8_t, 3> kOneByte{0x00, 0x00, 0x01};
+  const auto wait = std::chrono::milliseconds(1500);
+
+  std::cout
+      << "\nDirect internal-memory write probe (Phase 4b)\n"
+      << "----------------------------------------------\n"
+      << "Reads OUTPUT CHANNEL (offset 0x63) from the temporary buffer and from\n"
+      << "internal A11 (01 00 63), then writes the same value back (identity DT1).\n"
+      << "The stored value is not changed. Device ID 0x" << std::hex
+      << static_cast<int>(opt.deviceId) << std::dec << ".\n\n";
+
+  auto rq1 = [&](std::span<const std::uint8_t, 3> address, const char* label) {
+    const auto msg = roland::buildRequestData(opt.deviceId, address, kOneByte);
+    return sendSysEx(out, msg, opt.verbose, label);
+  };
+  auto dt1 = [&](std::span<const std::uint8_t, 3> address, std::uint8_t value, const char* label) {
+    const auto msg = roland::buildParameterChange(opt.deviceId, address, value);
+    return sendSysEx(out, msg, opt.verbose, label);
+  };
+
+  if (!rq1(kTempChannel, "RQ1 temp 00 00 63"))
+    return 1;
+  auto tempHits = collectDt1(inbox, wait);
+  std::cout << "  RX " << tempHits.size() << " DT1 after temp RQ1";
+  if (!tempHits.empty() && !tempHits.front().data.empty())
+    std::cout << ", data[0]=" << static_cast<int>(tempHits.front().data[0]);
+  std::cout << "\n";
+
+  std::this_thread::sleep_for(kInterRequestDelay);
+
+  if (!rq1(kInternalA11Channel, "RQ1 internal A11 01 00 63"))
+    return 1;
+  auto internalHits = collectDt1(inbox, wait);
+  std::cout << "  RX " << internalHits.size() << " DT1 after internal RQ1";
+  int original = -1;
+  if (!internalHits.empty() && !internalHits.front().data.empty()) {
+    original = static_cast<int>(internalHits.front().data[0]);
+    std::cout << ", data[0]=" << original;
+  }
+  std::cout << "\n";
+
+  bool wrote = false;
+  bool readBack = false;
+  int after = -1;
+  if (original >= 0) {
+    std::this_thread::sleep_for(kInterRequestDelay);
+    if (!dt1(kInternalA11Channel, static_cast<std::uint8_t>(original),
+             "DT1 identity write 01 00 63"))
+      return 1;
+    wrote = true;
+    std::this_thread::sleep_for(kInterRequestDelay);
+    if (!rq1(kInternalA11Channel, "RQ1 internal A11 after identity DT1"))
+      return 1;
+    auto afterHits = collectDt1(inbox, wait);
+    std::cout << "  RX " << afterHits.size() << " DT1 after identity write";
+    if (!afterHits.empty() && !afterHits.front().data.empty()) {
+      after = static_cast<int>(afterHits.front().data[0]);
+      readBack = true;
+      std::cout << ", data[0]=" << after;
+    }
+    std::cout << "\n";
+  }
+
+  std::cout << "\nFINDING: ";
+  if (original < 0) {
+    std::cout
+        << "no DT1 reply to RQ1 01 00 63. Direct internal-memory patch write is "
+           "UNVERIFIED on this setup (host RQ1 often delivers no SysEx on Linux + "
+           "generic USB MIDI). Import uses the temporary-buffer path (4a) only.\n";
+    return 3;
+  }
+  if (!wrote) {
+    std::cout << "internal read worked but the identity DT1 was not sent.\n";
+    return 1;
+  }
+  if (!readBack) {
+    std::cout
+        << "internal A11 OUTPUT CHANNEL reads back, but there was no DT1 reply after "
+           "the identity write to 01 00 63. Direct write is NOT confirmed. Import "
+           "keeps the temporary-buffer path (4a).\n";
+    return 3;
+  }
+  if (after != original) {
+    std::cout
+        << "identity DT1 to 01 00 63 did not round-trip (wrote " << original
+        << ", read " << after << "). Direct internal-memory write does NOT work as "
+           "assumed. Import keeps the temporary-buffer path (4a).\n";
+    return 1;
+  }
+  std::cout
+      << "identity DT1 to 01 00 63 round-tripped (value " << original
+      << "). A 1-byte internal write at that address family is possible. A full "
+         "117-byte patch DT1 to 01 <index> 00 is still NOT the import path until a "
+         "full-payload test is done; Import still uses temporary buffer + WRITE (4a).\n";
+  return 0;
+}
+
 int runPoke(const Options& opt, libremidi::midi_out& out)
 {
   constexpr std::array<std::uint8_t, 3> kSustainAddr{0x00, 0x00, 0x11};
@@ -643,6 +779,8 @@ int main(int argc, char** argv)
   std::cout << "API: " << libremidi::get_api_display_name(api) << "\n";
   if (opt.pokeMode)
     std::cout << "Mode: poke (SOUND CHANGE REQUEST)\n";
+  else if (opt.probeInternalWrite)
+    std::cout << "Mode: probe internal-memory write (Phase 4b)\n";
   else
     std::cout << "Mode: " << (opt.requestMode ? "request (RQ1)" : "listen (panel dump)") << "\n";
 
@@ -665,8 +803,8 @@ int main(int argc, char** argv)
   for (const auto& p : outputs)
     outNames.push_back(portName(p));
 
-  const bool needIn = !opt.pokeMode;
-  const bool needOut = opt.requestMode || opt.pokeMode;
+  const bool needIn = opt.probeInternalWrite || !opt.pokeMode;
+  const bool needOut = opt.requestMode || opt.pokeMode || opt.probeInternalWrite;
 
   if (opt.listOnly || (needIn && opt.inPort.empty())) {
     std::cout << "MIDI inputs (" << inNames.size() << "):\n";
@@ -718,10 +856,10 @@ int main(int argc, char** argv)
   if (outIdx)
     std::cout << "Output: [" << *outIdx << "] " << outNames[*outIdx] << "\n";
   std::cout << "Device ID: 0x" << std::hex << static_cast<int>(opt.deviceId) << std::dec << "\n";
-  if (!opt.pokeMode)
+  if (!opt.pokeMode && !opt.probeInternalWrite)
     std::cout << "File: " << opt.outFile << "\n";
 
-  if (opt.pokeMode) {
+  if (opt.pokeMode && !opt.probeInternalWrite) {
     libremidi::midi_out midiout{
         libremidi::output_configuration{},
         libremidi::midi_out_configuration_for(api),
@@ -780,7 +918,7 @@ int main(int argc, char** argv)
   }
 
   std::unique_ptr<libremidi::midi_out> midiout;
-  if (opt.requestMode) {
+  if (opt.requestMode || opt.probeInternalWrite) {
     midiout = std::make_unique<libremidi::midi_out>(
         libremidi::output_configuration{},
         libremidi::midi_out_configuration_for(api));
@@ -788,6 +926,14 @@ int main(int argc, char** argv)
       std::cerr << "Failed to open output: " << errorText(err) << "\n";
       return 1;
     }
+  }
+
+  if (opt.probeInternalWrite) {
+    if (!midiout) {
+      std::cerr << "Internal-write probe needs an output port.\n";
+      return 2;
+    }
+    return runProbeInternalWrite(opt, *midiout, inbox);
   }
 
   std::vector<std::vector<std::uint8_t>> patches(

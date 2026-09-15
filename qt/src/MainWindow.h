@@ -11,6 +11,7 @@
 class EffectEditor;
 class MidiService;
 class Patch;
+struct ParsedChart;
 class PatchDisplayWidget;
 class PatchListPanel;
 class SignalChainWidget;
@@ -70,6 +71,8 @@ private:
   void preferUsbMidi();
   [[nodiscard]] QString defaultImportDir() const;
   void applyImportedPatch(Patch patch, int destinationIndex);
+  bool queueImportedPatchToTempBuffer(const Patch& patch);
+  void finishImport(const ParsedChart& chart, int destinationIndex);
   [[nodiscard]] const Patch& currentPatch() const;
   static QString toHex(const QByteArray& data, int maxBytes = 48);
 

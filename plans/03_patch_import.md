@@ -1,6 +1,6 @@
 # 03 — Import legacy `.PCH` patch charts into the GP-16
 
-Status: in progress (phases 0–3 done)
+Status: in progress (phases 0–4a done; 4b hardware-gated)
 Scope: `qt/` tree only. The C# MAUI app is not touched.
 Depends on: plan 01 (`Patch`, `PatchBank`, `EffectSpecs`, `MidiService`, `MainWindow` chain/editor —
 all already implemented and reused here, nothing rebuilt from scratch).
@@ -161,7 +161,7 @@ CLI output for the same file.
 
 ## Phase 4 — Send to the GP-16 (hardware gate)
 
-Status: not started
+Status: 4a done; 4b gated (see `qt/README.md`)
 
 Two steps, same shape as plan 01's Phase 4/6 precedent: ship the already-proven path first,
 gate the exploratory one behind hardware verification.

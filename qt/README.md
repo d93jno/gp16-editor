@@ -145,7 +145,7 @@ qt/
     Patch.{h,cpp}             # one patch (name, chain, on/off, parameters)
     PatchBank.{h,cpp}         # 128 slots; panel + RQ1 ingest
     RolandSysex.{h,cpp}       # checksum, RQ1/DT1 helpers
-    cli/gp16_dump.cpp         # CLI dump / --decode / --import / --poke
+    cli/gp16_dump.cpp         # CLI dump / --decode / --import / --poke / --probe-internal-write
   tests/
     test_patch_parsing.cpp
     test_patch_chart_parser.cpp
@@ -166,3 +166,15 @@ qt/
 ## Live edit / SOUND CHANGE REQUEST (Phase 4)
 
 Play Mode **needs** a SOUND CHANGE REQUEST at temporary address `00 00 75` after temp-buffer DT1s for the change to be audible. Compressor sustain writes to `00 00 11` alone were silent; the same writes followed 50 ms later by `00 00 75` were heard. Probe: `gp16-dump --poke -o "USB MIDI" -d 00`.
+
+## Import send (plan 03 Phase 4)
+
+**4a — Temporary buffer (shipped).** With a MIDI output open, **Import Patch…** pushes the converted patch into the GP-16 temporary buffer using the same coalesced DT1 (`00 00 <offset>`) + SOUND CHANGE REQUEST (`00 00 75`) path as live edit. The librarian slot (`B21` etc.) is local. Saving on the unit still needs **WRITE** on the front panel, which stores the temp buffer to the patch *currently selected on the GP-16*, not automatically to the librarian destination.
+
+**4b — Direct internal-memory write.** A DT1 to `01 <patch index> 00` with the 117-byte payload is the address family used for internal bulk-dump *reads*, but this codebase had never sent a write like it. Probe (identity DT1 of A11 OUTPUT CHANNEL, does not change the stored value):
+
+```bash
+./build/gp16-dump --probe-internal-write -i "USB MIDI" -o "USB MIDI" -d 00 -v
+```
+
+**Finding (2026-09-15, Linux + generic USB MIDI, device ID `0x00`):** host RQ1 to both `00 00 63` (temp) and `01 00 63` (internal A11) transmitted, but **no DT1 replies arrived**. Direct internal-memory write is **unverified** on this setup — same SysEx-in limitation already noted for host RQ1 dumps. Import Patch therefore uses **4a only**. Do not treat `01 <index> 00` as a working write path until a probe round-trips on hardware that actually delivers MIDI IN.

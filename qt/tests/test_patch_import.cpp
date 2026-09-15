@@ -1,22 +1,32 @@
 #include "EffectEditor.h"
 #include "MainWindow.h"
+#include "MidiService.h"
 #include "Patch.h"
 #include "PatchBank.h"
 #include "PatchChartParser.h"
 #include "PatchDisplayWidget.h"
 #include "PatchImportDialog.h"
 #include "PatchListPanel.h"
+#include "RolandSysex.h"
 #include "SignalChainWidget.h"
 
 #include <QAction>
 #include <QApplication>
+#include <QByteArray>
+#include <QCoreApplication>
+#include <QElapsedTimer>
+#include <QEventLoop>
+#include <QLabel>
 #include <QList>
 #include <QPushButton>
 #include <QToolButton>
 
+#include <cstdint>
 #include <filesystem>
 #include <iostream>
+#include <span>
 #include <string>
+#include <vector>
 
 namespace {
 
@@ -65,6 +75,38 @@ QString pchPath(const char* filename)
   return QString::fromStdString((repoRoot() / "patches" / filename).string());
 }
 
+roland::ParsedDt1 parseSent(const QByteArray& bytes)
+{
+  return roland::parseDt1(std::span<const std::uint8_t>(
+      reinterpret_cast<const std::uint8_t*>(bytes.constData()),
+      static_cast<std::size_t>(bytes.size())));
+}
+
+std::vector<roland::ParsedDt1> writesTo(const std::vector<QByteArray>& sent, int offset)
+{
+  std::vector<roland::ParsedDt1> hits;
+  for (const auto& bytes : sent) {
+    auto parsed = parseSent(bytes);
+    if (parsed.valid && parsed.address.size() == 3 && parsed.address[0] == 0x00
+        && parsed.address[1] == 0x00 && parsed.address[2] == offset)
+      hits.push_back(std::move(parsed));
+  }
+  return hits;
+}
+
+template <typename Predicate>
+bool waitUntil(Predicate predicate, int timeoutMs)
+{
+  QElapsedTimer elapsed;
+  elapsed.start();
+  while (!predicate()) {
+    if (elapsed.elapsed() >= timeoutMs)
+      return predicate();
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 5);
+  }
+  return true;
+}
+
 void testDialogAcoustic()
 {
   PatchBank bank;
@@ -84,6 +126,9 @@ void testDialogAcoustic()
         "preview shows MASTER VOLUME 75");
   check(effects.contains(QStringLiteral("Channel")) && effects.contains(QStringLiteral("1")),
         "preview shows CHANNEL 1");
+  auto* midiNote = dialog.findChild<QLabel*>(QStringLiteral("importMidiNote"));
+  check(midiNote != nullptr && midiNote->text().contains(QStringLiteral("WRITE")),
+        "preview tells the user WRITE is required to save on the device");
 
   dialog.setDestinationIndex(72);
   checkEqual(dialog.destinationIndex(), 72, "destination picker accepts B21");
@@ -212,6 +257,52 @@ void testImportOverDumpAndAllSamples()
   checkEqual(imported, 13, "all 13 sample charts import with no device");
 }
 
+void testImportAuditionsTempBuffer()
+{
+  MainWindow window;
+  window.show();
+  window.midiService()->setTestOutputOpen(true);
+  std::vector<QByteArray> sent;
+  QObject::connect(window.midiService(), &MidiService::sysExSent,
+                   [&sent](const QByteArray& bytes) { sent.push_back(bytes); });
+
+  check(window.importPatchFile(pchPath("ACOUSTIC.PCH"), 72),
+        "import ACOUSTIC with simulated MIDI output");
+
+  const bool flushed = waitUntil([&] { return !writesTo(sent, 0x75).empty(); }, 800);
+  check(flushed, "import queues a SOUND CHANGE REQUEST after temp-buffer writes");
+
+  const auto sustain = writesTo(sent, 0x11);
+  check(!sustain.empty(), "import writes compressor sustain to 00 00 11");
+  if (!sustain.empty() && !sustain.front().data.empty())
+    checkEqual(static_cast<int>(sustain.front().data[0]), 80, "sustain DT1 carries 80");
+
+  const auto volume = writesTo(sent, 0x5B);
+  check(!volume.empty(), "import writes master volume to 00 00 5B");
+  if (!volume.empty() && !volume.front().data.empty())
+    checkEqual(static_cast<int>(volume.front().data[0]), 75, "master volume DT1 carries 75");
+
+  const auto name0 = writesTo(sent, 0x64);
+  check(!name0.empty() && !name0.front().data.empty() && name0.front().data[0] == 'A',
+        "import writes patch name starting with A");
+
+  const auto cutoff = writesTo(sent, 0x53);
+  check(!cutoff.empty() && cutoff.front().data.size() == 2, "reverb cutoff is one two-byte DT1");
+  if (!cutoff.empty() && cutoff.front().data.size() == 2) {
+    const int raw = (cutoff.front().data[0] << 7) | cutoff.front().data[1];
+    checkEqual(raw, 200, "CUTOFF THRU is raw 200");
+  }
+
+  bool internalWrite = false;
+  for (const auto& bytes : sent) {
+    auto parsed = parseSent(bytes);
+    if (parsed.valid && parsed.address.size() == 3 && parsed.address[0] == 0x01)
+      internalWrite = true;
+  }
+  check(!internalWrite, "import does not DT1 into internal memory (4b is not the path)");
+  check(writesTo(sent, 0x75).size() == 1, "SOUND CHANGE REQUEST is sent once after the burst");
+}
+
 } // namespace
 
 int main(int argc, char* argv[])
@@ -223,6 +314,7 @@ int main(int argc, char* argv[])
   testDialogBtt70sWarnings();
   testImportIntoLibrarian();
   testImportOverDumpAndAllSamples();
+  testImportAuditionsTempBuffer();
 
   if (failures == 0) {
     std::cout << "All patch import tests passed.\n";

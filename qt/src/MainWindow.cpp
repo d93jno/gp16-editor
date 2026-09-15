@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 
 #include "EffectEditor.h"
+#include "EffectSpecs.h"
 #include "MidiService.h"
 #include "Patch.h"
 #include "PatchChartParser.h"
@@ -414,6 +415,65 @@ void MainWindow::applyImportedPatch(Patch patch, int destinationIndex)
   listPanel_->selectPatch(destinationIndex);
 }
 
+bool MainWindow::queueImportedPatchToTempBuffer(const Patch& patch)
+{
+  if (!midi_->isOutputOpen() || dumpPhase_ != DumpPhase::Idle)
+    return false;
+
+  std::array<int, 0x76> width{};
+  width.fill(1);
+  for (const auto& spec : allEffectSpecs()) {
+    for (const auto& param : spec.params) {
+      if (param.byteWidth < 2 || param.offset < 0 || param.offset >= 0x75)
+        continue;
+      width[static_cast<std::size_t>(param.offset)] = 2;
+      if (param.offset + 1 < 0x76)
+        width[static_cast<std::size_t>(param.offset + 1)] = 0;
+    }
+  }
+
+  int queued = 0;
+  for (int off = 0; off <= 0x74; ++off) {
+    if (width[static_cast<std::size_t>(off)] == 0)
+      continue;
+    if (width[static_cast<std::size_t>(off)] >= 2)
+      onParameterEdited(off, 2, patch.wordAt(off));
+    else
+      onParameterEdited(off, 1, static_cast<int>(patch.byteAt(off)));
+    ++queued;
+  }
+  appendLog(QStringLiteral("Queued %1 temporary-buffer writes (then SOUND CHANGE REQUEST)")
+                .arg(queued));
+  return queued > 0;
+}
+
+void MainWindow::finishImport(const ParsedChart& chart, int destinationIndex)
+{
+  applyImportedPatch(chartToPatch(chart, destinationIndex), destinationIndex);
+  const bool sent = queueImportedPatchToTempBuffer(bank_.patchAt(destinationIndex));
+
+  const auto dest = QString::fromStdString(Patch::displayIdFor(destinationIndex));
+  const auto name = QString::fromStdString(chart.name.empty() ? "(unnamed)" : chart.name);
+  auto msg = chart.warnings.empty()
+                 ? QStringLiteral("Imported %1 → %2").arg(name, dest)
+                 : QStringLiteral("Imported %1 → %2 (%3 warning(s))")
+                       .arg(name, dest)
+                       .arg(static_cast<int>(chart.warnings.size()));
+  appendLog(msg);
+  for (const auto& w : chart.warnings)
+    appendLog(QStringLiteral("  warning: %1").arg(QString::fromStdString(w)));
+  if (sent) {
+    appendLog(QStringLiteral(
+        "Loaded to the GP-16 temporary buffer. Press WRITE on the device to save — "
+        "WRITE stores the temp buffer to the patch currently selected on the unit, "
+        "not automatically to the librarian slot."));
+    msg += QStringLiteral("  Auditioned on GP-16 (temp buffer). Press WRITE to save.");
+  } else {
+    appendLog(QStringLiteral("Offline — not sent to the device."));
+  }
+  statusBar()->showMessage(msg, sent ? 12000 : 8000);
+}
+
 bool MainWindow::importPatchFile(const QString& path, int destinationIndex)
 {
   if (destinationIndex < 0 || destinationIndex >= PatchBank::kPatchCount)
@@ -429,19 +489,7 @@ bool MainWindow::importPatchFile(const QString& path, int destinationIndex)
     return false;
   }
 
-  applyImportedPatch(chartToPatch(chart, destinationIndex), destinationIndex);
-
-  const auto dest = QString::fromStdString(Patch::displayIdFor(destinationIndex));
-  const auto name = QString::fromStdString(chart.name.empty() ? "(unnamed)" : chart.name);
-  const auto msg = chart.warnings.empty()
-                       ? QStringLiteral("Imported %1 → %2").arg(name, dest)
-                       : QStringLiteral("Imported %1 → %2 (%3 warning(s))")
-                             .arg(name, dest)
-                             .arg(static_cast<int>(chart.warnings.size()));
-  appendLog(msg);
-  for (const auto& w : chart.warnings)
-    appendLog(QStringLiteral("  warning: %1").arg(QString::fromStdString(w)));
-  statusBar()->showMessage(msg, 8000);
+  finishImport(chart, destinationIndex);
   return true;
 }
 
@@ -471,20 +519,7 @@ void MainWindow::onImportPatch()
   if (dialog.exec() != QDialog::Accepted)
     return;
 
-  const int dest = dialog.destinationIndex();
-  applyImportedPatch(chartToPatch(chart, dest), dest);
-
-  const auto destId = QString::fromStdString(Patch::displayIdFor(dest));
-  const auto name = QString::fromStdString(chart.name.empty() ? "(unnamed)" : chart.name);
-  const auto msg = chart.warnings.empty()
-                       ? QStringLiteral("Imported %1 → %2").arg(name, destId)
-                       : QStringLiteral("Imported %1 → %2 (%3 warning(s))")
-                             .arg(name, destId)
-                             .arg(static_cast<int>(chart.warnings.size()));
-  appendLog(msg);
-  for (const auto& w : chart.warnings)
-    appendLog(QStringLiteral("  warning: %1").arg(QString::fromStdString(w)));
-  statusBar()->showMessage(msg, 8000);
+  finishImport(chart, dialog.destinationIndex());
 }
 
 void MainWindow::onDumpTimeout()
