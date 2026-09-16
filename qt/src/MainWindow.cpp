@@ -6,6 +6,7 @@
 #include "Patch.h"
 #include "PatchChartParser.h"
 #include "PatchDisplayWidget.h"
+#include "PatchExportDialog.h"
 #include "PatchImportDialog.h"
 #include "PatchListPanel.h"
 #include "RolandSysex.h"
@@ -21,6 +22,7 @@
 #include <QHBoxLayout>
 #include <QKeySequence>
 #include <QLabel>
+#include <QRegularExpression>
 #include <QMenu>
 #include <QMenuBar>
 #include <QPlainTextEdit>
@@ -114,6 +116,10 @@ MainWindow::MainWindow(QWidget* parent)
   importAction_->setObjectName(QStringLiteral("importPatchAction"));
   importAction_->setToolTip(QStringLiteral("Import a legacy .PCH patch chart into a librarian slot"));
   importAction_->setShortcut(QKeySequence(QStringLiteral("Ctrl+I")));
+  exportAction_ = toolbar->addAction(QStringLiteral("Export Patch…"), this, &MainWindow::onExportPatch);
+  exportAction_->setObjectName(QStringLiteral("exportPatchAction"));
+  exportAction_->setToolTip(QStringLiteral("Export the selected patch as a .PCH chart"));
+  exportAction_->setShortcut(QKeySequence(QStringLiteral("Ctrl+E")));
 
   auto* splitter = new QSplitter(Qt::Horizontal, this);
   splitter->setChildrenCollapsible(false);
@@ -181,6 +187,7 @@ MainWindow::MainWindow(QWidget* parent)
   auto* fileMenu = menuBar()->addMenu(QStringLiteral("&File"));
   fileMenu->addAction(openAction_);
   fileMenu->addAction(importAction_);
+  fileMenu->addAction(exportAction_);
 
   auto* viewMenu = menuBar()->addMenu(QStringLiteral("&View"));
   viewMenu->addAction(logDock_->toggleViewAction());
@@ -522,6 +529,65 @@ void MainWindow::onImportPatch()
   finishImport(chart, dialog.destinationIndex());
 }
 
+bool MainWindow::exportPatchFile(const QString& path, const ChartMetadata& meta)
+{
+  if (selectedIndex_ < 0 || selectedIndex_ >= PatchBank::kPatchCount)
+    return false;
+  const auto& patch = bank_.patchAt(selectedIndex_);
+  if (!patch.isPresent()) {
+    const auto msg = QStringLiteral("No patch selected to export.");
+    appendLog(msg);
+    statusBar()->showMessage(msg, 8000);
+    return false;
+  }
+
+  std::string error;
+  if (!writePatchChartFile(path.toStdString(), patch, meta, error)) {
+    const auto msg = QStringLiteral("Failed to export %1: %2")
+                         .arg(path, QString::fromStdString(error));
+    appendLog(msg);
+    statusBar()->showMessage(msg, 8000);
+    return false;
+  }
+
+  const auto dest = QString::fromStdString(Patch::displayIdFor(selectedIndex_));
+  const auto msg = QStringLiteral("Exported %1 (%2) → %3")
+                       .arg(QString::fromStdString(patch.name()), dest, path);
+  appendLog(msg);
+  statusBar()->showMessage(msg, 8000);
+  lastOpenDir_ = QFileInfo(path).absolutePath();
+  return true;
+}
+
+void MainWindow::onExportPatch()
+{
+  if (selectedIndex_ < 0 || selectedIndex_ >= PatchBank::kPatchCount
+      || !bank_.patchAt(selectedIndex_).isPresent()) {
+    const auto msg = QStringLiteral("Select a patch in the librarian before exporting.");
+    appendLog(msg);
+    statusBar()->showMessage(msg, 8000);
+    return;
+  }
+
+  const auto& patch = bank_.patchAt(selectedIndex_);
+  PatchExportDialog dialog(patch, this);
+  if (dialog.exec() != QDialog::Accepted)
+    return;
+
+  QString suggested = QString::fromStdString(patch.name());
+  suggested.replace(QRegularExpression(QStringLiteral("[^A-Za-z0-9._-]+")), QStringLiteral("_"));
+  if (suggested.isEmpty())
+    suggested = QString::fromStdString(Patch::displayIdFor(selectedIndex_));
+  const auto path = QFileDialog::getSaveFileName(
+      this,
+      QStringLiteral("Export GP-16 patch chart"),
+      QDir(defaultImportDir()).filePath(suggested + QStringLiteral(".PCH")),
+      QStringLiteral("Patch charts (*.PCH *.pch);;All files (*)"));
+  if (path.isEmpty())
+    return;
+  exportPatchFile(path, dialog.metadata());
+}
+
 void MainWindow::onDumpTimeout()
 {
   if (dumpPhase_ != DumpPhase::GroupA && dumpPhase_ != DumpPhase::GroupB)
@@ -643,6 +709,7 @@ void MainWindow::onPatchSelected(int index)
 {
   selectedIndex_ = index;
   updateHeader(index);
+  updateActions();
 }
 
 void MainWindow::onChainSlotSelected(int identity)
@@ -725,6 +792,7 @@ void MainWindow::refreshLibrarian()
   const int index = listPanel_->currentPatchIndex();
   selectedIndex_ = index;
   updateHeader(index);
+  updateActions();
 }
 
 void MainWindow::updateHeader(int index)
@@ -763,6 +831,9 @@ void MainWindow::updateActions()
   listenAction_->setEnabled((idle || listening) && midi_->isInputOpen());
   openAction_->setEnabled(idle);
   importAction_->setEnabled(idle);
+  const bool havePatch = selectedIndex_ >= 0 && selectedIndex_ < PatchBank::kPatchCount
+                         && bank_.patchAt(selectedIndex_).isPresent();
+  exportAction_->setEnabled(idle && havePatch);
   connectAction_->setEnabled(true);
   refreshAction_->setEnabled(idle);
 }

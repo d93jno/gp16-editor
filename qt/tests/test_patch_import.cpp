@@ -5,6 +5,7 @@
 #include "PatchBank.h"
 #include "PatchChartParser.h"
 #include "PatchDisplayWidget.h"
+#include "PatchExportDialog.h"
 #include "PatchImportDialog.h"
 #include "PatchListPanel.h"
 #include "RolandSysex.h"
@@ -303,6 +304,57 @@ void testImportAuditionsTempBuffer()
   check(writesTo(sent, 0x75).size() == 1, "SOUND CHANGE REQUEST is sent once after the burst");
 }
 
+void testExportDialogAndRoundTrip()
+{
+  MainWindow window;
+  window.show();
+  auto* exportAction = window.findChild<QAction*>(QStringLiteral("exportPatchAction"));
+  check(exportAction != nullptr, "toolbar has Export Patch");
+  check(exportAction && !exportAction->isEnabled(), "Export is disabled with no patch selected");
+
+  check(window.importPatchFile(pchPath("ACOUSTIC.PCH"), 72), "import ACOUSTIC before export");
+  check(exportAction && exportAction->isEnabled(), "Export is enabled after a patch is selected");
+
+  auto* list = window.findChild<PatchListPanel*>();
+  check(list && list->currentPatchIndex() == 72, "export uses B21");
+
+  PatchBank bank;
+  // Reconstruct the same patch via import for byte compare after export.
+  std::string error;
+  const auto chart = parsePatchChartFile((repoRoot() / "patches" / "ACOUSTIC.PCH").string(), error);
+  const Patch imported = chartToPatch(chart, 72);
+
+  PatchExportDialog dialog(imported);
+  check(dialog.patchName().contains(QStringLiteral("Acoustic")), "export dialog shows the name");
+  ChartMetadata meta;
+  meta.author = "Jonas Nordin";
+  meta.comments = "round-trip";
+  meta.programChangeGroup = 'B';
+  meta.programChangeNumber = 28;
+
+  const auto tmp = std::filesystem::temp_directory_path() / "gp16-acoustic-export.PCH";
+  check(window.exportPatchFile(QString::fromStdString(tmp.string()), meta),
+        "export ACOUSTIC from B21");
+
+  const auto again = parsePatchChartFile(tmp, error);
+  check(error.empty(), "re-parse exported chart: " + error);
+  checkEqual(again.author, std::string("Jonas Nordin"), "exported author survives");
+  check(again.programChangeNumber && *again.programChangeNumber == 28, "exported PC survives");
+  const Patch roundtrip = chartToPatch(again, 0);
+  const auto a = imported.rawData();
+  const auto b = roundtrip.rawData();
+  check(a.size() == b.size(), "exported patch size matches");
+  bool match = a.size() == b.size();
+  for (std::size_t i = 0; match && i < a.size(); ++i)
+    match = a[i] == b[i];
+  check(match, "export→import reproduces Patch bytes");
+
+  check(window.importPatchFile(QString::fromStdString(tmp.string()), 0),
+        "re-import exported chart into A11");
+  if (list)
+    check(list->rowText(0).contains(QStringLiteral("Acoustic")), "A11 shows exported Acoustic");
+}
+
 } // namespace
 
 int main(int argc, char* argv[])
@@ -315,6 +367,7 @@ int main(int argc, char* argv[])
   testImportIntoLibrarian();
   testImportOverDumpAndAllSamples();
   testImportAuditionsTempBuffer();
+  testExportDialogAndRoundTrip();
 
   if (failures == 0) {
     std::cout << "All patch import tests passed.\n";

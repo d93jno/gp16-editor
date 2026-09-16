@@ -71,6 +71,8 @@ add_executable(gp16-editor-qt
   src/PatchListPanel.cpp
   src/PatchImportDialog.h
   src/PatchImportDialog.cpp
+  src/PatchExportDialog.h
+  src/PatchExportDialog.cpp
   src/SignalChainWidget.h
   src/SignalChainWidget.cpp
   src/EffectEditor.h
@@ -202,6 +204,8 @@ add_executable(gp16_main_window_tests
   src/PatchListPanel.cpp
   src/PatchImportDialog.h
   src/PatchImportDialog.cpp
+  src/PatchExportDialog.h
+  src/PatchExportDialog.cpp
   src/SignalChainWidget.h
   src/SignalChainWidget.cpp
   src/EffectEditor.h
@@ -228,6 +232,8 @@ add_executable(gp16_patch_import_tests
   tests/test_patch_import.cpp
   src/PatchImportDialog.h
   src/PatchImportDialog.cpp
+  src/PatchExportDialog.h
+  src/PatchExportDialog.cpp
   src/PatchListPanel.h
   src/PatchListPanel.cpp
   src/MainWindow.h

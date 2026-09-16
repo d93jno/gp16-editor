@@ -59,6 +59,7 @@ The window is a librarian and one-effect-at-a-time editor, not a debug console: 
 | **Listen** | Collects panel DT1s (`0F <idx> 00`) until you uncheck Listen, or until 128 patches arrive. Needs input open. |
 | **Open file** | Reads a captured `.bin` (panel or RQ1 shape, auto-detected). Works with the unit unplugged. |
 | **Import Patch…** | Offline: pick a legacy `.PCH` chart, preview it, and write it into a librarian slot (`A11`…`B88`). No MIDI. |
+| **Export Patch…** | Offline: write the selected librarian patch as a `.PCH` chart. Author/comments/program change are prompted (documentation only). |
 
 Starting Dump, Listen, Open file, or Connect drops any live-edit burst still queued behind the coalescing timer, so a stale parameter write or a trailing SOUND CHANGE REQUEST can never land after the librarian has moved on. Import Patch also cancels a pending edit burst before replacing the destination slot.
 
@@ -95,6 +96,10 @@ Chain on/off writes both `0x0D` and `0x0E` (the full effect on/off bitmap) throu
 
 # Offline: import a legacy .PCH chart and decode the resulting Patch
 ./build/gp16-dump --import patches/ACOUSTIC.PCH --decode
+
+# Offline: export a Patch as a .PCH chart (round-trip the sample, or a slot from a .bin)
+./build/gp16-dump --import patches/ACOUSTIC.PCH --export -f /tmp/acoustic.pch
+./build/gp16-dump --export captures/dump-20260730-153932.bin --from 0 -f /tmp/a11.pch
 
 # Play Mode SOUND CHANGE REQUEST probe (compressor sustain ± 0x75)
 ./build/gp16-dump --poke -o "USB MIDI" -d 00 -v
@@ -141,11 +146,12 @@ qt/
     EffectSpecs.{h,cpp}       # per-effect + global (Master Volume, Output Channel) ParamSpec tables
     PatchChartParser.{h,cpp}  # lenient .PCH chart parser (Phase 1)
     PatchImportDialog.{h,cpp} # Import Patch preview + destination picker
+    PatchExportDialog.{h,cpp} # Export Patch metadata + save .PCH
     MidiService.{h,cpp}       # libremidi wrapper, Qt signals
     Patch.{h,cpp}             # one patch (name, chain, on/off, parameters)
     PatchBank.{h,cpp}         # 128 slots; panel + RQ1 ingest
     RolandSysex.{h,cpp}       # checksum, RQ1/DT1 helpers
-    cli/gp16_dump.cpp         # CLI dump / --decode / --import / --poke / --probe-internal-write
+    cli/gp16_dump.cpp         # CLI dump / --decode / --import / --export / --poke / --probe-internal-write
   tests/
     test_patch_parsing.cpp
     test_patch_chart_parser.cpp

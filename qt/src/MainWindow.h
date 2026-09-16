@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PatchBank.h"
+#include "PatchChartParser.h"
 
 #include <QMainWindow>
 
@@ -11,7 +12,6 @@
 class EffectEditor;
 class MidiService;
 class Patch;
-struct ParsedChart;
 class PatchDisplayWidget;
 class PatchListPanel;
 class SignalChainWidget;
@@ -34,6 +34,7 @@ public:
 
   bool openDumpFile(const QString& path);
   bool importPatchFile(const QString& path, int destinationIndex);
+  bool exportPatchFile(const QString& path, const ChartMetadata& meta = {});
 
   [[nodiscard]] MidiService* midiService() const { return midi_; }
 
@@ -44,6 +45,7 @@ private slots:
   void onListenToggled(bool on);
   void onOpenFile();
   void onImportPatch();
+  void onExportPatch();
   void onSysEx(const QByteArray& sysex);
   void onLog(const QString& message);
   void onError(const QString& message);
@@ -88,6 +90,7 @@ private:
   QAction* listenAction_ = nullptr;
   QAction* openAction_ = nullptr;
   QAction* importAction_ = nullptr;
+  QAction* exportAction_ = nullptr;
 
   PatchListPanel* listPanel_ = nullptr;
   QStackedWidget* headerStack_ = nullptr;

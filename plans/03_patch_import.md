@@ -1,6 +1,6 @@
 # 03 — Import legacy `.PCH` patch charts into the GP-16
 
-Status: in progress (phases 0–4a done; 4b hardware-gated)
+Status: in progress (phases 0–5 done; 4b hardware-gated)
 Scope: `qt/` tree only. The C# MAUI app is not touched.
 Depends on: plan 01 (`Patch`, `PatchBank`, `EffectSpecs`, `MidiService`, `MainWindow` chain/editor —
 all already implemented and reused here, nothing rebuilt from scratch).
@@ -193,7 +193,7 @@ hardware.
 
 ## Phase 5 — Export a patch to `.PCH`
 
-Status: not started
+Status: done
 
 The inverse of Phases 1–2: given a `Patch`, render a chart in the same format as
 `patches/GP_16PCH.TXT`, so a patch fetched from the device (or edited live) can be written back

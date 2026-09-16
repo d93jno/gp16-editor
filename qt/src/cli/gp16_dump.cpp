@@ -53,6 +53,9 @@ struct Options {
   bool decodeMode = false;
   std::string decodeFile;
   std::string importFile;
+  bool exportMode = false;
+  std::string exportSource;
+  bool outFileGiven = false;
   std::uint8_t pokeLow = 0;
   std::uint8_t pokeHigh = 100;
 };
@@ -94,6 +97,8 @@ void usage(const char* argv0)
       << "      --api <name>       alsa_raw (default), alsa_seq, default\n"
       << "      --decode <file>    Offline: decode a captured .bin (shape auto-detected) and exit\n"
       << "      --import <file.pch> Offline: parse a legacy .PCH chart into a Patch and decode it\n"
+      << "      --export [file]    Offline: write a Patch as a .PCH chart (-f dest).\n"
+      << "                        Source is --import, a .PCH, or a .bin (use --from)\n"
       << "      --poke             Play Mode probe: compressor sustain @ 00 00 11 with/without\n"
       << "                        SOUND CHANGE REQUEST @ 00 00 75 (needs -o)\n"
       << "      --probe-internal-write  Hardware spike: RQ1 then identity DT1 to\n"
@@ -108,6 +113,8 @@ void usage(const char* argv0)
       << "  " << argv0 << " --request -i \"USB MIDI\" -o \"USB MIDI\" -d 00 -f dump.bin\n"
       << "  " << argv0 << " --decode captures/dump-20260730-153932.bin\n"
       << "  " << argv0 << " --import patches/ACOUSTIC.PCH --decode\n"
+      << "  " << argv0 << " --import patches/ACOUSTIC.PCH --export -f /tmp/acoustic.pch\n"
+      << "  " << argv0 << " --export captures/dump.bin --from 0 -f /tmp/a11.pch\n"
       << "  " << argv0 << " --poke -o \"USB MIDI\" -d 00 -v\n"
       << "  " << argv0 << " --probe-internal-write -i \"USB MIDI\" -o \"USB MIDI\" -d 00 -v\n";
 }
@@ -204,6 +211,7 @@ bool parseArgs(int argc, char** argv, Options& opt)
       opt.deviceId = parseHexByte(need(a.c_str()));
     } else if (a == "-f" || a == "--file") {
       opt.outFile = need(a.c_str());
+      opt.outFileGiven = true;
     } else if (a == "-t" || a == "--timeout") {
       opt.timeoutMs = std::stoi(need(a.c_str()));
     } else if (a == "-r" || a == "--retries") {
@@ -218,6 +226,10 @@ bool parseArgs(int argc, char** argv, Options& opt)
         opt.decodeFile = need(a.c_str());
     } else if (a == "--import") {
       opt.importFile = need(a.c_str());
+    } else if (a == "--export") {
+      opt.exportMode = true;
+      if (i + 1 < argc && argv[i + 1][0] != '-')
+        opt.exportSource = need(a.c_str());
     } else if (a == "--poke") {
       opt.pokeMode = true;
     } else if (a == "--probe-internal-write") {
@@ -547,6 +559,57 @@ int runImport(const std::string& file)
   return 0;
 }
 
+int runExport(const Options& opt)
+{
+  if (!opt.outFileGiven) {
+    std::cerr << "--export requires -f <file.pch>\n";
+    return 2;
+  }
+  std::string source = opt.exportSource;
+  if (source.empty())
+    source = opt.importFile;
+  if (source.empty()) {
+    std::cerr << "--export needs a source (.PCH or .bin) or --import <file.pch>\n";
+    return 2;
+  }
+
+  Patch patch;
+  ChartMetadata meta;
+  if (isPatchChartPath(source)) {
+    std::string error;
+    const auto chart = parsePatchChartFile(source, error);
+    if (!error.empty()) {
+      std::cerr << "Export failed: " << error << "\n";
+      return 1;
+    }
+    patch = chartToPatch(chart);
+    meta.author = chart.author;
+    meta.comments = chart.comments;
+    meta.programChangeGroup = chart.programChangeGroup;
+    meta.programChangeNumber = chart.programChangeNumber;
+  } else {
+    PatchBank bank;
+    std::string error;
+    if (!bank.loadFile(source, error)) {
+      std::cerr << "Export failed: " << error << "\n";
+      return 1;
+    }
+    patch = bank.patchAt(opt.patchFrom);
+    if (!patch.isPresent()) {
+      std::cerr << "Export failed: no patch at index " << opt.patchFrom << "\n";
+      return 1;
+    }
+  }
+
+  std::string error;
+  if (!writePatchChartFile(opt.outFile, patch, meta, error)) {
+    std::cerr << "Export failed: " << error << "\n";
+    return 1;
+  }
+  std::cout << "Wrote " << opt.outFile << " (" << patch.name() << ")\n";
+  return 0;
+}
+
 bool sendDt1(
     libremidi::midi_out& out,
     std::uint8_t deviceId,
@@ -763,6 +826,8 @@ int main(int argc, char** argv)
     return 2;
   }
 
+  if (opt.exportMode)
+    return runExport(opt);
   if (!opt.importFile.empty())
     return runImport(opt.importFile);
   if (opt.decodeMode) {

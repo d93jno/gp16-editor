@@ -6,6 +6,7 @@
 #include <cctype>
 #include <cmath>
 #include <fstream>
+#include <iomanip>
 #include <sstream>
 #include <unordered_map>
 
@@ -871,4 +872,359 @@ Patch chartToPatch(const ParsedChart& chart, int index)
   std::vector<std::uint8_t> copy(patch.rawData().begin(), patch.rawData().end());
   patch.parse(copy, index);
   return patch;
+}
+
+namespace {
+
+const ParamSpec* chartSpec(EffectKind kind, int offset)
+{
+  return specAtOffset(kind, offset);
+}
+
+std::string formatHzValue(double hz)
+{
+  std::ostringstream os;
+  os << std::fixed;
+  if (hz >= 1000.0)
+    os << std::setprecision(2) << (hz / 1000.0) << " kHz";
+  else
+    os << std::setprecision(0) << hz << " Hz";
+  return os.str();
+}
+
+std::string formatChartValue(const ParamSpec& spec, int raw)
+{
+  if (spec.type == ParamType::Combo && spec.comboItems && spec.comboCount > 0) {
+    const int i = std::clamp(raw, spec.min, spec.max);
+    if (i >= 0 && i < spec.comboCount)
+      return spec.comboItems[i];
+  }
+  if (spec.type == ParamType::Checkbox)
+    return raw ? "ON" : "OFF";
+  if ((spec.offset == 0x4F || spec.offset == 0x53) && raw >= spec.max)
+    return "THRU";
+  if (spec.offset == 0x51) {
+    const double sec = raw <= 45 ? 0.5 + static_cast<double>(raw) * 0.1
+                                 : 5.5 + static_cast<double>(raw - 46) * 0.5;
+    std::ostringstream os;
+    os << std::fixed << std::setprecision(1) << sec << " sec";
+    return os.str();
+  }
+  if (spec.offset == 0x4F || spec.offset == 0x53) {
+    ParamSpec freq = spec;
+    freq.min = 0;
+    freq.max = 199;
+    freq.transform = DisplayTransform::FreqLog;
+    freq.displayMin = 500;
+    freq.displayMax = 8000;
+    return formatHzValue(rawToDisplay(freq, raw));
+  }
+
+  const double display = rawToDisplay(spec, raw);
+  std::ostringstream os;
+  os << std::fixed;
+  switch (spec.transform) {
+    case DisplayTransform::LevelDb:
+      os << std::setprecision(1);
+      if (display == 0.0)
+        os << "0.0 dB";
+      else
+        os << std::showpos << display << " dB";
+      break;
+    case DisplayTransform::QValue:
+      os << std::setprecision(1) << display;
+      break;
+    case DisplayTransform::FreqLinear:
+    case DisplayTransform::FreqLog:
+      return formatHzValue(display);
+    case DisplayTransform::Offset12: {
+      const int n = static_cast<int>(std::lround(display));
+      if (n > 0)
+        os << '+' << n;
+      else
+        os << n;
+      break;
+    }
+    default: {
+      const int n = static_cast<int>(std::lround(display));
+      os << n;
+      if (spec.suffix && std::string_view(spec.suffix).find("ms") != std::string_view::npos)
+        os << " msec";
+      break;
+    }
+  }
+  return os.str();
+}
+
+std::string padLabel(std::string_view label)
+{
+  constexpr int kWidth = 11;
+  std::string s(label);
+  if (static_cast<int>(s.size()) >= kWidth)
+    return s + " ";
+  return std::string(static_cast<std::size_t>(kWidth - static_cast<int>(s.size())), ' ') + s + " ";
+}
+
+void emitKv(std::ostringstream& os, std::string_view label, std::string_view value)
+{
+  os << padLabel(label) << value << "\n";
+}
+
+void emitParam(std::ostringstream& os, std::string_view label, EffectKind kind, int offset,
+               const Patch& patch)
+{
+  const ParamSpec* spec = chartSpec(kind, offset);
+  if (!spec)
+    return;
+  emitKv(os, label, formatChartValue(*spec, readParam(patch, *spec)));
+}
+
+void emitSep(std::ostringstream& os)
+{
+  os << " ----------------------------------\n";
+}
+
+std::string sequenceDigits(const std::array<int, 6>& order)
+{
+  std::string s(6, '1');
+  for (int i = 0; i < 6; ++i) {
+    const int id = order[static_cast<std::size_t>(i)];
+    const int local = id < 6 ? id : id - 6;
+    s[static_cast<std::size_t>(i)] = static_cast<char>('1' + local);
+  }
+  return s;
+}
+
+std::string onOffDigits(const std::array<int, 6>& order, const Patch& patch)
+{
+  std::string s(6, '*');
+  for (int i = 0; i < 6; ++i) {
+    const int id = order[static_cast<std::size_t>(i)];
+    if (!patch.isEffectEnabled(id))
+      continue;
+    const int local = id < 6 ? id : id - 6;
+    s[static_cast<std::size_t>(i)] = static_cast<char>('1' + local);
+  }
+  return s;
+}
+
+std::string reverbModeLine(int raw)
+{
+  const auto& spec = specFor(EffectKind::Reverb);
+  const ParamSpec* mode = nullptr;
+  for (const auto& p : spec.params) {
+    if (p.offset == 0x52)
+      mode = &p;
+  }
+  if (!mode || !mode->comboItems || raw < 0 || raw >= mode->comboCount)
+    return {};
+  std::string item = mode->comboItems[raw];
+  for (char& c : item)
+    c = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+  return "MODE: " + item;
+}
+
+void emitEffect(std::ostringstream& os, const Patch& patch, int identity)
+{
+  if (!patch.isEffectEnabled(identity))
+    return;
+  const EffectKind kind = kindForSlot(identity, patch.blockB2Mode(), patch.isDistortion());
+  emitSep(os);
+
+  switch (identity) {
+    case 0:
+      os << " A-1 COMPRESSOR\n\n";
+      emitParam(os, "TONE", kind, 0x0F, patch);
+      emitParam(os, "ATTACK", kind, 0x10, patch);
+      emitParam(os, "SUSTAIN", kind, 0x11, patch);
+      emitParam(os, "LEVEL", kind, 0x12, patch);
+      break;
+    case 1:
+      if (patch.isDistortion()) {
+        os << " A-2  a. DISTORTION\n\n";
+        emitParam(os, "TONE", kind, 0x13, patch);
+        emitParam(os, "DISTORTION", kind, 0x14, patch);
+        emitParam(os, "LEVEL", kind, 0x15, patch);
+      } else {
+        os << " A-2  b. OVERDRIVE\n\n";
+        emitParam(os, "TONE", kind, 0x16, patch);
+        emitParam(os, "DRIVE", kind, 0x17, patch);
+        os << padLabel("TURBO:") << (patch.byteAt(0x18) ? "ON" : "OFF") << "\n";
+        emitParam(os, "LEVEL", kind, 0x19, patch);
+      }
+      break;
+    case 2:
+      os << " A-3 PICKING FILTER\n\n";
+      emitParam(os, "SENS", kind, 0x1A, patch);
+      emitParam(os, "CUTOFF FREQ", kind, 0x1B, patch);
+      emitParam(os, "Q", kind, 0x1C, patch);
+      emitParam(os, "UP/DOWN", kind, 0x1D, patch);
+      break;
+    case 3:
+      os << " A-4 STEP PHASER\n\n";
+      emitParam(os, "RATE", kind, 0x1E, patch);
+      emitParam(os, "DEPTH", kind, 0x1F, patch);
+      emitParam(os, "MANUAL", kind, 0x20, patch);
+      emitParam(os, "RESONANCE", kind, 0x21, patch);
+      emitParam(os, "LFO STEP", kind, 0x22, patch);
+      break;
+    case 4:
+      os << " A-5 PARAMETRIC EQ\n\n";
+      emitParam(os, "HI FREQ", kind, 0x23, patch);
+      emitParam(os, "HI LEVEL", kind, 0x24, patch);
+      os << "\n";
+      emitParam(os, "H.M.FREQ", kind, 0x25, patch);
+      emitParam(os, "H.M. Q", kind, 0x26, patch);
+      emitParam(os, "H.M. LEVEL", kind, 0x27, patch);
+      os << "\n";
+      emitParam(os, "L.M. FREQ", kind, 0x28, patch);
+      emitParam(os, "L.M. Q", kind, 0x29, patch);
+      emitParam(os, "L.M. LEVEL", kind, 0x2A, patch);
+      os << "\n";
+      emitParam(os, "LO FREQ", kind, 0x2B, patch);
+      emitParam(os, "LO LEVEL", kind, 0x2C, patch);
+      os << "\n";
+      emitParam(os, "OUT LEVEL", kind, 0x2D, patch);
+      break;
+    case 5:
+      os << " A-6 NOISE SUPPRESSOR\n\n";
+      emitParam(os, "SENS", kind, 0x2E, patch);
+      emitParam(os, "RELEASE", kind, 0x2F, patch);
+      emitParam(os, "LEVEL", kind, 0x30, patch);
+      break;
+    case 6:
+      os << " B-1 SHORT DELAY\n\n";
+      emitParam(os, "D. TIME", kind, 0x31, patch);
+      emitParam(os, "E. LEVEL", kind, 0x32, patch);
+      break;
+    case 7:
+      switch (patch.blockB2Mode()) {
+        case 1:
+          os << " B-2  b. FLANGER\n\n";
+          emitParam(os, "RATE", kind, 0x37, patch);
+          emitParam(os, "DEPTH", kind, 0x38, patch);
+          emitParam(os, "MANUAL", kind, 0x39, patch);
+          emitParam(os, "RESONANCE", kind, 0x3A, patch);
+          break;
+        case 2: {
+          os << " B-2  c. PITCH SHIFTER\n\n";
+          const int bal = patch.wordAt(0x3B);
+          emitKv(os, "BAL. E.", std::to_string(bal / 2));
+          emitKv(os, "BAL. D.", std::to_string(100 - bal / 2));
+          emitParam(os, "CHROMATIC", kind, 0x3D, patch);
+          emitParam(os, "FINE", kind, 0x3E, patch);
+          emitParam(os, "F.BACK", kind, 0x3F, patch);
+          emitParam(os, "P.DELAY", kind, 0x40, patch);
+          break;
+        }
+        case 3:
+          os << " B-2  d. SPACE-D\n\n";
+          emitParam(os, "MODE", kind, 0x41, patch);
+          break;
+        default:
+          os << " B-2  a. CHORUS\n\n";
+          emitParam(os, "P. DELAY", kind, 0x33, patch);
+          emitParam(os, "RATE", kind, 0x34, patch);
+          emitParam(os, "DEPTH", kind, 0x35, patch);
+          emitParam(os, "E. LEVEL", kind, 0x36, patch);
+          break;
+      }
+      break;
+    case 8:
+      os << " B-3 AUTO PANPOT\n\n";
+      emitParam(os, "RATE", kind, 0x42, patch);
+      emitParam(os, "DEPTH", kind, 0x43, patch);
+      emitParam(os, "MODE", kind, 0x44, patch);
+      break;
+    case 9:
+      os << " B-4 TAP DELAY\n\n";
+      emitParam(os, "C. TAP", kind, 0x45, patch);
+      emitParam(os, "L. TAP", kind, 0x47, patch);
+      emitParam(os, "R. TAP", kind, 0x49, patch);
+      emitParam(os, "C. LEVEL", kind, 0x4B, patch);
+      emitParam(os, "L. LEVEL", kind, 0x4C, patch);
+      emitParam(os, "R. LEVEL", kind, 0x4D, patch);
+      emitParam(os, "FEEDBACK", kind, 0x4E, patch);
+      emitParam(os, "CUTOFF", kind, 0x4F, patch);
+      break;
+    case 10:
+      os << " B-5 REVERB\n\n";
+      emitParam(os, "DECAY", kind, 0x51, patch);
+      os << "\n";
+      os << " " << reverbModeLine(static_cast<int>(patch.byteAt(0x52))) << "\n";
+      os << "\n";
+      emitParam(os, "CUTOFF", kind, 0x53, patch);
+      emitParam(os, "PRE DELAY", kind, 0x55, patch);
+      emitParam(os, "E. LEVEL", kind, 0x56, patch);
+      break;
+    case 11:
+      os << " B-6 LINEOUT FILTER\n\n";
+      emitParam(os, "PRESENCE", kind, 0x57, patch);
+      emitParam(os, "TREBLE", kind, 0x58, patch);
+      emitParam(os, "MIDDLE", kind, 0x59, patch);
+      emitParam(os, "BASS", kind, 0x5A, patch);
+      break;
+    default:
+      break;
+  }
+  os << "\n";
+}
+
+} // namespace
+
+std::string toChartText(const Patch& patch, const ChartMetadata& meta)
+{
+  std::ostringstream os;
+  os << " **********************************************\n";
+  os << " ********* Roland GP-16 Patch Chart ***********\n";
+  os << " **********************************************\n\n";
+  os << " Patch Name: " << patch.name() << "\n";
+  os << "     Author: " << meta.author << "\n";
+  os << "   Comments: " << meta.comments << "\n\n";
+  os << " PROGRAM CHANGE NO.";
+  if (meta.programChangeGroup && meta.programChangeNumber)
+    os << " " << *meta.programChangeGroup << ": " << *meta.programChangeNumber;
+  os << "\n\n";
+  os << " SEQUENCE BLOCK A\t" << sequenceDigits(patch.blockAOrder()) << "\n";
+  os << " SEQUENCE BLOCK B\t" << sequenceDigits(patch.blockBOrder()) << "\n\n";
+  os << " BLOCK A - ON/OFF\t" << onOffDigits(patch.blockAOrder(), patch) << "\n";
+  os << " BLOCK B - ON/OFF\t" << onOffDigits(patch.blockBOrder(), patch) << "\n\n";
+
+  for (int id = 0; id < Patch::kEffectCount; ++id)
+    emitEffect(os, patch, id);
+
+  emitSep(os);
+  os << " MASTER VOLUME " << static_cast<int>(patch.byteAt(0x5B)) << "\n\n";
+
+  emitSep(os);
+  os << " EXPRESSION PEDAL\n\n";
+  os << " ASSIGN OFF\n\n";
+
+  emitSep(os);
+  os << " OUTPUT SELECT\n\n";
+  const auto globals = allGlobalParams();
+  if (globals.size() >= 2)
+    os << " CHANNEL  " << formatChartValue(globals[1], static_cast<int>(patch.byteAt(0x63)))
+       << "\n";
+  else
+    os << " CHANNEL  1\n";
+
+  return os.str();
+}
+
+bool writePatchChartFile(const std::filesystem::path& path, const Patch& patch,
+                         const ChartMetadata& meta, std::string& error)
+{
+  error.clear();
+  std::ofstream out(path);
+  if (!out) {
+    error = "could not write " + path.string();
+    return false;
+  }
+  out << toChartText(patch, meta);
+  if (!out) {
+    error = "failed writing " + path.string();
+    return false;
+  }
+  return true;
 }

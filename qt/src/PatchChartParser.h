@@ -57,3 +57,14 @@ struct ParsedChart {
                                               std::string& error);
 
 [[nodiscard]] Patch chartToPatch(const ParsedChart& chart, int index = 0);
+
+struct ChartMetadata {
+  std::string author;
+  std::string comments;
+  std::optional<char> programChangeGroup;
+  std::optional<int> programChangeNumber;
+};
+
+[[nodiscard]] std::string toChartText(const Patch& patch, const ChartMetadata& meta = {});
+bool writePatchChartFile(const std::filesystem::path& path, const Patch& patch,
+                         const ChartMetadata& meta, std::string& error);

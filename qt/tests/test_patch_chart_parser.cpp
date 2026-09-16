@@ -446,6 +446,62 @@ void testChartToPatchEdlund2()
   checkEqual(patch.blockBOrder(), (std::array<int, 6>{6, 9, 7, 10, 8, 11}), "EDLUND2 seq B 142536");
 }
 
+bool patchesMatch(const Patch& a, const Patch& b, const std::string& what)
+{
+  const auto da = a.rawData();
+  const auto db = b.rawData();
+  if (da.size() != db.size()) {
+    check(false, what + " size " + std::to_string(da.size()) + " vs " + std::to_string(db.size()));
+    return false;
+  }
+  bool ok = true;
+  for (std::size_t i = 0; i < da.size(); ++i) {
+    if (da[i] == db[i])
+      continue;
+    checkEqual(static_cast<int>(da[i]), static_cast<int>(db[i]),
+               what + " byte 0x" + std::to_string(i));
+    ok = false;
+    if (!ok && i > 8)
+      break;
+  }
+  return ok;
+}
+
+void testExportRoundTrip()
+{
+  int count = 0;
+  for (const auto& entry : std::filesystem::directory_iterator(repoRoot() / "patches")) {
+    if (entry.path().extension() != ".PCH")
+      continue;
+    ++count;
+    const auto name = entry.path().filename().string();
+    std::string error;
+    const auto chart = parsePatchChartFile(entry.path(), error);
+    check(error.empty(), name + " export opened: " + error);
+    const Patch original = chartToPatch(chart);
+    ChartMetadata meta;
+    meta.author = chart.author;
+    meta.comments = chart.comments;
+    meta.programChangeGroup = chart.programChangeGroup;
+    meta.programChangeNumber = chart.programChangeNumber;
+    const std::string text = toChartText(original, meta);
+    check(!text.empty(), name + " export produced text");
+    const auto again = parsePatchChart(text);
+    checkEqual(again.name, original.name(), name + " exported name");
+    checkEqual(again.author, chart.author, name + " exported author");
+    const Patch roundtrip = chartToPatch(again);
+    patchesMatch(original, roundtrip, name + " import→export→import");
+  }
+  checkEqual(count, 13, "exported all 13 .PCH files");
+
+  const auto acoustic = toChartText(chartToPatch(loadChart("ACOUSTIC.PCH")));
+  check(acoustic.find("A-1 COMPRESSOR") != std::string::npos, "ACOUSTIC export has compressor");
+  check(acoustic.find("A-2") == std::string::npos, "ACOUSTIC export omits off distortion");
+  check(acoustic.find("CUTOFF THRU") != std::string::npos, "ACOUSTIC export has CUTOFF THRU");
+  check(acoustic.find("MASTER VOLUME 75") != std::string::npos, "ACOUSTIC export master volume");
+  check(acoustic.find("MODE: ROOM 1") != std::string::npos, "ACOUSTIC export reverb mode");
+}
+
 } // namespace
 
 int main()
@@ -460,6 +516,7 @@ int main()
   testChartToPatchAcoustic();
   testChartToPatchBtt70s();
   testChartToPatchEdlund2();
+  testExportRoundTrip();
 
   if (failures == 0) {
     std::cout << "All patch chart parser tests passed.\n";
