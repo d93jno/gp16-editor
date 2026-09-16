@@ -21,8 +21,10 @@ There are **two parallel implementations**:
 
 | Tree | Role | Platforms |
 |------|------|-----------|
-| `GP16Editor/` + `gp16editor.sln` | Primary **.NET MAUI** editor (C#) | Windows, macOS (Catalyst), iOS; DryWetMidi device I/O is **Windows/macOS** |
-| `qt/` | **C++20** Qt Widgets scaffold + **CLI dump tool** | Linux (ALSA), also portable via libremidi |
+| `qt/` | Active-development **C++20** Qt Widgets editor + **CLI dump tool** | Linux (ALSA), also portable via libremidi |
+| `GP16Editor/` + `gp16editor.sln` | **Obsolete** — .NET MAUI editor (C#), superseded by `qt/`, kept for reference only | Windows, macOS (Catalyst), iOS; DryWetMidi device I/O is **Windows/macOS** |
+
+The Qt tree (`qt/`) is where new feature work and bug fixes happen. The C# MAUI tree is no longer under active development; do not add new features there unless explicitly asked — prefer porting new work to `qt/` instead.
 
 ---
 
@@ -63,16 +65,17 @@ gp16-editor/
 - Roland SysEx details (checksum, addresses, delays): see [`docs/GP16_PROTOCOL.md`](docs/GP16_PROTOCOL.md). Between large messages, use a **20–50 ms** gap.
 - Do not commit `qt/build/` or MAUI `bin/` / `obj/` artifacts.
 
-### C# (`GP16Editor/`, Core, Models, Cli)
+### C# (`GP16Editor/`, Core, Models, Cli) — obsolete, reference only
 
+- This tree is **obsolete** and superseded by `qt/`. Do not add new features or drive-by refactor it; only touch it if explicitly asked (e.g. bug fix requested against the C# app specifically).
 - No comments in code (project convention).
 - Treat all `PropertyChanged` event invocations as nullable (`?.Invoke`).
 - MVVM: Views bind to ViewModels; MIDI I/O stays in services (`MidiService` / Core).
 - Nullable reference types enabled; implicit usings on.
-- Do **not** casually rewrite working C# MIDI paths unless explicitly asked; the MAUI app is the validated Windows workflow.
+- Do **not** casually rewrite working C# MIDI paths unless explicitly asked.
 - DryWetMidi: `NormalSysExEvent.Data` excludes `F0` and `F7`; prepend/append them when passing data to `SysExService.ParseDt1Message`.
 
-### C++ (`qt/`)
+### C++ (`qt/`) — active development
 
 - C++20, no compiler extensions.
 - Qt: `AUTOMOC` on; QObject MIDI callbacks marshalled to the UI thread (`QueuedConnection` / `invokeMethod`).
@@ -81,7 +84,7 @@ gp16-editor/
 
 ---
 
-## Architecture (C# MAUI)
+## Architecture (C# MAUI, obsolete)
 
 Four projects with a strict dependency direction: `GP16Editor` / `GP16Editor.Cli` → `GP16Editor.Core` → `GP16Editor.Models`.
 
